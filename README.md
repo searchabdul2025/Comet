@@ -243,4 +243,4 @@ Your app is live at: **https://portal-blue-zeta.vercel.app**
 
 ## License
 
-© 2025 Comet Portal •
+2025 portal Developed by Aqstoria
