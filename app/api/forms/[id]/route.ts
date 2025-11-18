@@ -49,7 +49,7 @@ export async function GET(
 // PUT update form
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const user = await getCurrentUser();
@@ -69,11 +69,15 @@ export async function PUT(
       );
     }
 
+    // Handle both async and sync params (Next.js 15+ uses Promise)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const formId = resolvedParams.id;
+
     await connectDB();
     const body = await request.json();
     
     const form = await Form.findByIdAndUpdate(
-      params.id,
+      formId,
       body,
       { new: true, runValidators: true }
     ).populate('createdBy', 'name email');
@@ -97,7 +101,7 @@ export async function PUT(
 // DELETE form
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const user = await getCurrentUser();
@@ -117,8 +121,12 @@ export async function DELETE(
       );
     }
 
+    // Handle both async and sync params (Next.js 15+ uses Promise)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const formId = resolvedParams.id;
+
     await connectDB();
-    const form = await Form.findByIdAndDelete(params.id);
+    const form = await Form.findByIdAndDelete(formId);
     
     if (!form) {
       return NextResponse.json(

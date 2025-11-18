@@ -7,11 +7,15 @@ import { getCurrentUser } from '@/lib/auth';
 // GET single user by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    // Handle both async and sync params (Next.js 15+ uses Promise)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const userId = resolvedParams.id;
+
     await connectDB();
-    const user = await User.findById(params.id).select('-password');
+    const user = await User.findById(userId).select('-password');
     
     if (!user) {
       return NextResponse.json(
@@ -32,7 +36,7 @@ export async function GET(
 // PUT update user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const currentUser = await getCurrentUser();
@@ -52,6 +56,10 @@ export async function PUT(
       );
     }
 
+    // Handle both async and sync params (Next.js 15+ uses Promise)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const userId = resolvedParams.id;
+
     await connectDB();
     const body = await request.json();
     
@@ -61,7 +69,7 @@ export async function PUT(
     }
     
     const user = await User.findByIdAndUpdate(
-      params.id,
+      userId,
       body,
       { new: true, runValidators: true }
     ).select('-password');
@@ -85,7 +93,7 @@ export async function PUT(
 // DELETE user
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const currentUser = await getCurrentUser();
@@ -105,8 +113,12 @@ export async function DELETE(
       );
     }
 
+    // Handle both async and sync params (Next.js 15+ uses Promise)
+    const resolvedParams = params instanceof Promise ? await params : params;
+    const userId = resolvedParams.id;
+
     await connectDB();
-    const user = await User.findByIdAndDelete(params.id);
+    const user = await User.findByIdAndDelete(userId);
     
     if (!user) {
       return NextResponse.json(

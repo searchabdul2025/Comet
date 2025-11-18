@@ -181,6 +181,51 @@ To make this production-ready, consider:
 8. **Testing**: Add unit and integration tests
 9. **Environment Variables**: Set up proper environment variables for production
 
+## Deployment to Vercel
+
+This project is ready to deploy to Vercel. Follow these steps:
+
+### 1. Push to GitHub
+```bash
+git add .
+git commit -m "Ready for Vercel deployment"
+git push origin main
+```
+
+### 2. Deploy to Vercel
+
+1. Go to [Vercel](https://vercel.com) and sign in with your GitHub account
+2. Click "New Project"
+3. Import your GitHub repository: `Ahmadkhanworkspace/portal`
+4. Configure environment variables:
+   - `MONGODB_URI` - Your MongoDB connection string
+   - `NEXTAUTH_SECRET` - A random secret string (generate with: `openssl rand -base64 32`)
+   - `NEXTAUTH_URL` - Your Vercel deployment URL (e.g., `https://your-app.vercel.app`)
+5. Click "Deploy"
+
+### 3. Environment Variables in Vercel
+
+After deployment, go to your project settings → Environment Variables and add:
+
+```
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/comet-portal
+NEXTAUTH_SECRET=your-secret-key-here
+NEXTAUTH_URL=https://your-app.vercel.app
+```
+
+### 4. Seed Initial Users
+
+After deployment, visit:
+```
+https://your-app.vercel.app/api/seed?force=true
+```
+
+This will create the default admin, supervisor, and user accounts.
+
+### 5. Access Your App
+
+Your app will be live at: `https://your-app.vercel.app`
+
 ## License
 
 © 2025 Comet Portal • Developed by Ceven Technologies
