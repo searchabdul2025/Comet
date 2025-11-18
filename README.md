@@ -211,7 +211,7 @@ git push origin main
 4. Configure environment variables:
    - `MONGODB_URI` - Your MongoDB connection string
    - `NEXTAUTH_SECRET` - A random secret string (generate with: `openssl rand -base64 32`)
-   - `NEXTAUTH_URL` - Your Vercel deployment URL (e.g., `https://your-app.vercel.app`)
+   - `NEXTAUTH_URL` - Your Vercel deployment URL (e.g., `https://portal-blue-zeta.vercel.app`)
 5. Click "Deploy"
 
 ### 3. Environment Variables in Vercel
@@ -221,21 +221,21 @@ After deployment, go to your project settings → Environment Variables and add:
 ```
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/comet-portal
 NEXTAUTH_SECRET=your-secret-key-here
-NEXTAUTH_URL=https://your-app.vercel.app
+NEXTAUTH_URL=https://portal-blue-zeta.vercel.app
 ```
 
 ### 4. Seed Initial Users
 
 After deployment, visit:
 ```
-https://your-app.vercel.app/api/seed?force=true
+https://portal-blue-zeta.vercel.app/api/seed?force=true
 ```
 
 This will create the default admin, supervisor, and user accounts.
 
 ### 5. Access Your App
 
-Your app will be live at: `https://your-app.vercel.app`
+Your app is live at: **https://portal-blue-zeta.vercel.app**
 
 ## License
 

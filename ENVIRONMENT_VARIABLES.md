@@ -125,7 +125,7 @@ npm run dev
    - **Environment**: Production, Preview, Development (select all)
    
    - **Key**: `NEXTAUTH_URL`
-   - **Value**: `https://your-app.vercel.app` (or your custom domain)
+   - **Value**: `https://portal-blue-zeta.vercel.app` (or your custom domain)
    - **Environment**: Production, Preview, Development (select all)
 
 4. Redeploy your application
