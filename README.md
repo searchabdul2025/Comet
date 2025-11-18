@@ -239,4 +239,4 @@ Your app is live at: **https://portal-blue-zeta.vercel.app**
 
 ## License
 
-© 2025 Comet Portal • Developed by Ceven Technologies
+© 2025 Comet Portal •
