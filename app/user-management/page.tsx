@@ -9,7 +9,8 @@ interface User {
   _id: string;
   id?: string;
   name: string;
-  email: string;
+  email?: string;
+  username?: string;
   role: 'Admin' | 'Supervisor' | 'User';
   permissions?: Record<string, boolean>;
 }
@@ -23,6 +24,7 @@ export default function UserManagementPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    username: '',
     password: '',
     role: 'User' as 'Admin' | 'Supervisor' | 'User',
     permissions: {
@@ -63,6 +65,7 @@ export default function UserManagementPage() {
     setFormData({
       name: '',
       email: '',
+      username: '',
       password: '',
       role: 'User',
       permissions: {
@@ -84,7 +87,8 @@ export default function UserManagementPage() {
     setEditingUser(user);
     setFormData({
       name: user.name,
-      email: user.email,
+      email: user.email || '',
+      username: user.username || '',
       password: '',
       role: user.role,
       permissions: {
@@ -254,6 +258,7 @@ export default function UserManagementPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Overrides</th>
@@ -278,7 +283,8 @@ export default function UserManagementPage() {
                   <tr key={user._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user._id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.email || '—'}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.username || '—'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">••••••••</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
@@ -348,6 +354,17 @@ export default function UserManagementPage() {
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="user@example.com"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input
+                  type="text"
+                  value={formData.username}
+                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                  placeholder="username (required if no email)"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
                 />
               </div>

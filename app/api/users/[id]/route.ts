@@ -62,15 +62,30 @@ export async function PUT(
 
     await connectDB();
     const body = await request.json();
-    
+
+    if (!body.username && !body.email) {
+      return NextResponse.json(
+        { success: false, error: 'Username or email is required' },
+        { status: 400 }
+      );
+    }
+
+    const updateData: any = {
+      name: body.name,
+      email: body.email ? body.email.toLowerCase().trim() : undefined,
+      username: body.username ? body.username.toLowerCase().trim() : undefined,
+      role: body.role,
+      permissions: body.permissions,
+    };
+
     // If password is being updated, hash it
     if (body.password) {
-      body.password = await bcrypt.hash(body.password, 10);
+      updateData.password = await bcrypt.hash(body.password, 10);
     }
     
     const user = await User.findByIdAndUpdate(
       userId,
-      body,
+      updateData,
       { new: true, runValidators: true }
     ).select('-password');
     

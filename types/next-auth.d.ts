@@ -6,6 +6,7 @@ declare module 'next-auth' {
     user: {
       id: string;
       email: string;
+      username?: string;
       name: string;
       role: 'Admin' | 'Supervisor' | 'User';
       permissions?: {
@@ -25,6 +26,7 @@ declare module 'next-auth' {
   interface User {
     id: string;
     role: 'Admin' | 'Supervisor' | 'User';
+    username?: string;
     permissions?: Session['user']['permissions'];
   }
 }

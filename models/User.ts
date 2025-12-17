@@ -14,7 +14,8 @@ export interface IUserPermissions {
 
 export interface IUser extends Document {
   name: string;
-  email: string;
+  email?: string;
+  username?: string;
   password: string;
   role: 'Admin' | 'Supervisor' | 'User';
   permissions?: IUserPermissions;
@@ -31,8 +32,17 @@ const UserSchema = new Schema<IUser>(
     },
     email: {
       type: String,
-      required: true,
+      required: false,
       unique: true,
+      sparse: true,
+      lowercase: true,
+      trim: true,
+    },
+    username: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
       lowercase: true,
       trim: true,
     },

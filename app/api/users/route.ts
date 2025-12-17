@@ -56,13 +56,34 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
     const body = await request.json();
+    const { name, email, username, password, role } = body;
+
+    if (!username && !email) {
+      return NextResponse.json(
+        { success: false, error: 'Username or email is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!password) {
+      return NextResponse.json(
+        { success: false, error: 'Password is required' },
+        { status: 400 }
+      );
+    }
     
     // Hash password
-    const hashedPassword = await bcrypt.hash(body.password, 10);
-    
-    const newUser = await User.create({
-      ...body,
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userData: any = {
+      name,
+      email: email ? email.toLowerCase().trim() : undefined,
+      username: username ? username.toLowerCase().trim() : undefined,
+      role,
       password: hashedPassword,
+    };
+
+    const newUser = await User.create({
+      ...userData,
     });
     
     const userWithoutPassword = newUser.toObject();

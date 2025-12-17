@@ -7,7 +7,7 @@ import { signIn } from 'next-auth/react';
 export default function LoginPage() {
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<'admin' | 'supervisor' | 'user'>('admin');
-  const [email, setEmail] = useState('admin@cometportal.com');
+  const [identifier, setIdentifier] = useState('admin');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,7 +32,7 @@ export default function LoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        identifier,
         password,
         redirect: false,
       });
@@ -101,14 +101,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email address
+            <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 mb-1">
+              Email or Username
             </label>
             <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              id="identifier"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 text-black bg-white"
               required
             />
