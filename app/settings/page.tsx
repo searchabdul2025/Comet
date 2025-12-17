@@ -87,13 +87,13 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Settings</h1>
-        <p className="text-gray-600">Configure integrations like Google Sheets.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">Settings</h1>
+        <p className="text-gray-600">Configure branding and integrations.</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-6 space-y-4">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Application Name</label>
