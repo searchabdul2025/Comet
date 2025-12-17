@@ -140,6 +140,14 @@ export default function FormsPage() {
                   <Eye size={16} className="inline mr-1" />
                   Preview
                 </Link>
+                {permissions?.canEditForms && (
+                  <Link
+                    href={`/form-builder?id=${form._id}`}
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors text-sm font-medium"
+                  >
+                    Edit
+                  </Link>
+                )}
                 {permissions?.canDeleteForms && (
                   <button
                     onClick={() => handleDelete(form._id)}

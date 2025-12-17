@@ -6,6 +6,7 @@ export interface IFormSubmission extends Document {
   submittedBy?: mongoose.Types.ObjectId;
   submittedAt: Date;
   ipAddress?: string;
+  phoneNumber?: string; // normalized 10-digit US phone for de-dup + reporting
 }
 
 const FormSubmissionSchema = new Schema<IFormSubmission>(
@@ -29,6 +30,10 @@ const FormSubmissionSchema = new Schema<IFormSubmission>(
     },
     ipAddress: {
       type: String,
+    },
+    phoneNumber: {
+      type: String,
+      index: true,
     },
   },
   {

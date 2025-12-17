@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus, X, Save } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type FieldType = 'text' | 'email' | 'tel' | 'number' | 'date' | 'select' | 'radio' | 'checkbox' | 'textarea';
 
@@ -18,12 +18,15 @@ interface FormField {
 
 export default function FormBuilderPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editingId = searchParams.get('id');
   const [formTitle, setFormTitle] = useState('');
   const [formId, setFormId] = useState('');
   const [description, setDescription] = useState('');
   const [fields, setFields] = useState<FormField[]>([]);
   const [showAddField, setShowAddField] = useState(false);
   const [editingField, setEditingField] = useState<FormField | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const fieldTypes: { value: FieldType; label: string }[] = [
     { value: 'text', label: 'Text' },
@@ -36,6 +39,29 @@ export default function FormBuilderPage() {
     { value: 'checkbox', label: 'Checkbox' },
     { value: 'textarea', label: 'Textarea' },
   ];
+
+  useEffect(() => {
+    if (!editingId) return;
+    const loadForm = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/forms/${editingId}`);
+        const result = await res.json();
+        if (result.success && result.data) {
+          const f = result.data;
+          setFormTitle(f.title);
+          setFormId(f.formId);
+          setDescription(f.description || '');
+          setFields(f.fields || []);
+        }
+      } catch (err) {
+        console.error('Failed to load form', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadForm();
+  }, [editingId]);
 
   const handleAddField = () => {
     const newField: FormField = {
@@ -78,8 +104,9 @@ export default function FormBuilderPage() {
     }
 
     try {
-      const response = await fetch('/api/forms', {
-        method: 'POST',
+      const isEdit = Boolean(editingId);
+      const response = await fetch(isEdit ? `/api/forms/${editingId}` : '/api/forms', {
+        method: isEdit ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -106,8 +133,13 @@ export default function FormBuilderPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Form Builder</h1>
-        <p className="text-gray-600">Create dynamic forms with validation and multiple field types.</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          {editingId ? 'Edit Form' : 'Form Builder'}
+        </h1>
+        <p className="text-gray-600">
+          {editingId ? 'Update your form configuration.' : 'Create dynamic forms with validation and multiple field types.'}
+        </p>
+        {loading && <p className="text-sm text-gray-500">Loading form...</p>}
       </div>
 
       {/* Form Information */}
