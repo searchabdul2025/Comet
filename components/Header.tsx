@@ -9,6 +9,7 @@ export default function Header() {
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Portal' });
+  const accent = 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500';
 
   useEffect(() => {
     setMounted(true);
@@ -52,13 +53,13 @@ export default function Header() {
   const user = session.user;
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
       <div className="flex items-center gap-3">
         {brand.logo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={brand.logo} alt={brand.name} className="h-8 w-8 rounded-md object-contain" />
         ) : (
-          <div className="h-8 w-8 rounded-md bg-blue-600 text-white flex items-center justify-center font-semibold">
+          <div className={`h-8 w-8 rounded-md text-white flex items-center justify-center font-semibold ${accent}`}>
             {brand.name.slice(0, 2).toUpperCase()}
           </div>
         )}

@@ -58,8 +58,8 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
 
   // Prevent hydration mismatch - usePathname can differ on server/client
   const Shell = ({ children }: { children: React.ReactNode }) => (
-    <div className="w-64 bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 text-white min-h-screen p-4">
-      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/10 mb-4">
+    <div className="w-64 bg-gradient-to-b from-cyan-700 via-teal-700 to-emerald-700 text-white min-h-screen p-4">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/10 mb-4 shadow-lg shadow-emerald-900/20">
         {brand.logo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={brand.logo} alt={brand.name} className="h-9 w-9 rounded-lg object-contain bg-white/10" />
@@ -111,13 +111,13 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
               href={item.href}
               className={`group relative flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${
                 isActive
-                  ? 'bg-white text-slate-900 border-white/60 shadow-lg shadow-white/10'
+                  ? 'bg-white text-emerald-900 border-white/60 shadow-lg shadow-emerald-900/10'
                   : 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'
               }`}
             >
               <div
                 className={`h-9 w-9 rounded-lg flex items-center justify-center transition ${
-                  isActive ? 'bg-slate-900 text-white' : 'bg-white/10 text-white'
+                  isActive ? 'bg-emerald-900 text-white' : 'bg-white/10 text-white'
                 }`}
               >
                 <Icon size={18} />

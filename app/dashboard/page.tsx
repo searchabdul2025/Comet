@@ -10,13 +10,14 @@ import {
   Sparkles,
   ShieldCheck,
   TrendingUp,
+  Activity,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 const cardBase =
-  'bg-white/80 backdrop-blur-sm border border-slate-100 shadow-sm rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg';
+  'bg-white border border-teal-50 shadow-sm rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg';
 
 export default function DashboardPage() {
   const pathname = usePathname();
@@ -92,17 +93,17 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-6 md:p-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.08),_transparent_45%)]" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white p-6 md:p-8 shadow-lg">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_45%)]" />
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-100">
               <Sparkles size={14} />
               New 2026 Experience
             </div>
-            <h1 className="mt-3 text-3xl md:text-4xl font-bold">Admin Command Center</h1>
-            <p className="mt-2 text-slate-200/80 max-w-2xl">
-              Track forms, users, submissions, and network access with a streamlined, responsive layout.
+            <h1 className="mt-3 text-3xl md:text-4xl font-bold">Admin Dashboard</h1>
+            <p className="mt-2 text-white/80 max-w-2xl">
+              Track forms, users, submissions, and integrations with a modern UI.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               {tabs.map((tab) => {
@@ -185,19 +186,19 @@ export default function DashboardPage() {
               <ProgressRow
                 label="Forms"
                 value={stats.totalForms}
-                color="bg-blue-600"
+                color="bg-emerald-500"
                 loading={loading}
               />
               <ProgressRow
                 label="Submissions"
                 value={stats.totalSubmissions}
-                color="bg-amber-500"
+                color="bg-teal-500"
                 loading={loading}
               />
               <ProgressRow
                 label="Users"
                 value={stats.totalUsers}
-                color="bg-emerald-500"
+                color="bg-cyan-500"
                 loading={loading}
               />
             </div>
@@ -220,6 +221,7 @@ export default function DashboardPage() {
                 icon={<Database size={18} />}
                 label="View Submissions"
               />
+              <CTA href="/settings" icon={<Activity size={18} />} label="Settings" variant="neutral" />
             </div>
           </div>
         </div>
