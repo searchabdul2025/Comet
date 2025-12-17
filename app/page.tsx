@@ -51,40 +51,47 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h1 className="text-4xl font-bold text-center mb-2">Comet Portal</h1>
-        <p className="text-gray-600 text-center mb-6">Sign in to your account</p>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center p-4">
+      <div className="bg-white/95 backdrop-blur rounded-2xl shadow-2xl p-8 w-full max-w-md border border-white/40">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-10 w-10 rounded-lg bg-gradient-to-r from-emerald-500 to-cyan-500 text-white flex items-center justify-center font-bold text-lg">
+            PO
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Portal</h1>
+            <p className="text-sm text-gray-500">Sign in to your account</p>
+          </div>
+        </div>
 
         <div className="mb-6">
           <p className="text-sm text-gray-600 mb-3">Quick Fill (optional)</p>
           <div className="flex gap-2">
             <button
               onClick={() => handleRoleSelect('admin')}
-              className={`flex-1 py-2 px-4 rounded ${
+              className={`flex-1 py-2 px-4 rounded-lg border ${
                 selectedRole === 'admin'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300'
               } transition-colors`}
             >
               Admin
             </button>
             <button
               onClick={() => handleRoleSelect('supervisor')}
-              className={`flex-1 py-2 px-4 rounded ${
+              className={`flex-1 py-2 px-4 rounded-lg border ${
                 selectedRole === 'supervisor'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300'
               } transition-colors`}
             >
               Supervisor
             </button>
             <button
               onClick={() => handleRoleSelect('user')}
-              className={`flex-1 py-2 px-4 rounded ${
+              className={`flex-1 py-2 px-4 rounded-lg border ${
                 selectedRole === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                  : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300'
               } transition-colors`}
             >
               User
@@ -102,7 +109,7 @@ export default function LoginPage() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 text-black bg-white"
               required
             />
           </div>
@@ -116,13 +123,13 @@ export default function LoginPage() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 text-black bg-white"
               required
             />
           </div>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
@@ -130,7 +137,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-3 rounded-md font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white py-3 rounded-lg font-medium shadow hover:shadow-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>

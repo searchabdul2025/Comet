@@ -110,11 +110,7 @@ export default function DashboardPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_45%)]" />
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-100">
-              <Sparkles size={14} />
-              New 2026 Experience
-            </div>
-            <h1 className="mt-3 text-3xl md:text-4xl font-bold">Admin Dashboard</h1>
+            <h1 className="text-3xl md:text-4xl font-bold">Admin Dashboard</h1>
             <p className="mt-2 text-white/80 max-w-2xl">
               Track forms, users, submissions, and integrations with a modern UI.
             </p>
