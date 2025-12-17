@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   const handleRoleSelect = (role: 'admin' | 'supervisor' | 'user') => {
     setSelectedRole(role);
-    setEmail(roleCredentials[role].email);
+    setIdentifier(roleCredentials[role].email);
     setPassword(roleCredentials[role].password);
     setError('');
   };
