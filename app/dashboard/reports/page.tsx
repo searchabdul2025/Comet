@@ -96,30 +96,34 @@ export default function ReportsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Reports</h1>
           <p className="text-gray-600">Export submissions as PDF, CSV, XLSX, or push to Google Sheets.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <ExportButton
             label="CSV"
             icon={<FileText size={16} />}
             onClick={() => handleExport('csv')}
             loading={exporting === 'csv'}
+            color="bg-emerald-500 hover:bg-emerald-600 text-white"
           />
           <ExportButton
             label="XLSX"
             icon={<FileSpreadsheet size={16} />}
             onClick={() => handleExport('xlsx')}
             loading={exporting === 'xlsx'}
+            color="bg-cyan-500 hover:bg-cyan-600 text-white"
           />
           <ExportButton
             label="PDF"
             icon={<FileDown size={16} />}
             onClick={() => handleExport('pdf')}
             loading={exporting === 'pdf'}
+            color="bg-amber-500 hover:bg-amber-600 text-white"
           />
           <ExportButton
             label="Google Sheet"
             icon={<Sheet size={16} />}
             onClick={() => handleExport('sheets')}
             loading={exporting === 'sheets'}
+            color="bg-sky-500 hover:bg-sky-600 text-white"
           />
         </div>
       </div>
@@ -189,17 +193,19 @@ function ExportButton({
   icon,
   onClick,
   loading,
+  color = 'bg-white/80 border border-slate-200 hover:bg-white text-slate-800',
 }: {
   label: string;
   icon: React.ReactNode;
   onClick: () => void;
   loading: boolean;
+  color?: string;
 }) {
   return (
     <button
       onClick={onClick}
       disabled={loading}
-      className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-white/80 border border-slate-200 hover:bg-white transition disabled:opacity-60"
+      className={`inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md transition disabled:opacity-60 disabled:cursor-not-allowed ${color}`}
     >
       {icon}
       {loading ? 'Working...' : label}
