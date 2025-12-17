@@ -15,12 +15,14 @@ import {
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 const cardBase =
   'bg-white border border-slate-100 shadow-sm rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg';
 
 export default function DashboardPage() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [stats, setStats] = useState({
     totalForms: 0,
     totalUsers: 0,
@@ -56,13 +58,16 @@ export default function DashboardPage() {
     }
   };
 
+  const isAdmin = session?.user?.role === 'Admin';
+
   const tabs = [
     { name: 'Forms', href: '/forms' },
     { name: 'Submissions', href: '/dashboard?tab=Submissions' },
     { name: 'Requests', href: '/requests' },
     { name: 'IP Management', href: '/ip-management' },
-    { name: 'User Management', href: '/user-management' },
-  ];
+    { name: 'User Management', href: '/user-management', adminOnly: true },
+    { name: 'Reports', href: '/dashboard/reports', adminOnly: true },
+  ].filter((tab) => !tab.adminOnly || isAdmin);
 
   const metrics = [
     {

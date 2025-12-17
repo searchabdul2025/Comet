@@ -47,6 +47,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     { href: '/ip-management', label: 'IP Management', icon: Network, permission: 'canManageIPs' as const },
     { href: '/user-management', label: 'User Management', icon: Users, permission: 'canManageUsers' as const },
     { href: '/settings', label: 'Settings', icon: Sparkles, permission: 'canManageSettings' as const },
+    { href: '/dashboard/reports', label: 'Reports', icon: Activity, permission: 'canManageUsers' as const },
   ];
 
   // Filter nav items based on permissions
