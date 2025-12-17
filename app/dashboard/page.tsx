@@ -30,9 +30,12 @@ export default function DashboardPage() {
     authorizedIPs: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [chartData, setChartData] = useState<number[]>(Array(12).fill(0));
+  const [chartLoading, setChartLoading] = useState(true);
 
   useEffect(() => {
     fetchStats();
+    fetchChart();
   }, []);
 
   const fetchStats = async () => {
@@ -55,6 +58,25 @@ export default function DashboardPage() {
       console.error('Failed to fetch stats:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchChart = async () => {
+    try {
+      setChartLoading(true);
+      const res = await fetch('/api/submissions/summary');
+      const result = await res.json();
+      if (result.success) {
+        const arr: number[] = Array(12).fill(0);
+        (result.data as { month: number; count: number }[]).forEach((m) => {
+          if (m.month >= 1 && m.month <= 12) arr[m.month - 1] = m.count;
+        });
+        setChartData(arr);
+      }
+    } catch (err) {
+      // ignore for now
+    } finally {
+      setChartLoading(false);
     }
   };
 
@@ -97,9 +119,7 @@ export default function DashboardPage() {
   ];
 
   const submissionsLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const submissionsSeries = [
-    120, 180, 240, 210, 260, 320, 300, 360, 410, 380, 440, 520,
-  ];
+  const submissionsSeries = chartData;
   const maxValue = Math.max(...submissionsSeries, 1);
   const points = submissionsSeries
     .map((v, i) => {
@@ -197,36 +217,40 @@ export default function DashboardPage() {
               <TrendingUp className="text-teal-600" size={20} />
             </div>
             <div className="mt-4">
-              <div className="relative h-56">
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-                  <defs>
-                    <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <polyline
-                    fill="none"
-                    stroke="#0ea5e9"
-                    strokeWidth="2"
-                    points={points}
-                  />
-                  {submissionsSeries.map((v, i) => {
-                    const x = (i / (submissionsSeries.length - 1)) * 100;
-                    const y = 100 - (v / maxValue) * 100;
-                    return <circle key={i} cx={x} cy={y} r={1.2} fill="#0ea5e9" />;
-                  })}
-                  <polygon
-                    fill="url(#areaGradient)"
-                    points={`0,100 ${points} 100,100`}
-                  />
-                </svg>
-                <div className="absolute inset-x-3 bottom-2 flex justify-between text-[10px] text-slate-500">
-                  {submissionsLabels.map((label) => (
-                    <span key={label}>{label}</span>
-                  ))}
+              {chartLoading ? (
+                <div className="p-4 text-sm text-slate-500">Loading chart...</div>
+              ) : (
+                <div className="relative h-56">
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
+                    <defs>
+                      <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <polyline
+                      fill="none"
+                      stroke="#0ea5e9"
+                      strokeWidth="2"
+                      points={points}
+                    />
+                    {submissionsSeries.map((v, i) => {
+                      const x = (i / (submissionsSeries.length - 1)) * 100;
+                      const y = 100 - (v / maxValue) * 100;
+                      return <circle key={i} cx={x} cy={y} r={1.2} fill="#0ea5e9" />;
+                    })}
+                    <polygon
+                      fill="url(#areaGradient)"
+                      points={`0,100 ${points} 100,100`}
+                    />
+                  </svg>
+                  <div className="absolute inset-x-3 bottom-2 flex justify-between text-[10px] text-slate-500">
+                    {submissionsLabels.map((label) => (
+                      <span key={label}>{label}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="mt-3 flex items-center gap-4 text-sm text-slate-600">
                 <span className="inline-flex items-center gap-1">
                   <span className="h-2 w-2 rounded-full bg-sky-500" />
