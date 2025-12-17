@@ -3,8 +3,9 @@ import Setting from '@/models/Setting';
 
 export async function getSetting(key: string): Promise<string | null> {
   await connectDB();
-  const doc = await Setting.findOne({ key }).lean();
-  return doc?.value ?? null;
+  const doc = await Setting.findOne({ key }).lean<{ value?: string }>();
+  if (!doc) return null;
+  return doc.value ?? null;
 }
 
 export async function setSettings(settings: Record<string, string>) {
