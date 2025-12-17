@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Bell, Network, Users, Sparkles } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Network, Users, Sparkles, Activity } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { getPermissions } from '@/lib/permissions';
