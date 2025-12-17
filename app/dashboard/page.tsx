@@ -95,7 +95,7 @@ export default function DashboardPage() {
   const submissionsSeries = [
     120, 180, 240, 210, 260, 320, 300, 360, 410, 380, 440, 520,
   ];
-  const maxValue = Math.max(...submissionsSeries, 500);
+  const maxValue = Math.max(...submissionsSeries, 1);
   const points = submissionsSeries
     .map((v, i) => {
       const x = (i / (submissionsSeries.length - 1)) * 100;
