@@ -27,6 +27,10 @@ export default function RequestsPage() {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState('');
   const [error, setError] = useState('');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [newType, setNewType] = useState('');
+  const [newDetails, setNewDetails] = useState('');
 
   const fetchRequests = async () => {
     try {
@@ -84,6 +88,33 @@ export default function RequestsPage() {
     }
   };
 
+  const createRequest = async () => {
+    try {
+      setCreateError('');
+      if (!newType.trim() || !newDetails.trim()) {
+        setCreateError('Type and details are required.');
+        return;
+      }
+      setCreating(true);
+      const res = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: newType.trim(), details: newDetails.trim() }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Failed to create request');
+      }
+      setRequests((prev) => [result.data, ...prev]);
+      setNewType('');
+      setNewDetails('');
+    } catch (err: any) {
+      setCreateError(err.message || 'Failed to create request');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -99,6 +130,47 @@ export default function RequestsPage() {
           {loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCcw size={16} />}
           Refresh
         </button>
+      </div>
+
+      <div className="mb-6 bg-white rounded-lg shadow p-4 border border-slate-200">
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">Submit a request</h3>
+        {createError && (
+          <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-amber-800 text-sm">
+            {createError}
+          </div>
+        )}
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-slate-700">Type</label>
+            <input
+              type="text"
+              value={newType}
+              onChange={(e) => setNewType(e.target.value)}
+              placeholder="e.g. Access request"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex flex-col gap-1 md:col-span-1">
+            <label className="text-sm font-medium text-slate-700">Details</label>
+            <textarea
+              value={newDetails}
+              onChange={(e) => setNewDetails(e.target.value)}
+              placeholder="Describe the request..."
+              rows={2}
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        <div className="mt-3 flex justify-end">
+          <button
+            onClick={createRequest}
+            disabled={creating}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {creating ? <Loader2 size={16} className="animate-spin" /> : null}
+            Submit
+          </button>
+        </div>
       </div>
 
       {error && (
