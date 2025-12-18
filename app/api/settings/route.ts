@@ -19,6 +19,8 @@ export async function GET() {
       'CHAT_RATE_LIMIT_PER_MINUTE',
       'CHAT_MESSAGE_MAX_LENGTH',
       'CHAT_HISTORY_LIMIT',
+      'BONUS_PER_SUBMISSION',
+      'BONUS_TARGET_BONUS',
     ];
     const entries = await Promise.all(keys.map(async (key) => [key, await getSetting(key)] as const));
     const data: Record<string, string | null> = {};

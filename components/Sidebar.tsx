@@ -71,9 +71,8 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
 
     // Agent / supervisor views (no special permissions, role-gated)
     { href: '/agent/reports', label: 'Reports', icon: Activity, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/submitted-leads', label: 'Submitted Leads', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/achieved-targets', label: 'Achieved Targets', icon: Trophy, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/bonuses', label: 'Bonuses', icon: Gift, permission: null, roles: ['User', 'Supervisor'] as const },
+    { href: '/agent/targets', label: 'My Target', icon: Target, permission: null, roles: ['User', 'Supervisor'] as const },
+    { href: '/agent/submissions', label: 'My Submissions', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
     { href: '/agent/campaigns', label: 'Campaign Forms', icon: FolderKanban, permission: null, roles: ['User', 'Supervisor'] as const },
   ];
 
