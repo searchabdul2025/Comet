@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Download, FileSpreadsheet, FileText, FileDown, Sheet } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Download, FileSpreadsheet, FileText, FileDown, Sheet, Loader2 } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 interface Submission {
@@ -126,30 +126,32 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white border border-slate-200 rounded-xl shadow-sm p-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Reports</h1>
           <p className="text-gray-600">Export submissions as PDF, CSV, XLSX, or push to Google Sheets.</p>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
-          <label className="text-sm text-slate-700">From</label>
+          <label className="text-sm font-medium text-slate-800">From</label>
           <input
             type="date"
             value={fromDate}
             onChange={(e) => setFromDate(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm bg-white"
           />
-          <label className="text-sm text-slate-700">To</label>
+          <label className="text-sm font-medium text-slate-800">To</label>
           <input
             type="date"
             value={toDate}
             onChange={(e) => setToDate(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm bg-white"
           />
           <button
             onClick={fetchSubs}
-            className="inline-flex items-center gap-1 px-3 py-2 text-sm rounded-md bg-slate-100 hover:bg-slate-200 transition"
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
+            {loading ? <Loader2 size={14} className="animate-spin" /> : null}
             Apply
           </button>
           <div className="flex flex-wrap gap-1">
@@ -162,7 +164,7 @@ export default function ReportsPage() {
                   setToDate(r.to);
                   setTimeout(fetchSubs, 0);
                 }}
-                className="px-2 py-1 text-xs rounded-md border border-slate-200 bg-white hover:bg-slate-50"
+                className="px-3 py-1.5 text-xs font-medium rounded-md border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-400 transition"
               >
                 {p.label}
               </button>
@@ -212,33 +214,40 @@ export default function ReportsPage() {
           <h3 className="text-lg font-semibold text-gray-800">Submissions ({submissions.length})</h3>
           <button
             onClick={fetchSubs}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-slate-100 hover:bg-slate-200 transition"
+            disabled={loading}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-slate-100 hover:bg-slate-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <Download size={14} />
-            Refresh
+            {loading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+            {loading ? 'Loading' : 'Refresh'}
           </button>
         </div>
         <div className="overflow-auto">
           {loading ? (
-            <div className="p-4 text-sm text-gray-500">Loading submissions...</div>
+            <div className="p-6 flex items-center gap-3 text-sm text-gray-600">
+              <Loader2 size={18} className="animate-spin" />
+              Loading submissions...
+            </div>
           ) : submissions.length === 0 ? (
-            <div className="p-4 text-sm text-gray-500">No submissions yet.</div>
+            <div className="p-6 text-sm text-gray-600 flex items-center gap-3">
+              <FileText size={18} className="text-slate-400" />
+              No submissions yet.
+            </div>
           ) : (
             <table className="min-w-full text-sm">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
                 <tr>
-                  <th className="px-4 py-2 text-left text-slate-600">Date</th>
-                  <th className="px-4 py-2 text-left text-slate-600">Phone</th>
-                  <th className="px-4 py-2 text-left text-slate-600">Form ID</th>
-                  <th className="px-4 py-2 text-left text-slate-600">IP</th>
-                  <th className="px-4 py-2 text-left text-slate-600">User</th>
-                  <th className="px-4 py-2 text-left text-slate-600">Data</th>
+                  <th className="px-4 py-2 text-left text-slate-700 font-semibold">Date</th>
+                  <th className="px-4 py-2 text-left text-slate-700 font-semibold">Phone</th>
+                  <th className="px-4 py-2 text-left text-slate-700 font-semibold">Form ID</th>
+                  <th className="px-4 py-2 text-left text-slate-700 font-semibold">IP</th>
+                  <th className="px-4 py-2 text-left text-slate-700 font-semibold">User</th>
+                  <th className="px-4 py-2 text-left text-slate-700 font-semibold">Data</th>
                 </tr>
               </thead>
               <tbody>
                 {submissions.map((s) => (
-                  <tr key={s._id} className="border-t">
-                    <td className="px-4 py-2 text-slate-700">
+                  <tr key={s._id} className="border-t hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
                       {s.createdAt ? new Date(s.createdAt).toLocaleString() : '-'}
                     </td>
                     <td className="px-4 py-2 text-slate-700">{s.phoneNumber || '-'}</td>
