@@ -26,6 +26,7 @@ export default function CampaignsPage() {
   const [editingName, setEditingName] = useState('');
   const [editingDesc, setEditingDesc] = useState('');
   const [editSaving, setEditSaving] = useState(false);
+  const [pendingRedirectCampaign, setPendingRedirectCampaign] = useState<Campaign | null>(null);
 
   const { data: session } = useSession();
   const userRole = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
@@ -75,14 +76,9 @@ export default function CampaignsPage() {
         setCampaigns([result.data, ...campaigns]);
         setName('');
         setDescription('');
-        // Prompt to build form
+        // Prompt to build form with in-app modal
         const created = result.data as Campaign;
-        if (created?._id && confirm('Campaign created. Would you like to build the form now?')) {
-          const params = new URLSearchParams();
-          if (created.campaignId) params.append('campaignId', created.campaignId);
-          params.append('campaignName', created.name);
-          router.push(`/form-builder?${params.toString()}`);
-        }
+        setPendingRedirectCampaign(created);
       } else {
         setError(result.error || 'Failed to create campaign');
       }
@@ -289,6 +285,40 @@ export default function CampaignsPage() {
           </div>
         )}
       </div>
+
+      {pendingRedirectCampaign && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 border border-slate-200">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">Build the form now?</h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Campaign "{pendingRedirectCampaign.name}" was created successfully. Would you like to open the form builder?
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setPendingRedirectCampaign(null)}
+                className="px-4 py-2 rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
+              >
+                No
+              </button>
+              <button
+                onClick={() => {
+                  const created = pendingRedirectCampaign;
+                  setPendingRedirectCampaign(null);
+                  if (created?._id) {
+                    const params = new URLSearchParams();
+                    if (created.campaignId) params.append('campaignId', created.campaignId);
+                    params.append('campaignName', created.name);
+                    router.push(`/form-builder?${params.toString()}`);
+                  }
+                }}
+                className="px-4 py-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 transition"
+              >
+                Yes, build form
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
