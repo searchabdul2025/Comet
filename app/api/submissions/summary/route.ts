@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import FormSubmission from '@/models/FormSubmission';
 import { getCurrentUser } from '@/lib/auth';
 import { requirePermission } from '@/lib/permissions';
+import type { PipelineStage } from 'mongoose';
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
     const to = searchParams.get('to');
 
     let startOfYear: Date | undefined = undefined;
-    const match: any = {};
+    const match: Record<string, any> = {};
     if (from || to) {
       match.createdAt = {};
       if (from) match.createdAt.$gte = new Date(from);
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
       match.createdAt = { $gte: startOfYear };
     }
 
-    const pipeline = [
+    const pipeline: PipelineStage[] = [
       { $match: match },
       {
         $group: {
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
           count: { $sum: 1 },
         },
       },
-      { $sort: { '_id.year': 1, '_id.month': 1 } },
+      { $sort: { '_id.year': 1 as 1, '_id.month': 1 as 1 } },
     ];
 
     const data = await FormSubmission.aggregate(pipeline);

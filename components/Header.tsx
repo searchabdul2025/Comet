@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import AgentLaunch from './AgentLaunch';
 
 export default function Header() {
   const router = useRouter();
@@ -53,31 +54,34 @@ export default function Header() {
   const user = session.user;
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-      <div className="flex items-center gap-3">
-        {brand.logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={brand.logo} alt={brand.name} className="h-8 w-8 rounded-md object-contain" />
-        ) : (
-          <div className={`h-8 w-8 rounded-md text-white flex items-center justify-center font-semibold ${accent}`}>
-            {brand.name.slice(0, 2).toUpperCase()}
-          </div>
-        )}
-        <h1 className="text-xl font-bold text-gray-800">{brand.name}</h1>
-      </div>
-      <div className="flex items-center gap-4">
-        <span className="text-gray-700">{user.name || user.email}</span>
-        <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-md font-medium">
-          {user.role}
-        </span>
-        <button
-          onClick={handleLogout}
-          className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
-        >
-          Logout
-        </button>
-      </div>
-    </header>
+    <>
+      <AgentLaunch />
+      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+        <div className="flex items-center gap-3">
+          {brand.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={brand.logo} alt={brand.name} className="h-8 w-8 rounded-md object-contain" />
+          ) : (
+            <div className={`h-8 w-8 rounded-md text-white flex items-center justify-center font-semibold ${accent}`}>
+              {brand.name.slice(0, 2).toUpperCase()}
+            </div>
+          )}
+          <h1 className="text-xl font-bold text-gray-800">{brand.name}</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-gray-700">{user.name || user.email}</span>
+          <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-md font-medium">
+            {user.role}
+          </span>
+          <button
+            onClick={handleLogout}
+            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+    </>
   );
 }
 
