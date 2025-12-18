@@ -90,6 +90,14 @@ function FormBuilderContent() {
         if (result.success) {
           setCampaigns(result.data);
           setCampaignsError('');
+          // auto-select campaign from query if present
+          const fromParam = searchParams.get('campaignId') || searchParams.get('campaign');
+          if (fromParam) {
+            const found = result.data.find((c: any) => c.campaignId === fromParam || c._id === fromParam);
+            if (found) {
+              setCampaignId(found._id);
+            }
+          }
         } else {
           setCampaignsError(result.error || 'Failed to load campaigns');
         }
@@ -100,7 +108,7 @@ function FormBuilderContent() {
       }
     };
     fetchCampaigns();
-  }, []);
+  }, [searchParams]);
 
   const handleAddField = () => {
     const newField: FormField = {
