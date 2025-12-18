@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Bell, Network, Users, Sparkles, Activity } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Network, Users, Sparkles, Activity, Megaphone, Briefcase, MessageSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { getPermissions } from '@/lib/permissions';
@@ -41,7 +41,10 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   const permissions = userRole ? getPermissions(userRole, userPermOverrides || undefined) : null;
 
   const allNavItems = [
+    { href: '/employee/major-form', label: 'Employee Portal', icon: Briefcase, permission: null },
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null },
+    { href: '/chat', label: 'Team Chat', icon: MessageSquare, permission: null },
+    { href: '/campaigns', label: 'Campaigns', icon: Megaphone, permission: 'canManageForms' as const },
     { href: '/forms', label: 'Forms', icon: FileText, permission: 'canManageForms' as const },
     { href: '/requests', label: 'Requests', icon: Bell, badge: requestCount, permission: 'canManageRequests' as const },
     { href: '/ip-management', label: 'IP Management', icon: Network, permission: 'canManageIPs' as const },

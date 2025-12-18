@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+import { requirePermission } from '@/lib/permissions';
 
 // POST reset user password
 export async function POST(request: NextRequest) {
@@ -12,6 +13,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!requirePermission(currentUser.role as any, 'canManageUsers', currentUser.permissions as any)) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden: Admin access required' },
+        { status: 403 }
       );
     }
 

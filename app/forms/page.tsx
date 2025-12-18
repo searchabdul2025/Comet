@@ -12,6 +12,7 @@ interface Form {
   title: string;
   formId: string;
   description?: string;
+  campaign?: { _id: string; name: string } | string;
   fields: Array<{
     name: string;
     type: string;
@@ -24,6 +25,7 @@ export default function FormsPage() {
   const [forms, setForms] = useState<Form[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [campaignsAvailable, setCampaignsAvailable] = useState(true);
   const { data: session } = useSession();
   
   const userRole = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
@@ -32,6 +34,7 @@ export default function FormsPage() {
 
   useEffect(() => {
     fetchForms();
+    checkCampaigns();
   }, []);
 
   const fetchForms = async () => {
@@ -49,6 +52,20 @@ export default function FormsPage() {
       setError('Failed to load forms');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkCampaigns = async () => {
+    try {
+      const response = await fetch('/api/campaigns');
+      const result = await response.json();
+      if (result.success) {
+        setCampaignsAvailable((result.data || []).length > 0);
+      } else {
+        setCampaignsAvailable(false);
+      }
+    } catch (err) {
+      setCampaignsAvailable(false);
     }
   };
 
@@ -103,13 +120,23 @@ export default function FormsPage() {
         </div>
         {permissions?.canCreateForms && (
           <Link
-            href="/form-builder"
-            className="inline-flex items-center justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition"
+            href={campaignsAvailable ? '/form-builder' : '/campaigns'}
+            className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white shadow-sm transition ${
+              campaignsAvailable
+                ? 'bg-blue-600 hover:bg-blue-700'
+                : 'bg-gray-400 cursor-not-allowed'
+            }`}
           >
-            + New Form
+            {campaignsAvailable ? '+ New Form' : 'Create a Campaign First'}
           </Link>
         )}
       </div>
+
+      {!campaignsAvailable && (
+        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Create a campaign before adding a new form. Go to the Campaigns tab to create one.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {forms.length === 0 ? (
@@ -122,6 +149,12 @@ export default function FormsPage() {
               <div className="mb-4">
                 <h3 className="text-xl font-bold text-gray-800 mb-1">{form.title}</h3>
                 <p className="text-sm text-gray-600 mb-2">ID: {form.formId}</p>
+                {form.campaign && (
+                  <p className="text-sm text-gray-700 mb-2">
+                    Campaign:{' '}
+                    {typeof form.campaign === 'string' ? form.campaign : form.campaign.name}
+                  </p>
+                )}
                 {form.description && (
                   <p className="text-sm text-gray-600 mb-3">{form.description}</p>
                 )}

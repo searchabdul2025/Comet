@@ -162,6 +162,7 @@ export default function UserManagementPage() {
         const updateData: any = {
           name: formData.name,
           email: formData.email,
+          username: formData.username,
           role: formData.role,
           permissions: formData.permissions,
         };

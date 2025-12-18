@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Form from '@/models/Form';
+import Campaign from '@/models/Campaign';
 import { getCurrentUser } from '@/lib/auth';
 
 // GET single form by ID
@@ -23,7 +24,9 @@ export async function GET(
       );
     }
     
-    const form = await Form.findById(formId).populate('createdBy', 'name email');
+    const form = await Form.findById(formId)
+      .populate('createdBy', 'name email')
+      .populate('campaign', 'name description');
     
     if (!form) {
       return NextResponse.json(
@@ -75,6 +78,16 @@ export async function PUT(
 
     await connectDB();
     const body = await request.json();
+
+    if (body?.campaign) {
+      const campaign = await Campaign.findById(body.campaign);
+      if (!campaign) {
+        return NextResponse.json(
+          { success: false, error: 'Campaign not found' },
+          { status: 404 }
+        );
+      }
+    }
     
     const form = await Form.findByIdAndUpdate(
       formId,

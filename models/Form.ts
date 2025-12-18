@@ -14,6 +14,7 @@ export interface IForm extends Document {
   title: string;
   formId: string;
   description?: string;
+  campaign?: mongoose.Types.ObjectId;
   fields: IFormField[];
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -50,6 +51,12 @@ const FormSchema = new Schema<IForm>(
     description: {
       type: String,
       trim: true,
+    },
+    campaign: {
+      type: Schema.Types.ObjectId,
+      ref: 'Campaign',
+      default: null,
+      index: true,
     },
     fields: {
       type: [FormFieldSchema],

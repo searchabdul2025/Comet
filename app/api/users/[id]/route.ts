@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import { getCurrentUser } from '@/lib/auth';
+import { requirePermission } from '@/lib/permissions';
 
 // GET single user by ID
 export async function GET(
@@ -10,6 +11,21 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    if (!requirePermission(currentUser.role as any, 'canManageUsers', currentUser.permissions as any)) {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden: Admin access required' },
+        { status: 403 }
+      );
+    }
+
     // Handle both async and sync params (Next.js 15+ uses Promise)
     const resolvedParams = params instanceof Promise ? await params : params;
     const userId = resolvedParams.id;
@@ -48,8 +64,7 @@ export async function PUT(
     }
 
     // Only Admin can update users
-    const { requirePermission } = await import('@/lib/permissions');
-    if (!requirePermission(currentUser.role as any, 'canManageUsers')) {
+    if (!requirePermission(currentUser.role as any, 'canManageUsers', currentUser.permissions as any)) {
       return NextResponse.json(
         { success: false, error: 'Forbidden: Admin access required' },
         { status: 403 }
@@ -120,8 +135,7 @@ export async function DELETE(
     }
 
     // Only Admin can delete users
-    const { requirePermission } = await import('@/lib/permissions');
-    if (!requirePermission(currentUser.role as any, 'canManageUsers')) {
+    if (!requirePermission(currentUser.role as any, 'canManageUsers', currentUser.permissions as any)) {
       return NextResponse.json(
         { success: false, error: 'Forbidden: Admin access required' },
         { status: 403 }

@@ -16,6 +16,11 @@ interface FormField {
   options?: string[]; // For select and radio
 }
 
+interface Campaign {
+  _id: string;
+  name: string;
+}
+
 export default function FormBuilderPage() {
   return (
     <Suspense fallback={<div className="p-6 text-gray-600">Loading form builder...</div>}>
@@ -32,6 +37,10 @@ function FormBuilderContent() {
   const [formId, setFormId] = useState('');
   const [description, setDescription] = useState('');
   const [fields, setFields] = useState<FormField[]>([]);
+  const [campaignId, setCampaignId] = useState('');
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaignsLoading, setCampaignsLoading] = useState(false);
+  const [campaignsError, setCampaignsError] = useState('');
   const [showAddField, setShowAddField] = useState(false);
   const [editingField, setEditingField] = useState<FormField | null>(null);
   const [loading, setLoading] = useState(false);
@@ -61,6 +70,7 @@ function FormBuilderContent() {
           setFormId(f.formId);
           setDescription(f.description || '');
           setFields(f.fields || []);
+          setCampaignId(f.campaign?._id || f.campaign || '');
         }
       } catch (err) {
         console.error('Failed to load form', err);
@@ -70,6 +80,27 @@ function FormBuilderContent() {
     };
     loadForm();
   }, [editingId]);
+
+  useEffect(() => {
+    const fetchCampaigns = async () => {
+      try {
+        setCampaignsLoading(true);
+        const res = await fetch('/api/campaigns');
+        const result = await res.json();
+        if (result.success) {
+          setCampaigns(result.data);
+          setCampaignsError('');
+        } else {
+          setCampaignsError(result.error || 'Failed to load campaigns');
+        }
+      } catch (err) {
+        setCampaignsError('Failed to load campaigns');
+      } finally {
+        setCampaignsLoading(false);
+      }
+    };
+    fetchCampaigns();
+  }, []);
 
   const handleAddField = () => {
     const newField: FormField = {
@@ -111,6 +142,11 @@ function FormBuilderContent() {
       return;
     }
 
+    if (!campaignId) {
+      alert('Please select a campaign before saving the form');
+      return;
+    }
+
     try {
       const isEdit = Boolean(editingId);
       const response = await fetch(isEdit ? `/api/forms/${editingId}` : '/api/forms', {
@@ -122,6 +158,7 @@ function FormBuilderContent() {
           title: formTitle,
           formId: formId,
           description: description,
+          campaign: campaignId,
           fields: fields,
         }),
       });
@@ -177,6 +214,33 @@ function FormBuilderContent() {
               placeholder="Enter unique form ID"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
             />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Campaign *
+            </label>
+            <select
+              value={campaignId}
+              onChange={(e) => setCampaignId(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
+            >
+              <option value="">Select a campaign</option>
+              {campaigns.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            {!campaignsLoading && campaigns.length === 0 && (
+              <p className="text-sm text-red-600 mt-1">
+                No campaigns found. Create one first from the Campaigns page.
+              </p>
+            )}
+            {campaignsError && (
+              <p className="text-sm text-red-600 mt-1">{campaignsError}</p>
+            )}
           </div>
         </div>
         <div>

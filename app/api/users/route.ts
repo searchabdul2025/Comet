@@ -16,8 +16,8 @@ export async function GET() {
       );
     }
 
-    // Only Admin can view all users
-    if (!requirePermission(user.role as any, 'canManageUsers')) {
+    // Only users with manage-users permission can view all users
+    if (!requirePermission(user.role as any, 'canManageUsers', user.permissions as any)) {
       return NextResponse.json(
         { success: false, error: 'Forbidden: Admin access required' },
         { status: 403 }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     await connectDB();
     const body = await request.json();
-    const { name, email, username, password, role } = body;
+    const { name, email, username, password, role, permissions } = body;
 
     if (!username && !email) {
       return NextResponse.json(
@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
       username: username ? username.toLowerCase().trim() : undefined,
       role,
       password: hashedPassword,
+      permissions: permissions ?? undefined,
     };
 
     const newUser = await User.create({
