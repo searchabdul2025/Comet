@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Plus, Edit, Trash2, Key } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { getPermissions } from '@/lib/permissions';
 
 interface User {
   _id: string;
@@ -17,6 +19,7 @@ interface User {
 
 export default function UserManagementPage() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -40,6 +43,12 @@ export default function UserManagementPage() {
     },
   });
 
+  const permissions = useMemo(() => {
+    const role = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
+    return role ? getPermissions(role, session?.user?.permissions || undefined) : null;
+  }, [session]);
+  const canManageUsers = !!permissions?.canManageUsers;
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -61,6 +70,7 @@ export default function UserManagementPage() {
   };
 
   const handleAddUser = () => {
+    if (!canManageUsers) return;
     setEditingUser(null);
     setFormData({
       name: '',
@@ -84,6 +94,7 @@ export default function UserManagementPage() {
   };
 
   const handleEdit = (user: User) => {
+    if (!canManageUsers) return;
     setEditingUser(user);
     setFormData({
       name: user.name,
@@ -107,6 +118,7 @@ export default function UserManagementPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (!canManageUsers) return;
     if (!confirm('Are you sure you want to delete this user?')) {
       return;
     }
@@ -128,6 +140,7 @@ export default function UserManagementPage() {
   };
 
   const handleResetPassword = async (id: string) => {
+    if (!canManageUsers) return;
     const newPassword = prompt('Enter new password:');
     if (!newPassword) return;
 
@@ -208,6 +221,12 @@ export default function UserManagementPage() {
         <p className="text-sm text-gray-600">Manage system users and their roles</p>
       </div>
 
+      {!canManageUsers && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+          You do not have permission to manage users. Contact an admin for access.
+        </div>
+      )}
+
       <div className="bg-white rounded-xl shadow-sm border border-slate-200">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-slate-200">
           <div className="text-sm text-gray-700">
@@ -215,7 +234,8 @@ export default function UserManagementPage() {
           </div>
           <button
             onClick={handleAddUser}
-            className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-md hover:bg-emerald-600 transition"
+            disabled={!canManageUsers}
+            className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-md hover:bg-emerald-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Plus size={18} />
             Add User
@@ -271,21 +291,24 @@ export default function UserManagementPage() {
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => handleEdit(user)}
-                          className="inline-flex items-center gap-1 border border-slate-200 text-slate-700 px-3 py-1 rounded hover:bg-slate-100 transition"
+                          disabled={!canManageUsers}
+                          className="inline-flex items-center gap-1 border border-slate-200 text-slate-700 px-3 py-1 rounded hover:bg-slate-100 transition disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <Edit size={14} />
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(user._id)}
-                          className="inline-flex items-center gap-1 border border-red-200 text-red-700 px-3 py-1 rounded hover:bg-red-50 transition"
+                          disabled={!canManageUsers}
+                          className="inline-flex items-center gap-1 border border-red-200 text-red-700 px-3 py-1 rounded hover:bg-red-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <Trash2 size={14} />
                           Delete
                         </button>
                         <button
                           onClick={() => handleResetPassword(user._id)}
-                          className="inline-flex items-center gap-1 border border-amber-200 text-amber-700 px-3 py-1 rounded hover:bg-amber-50 transition"
+                          disabled={!canManageUsers}
+                          className="inline-flex items-center gap-1 border border-amber-200 text-amber-700 px-3 py-1 rounded hover:bg-amber-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <Key size={14} />
                           Reset Password
