@@ -32,7 +32,7 @@ export async function PATCH(
     }
 
     // upsert approval for this role
-    const existingIdx = lead.approvals.findIndex((a) => a.role === user.role);
+    const existingIdx = lead.approvals.findIndex((a: any) => a.role === user.role);
     const approvalEntry = {
       role: user.role as 'Supervisor' | 'Admin',
       decision,
@@ -47,8 +47,8 @@ export async function PATCH(
     }
 
     // status resolution: any rejection -> Rejected, else any approval -> Approved, else Pending
-    const hasRejection = lead.approvals.some((a) => a.decision === 'rejected');
-    const hasApproval = lead.approvals.some((a) => a.decision === 'approved');
+    const hasRejection = lead.approvals.some((a: any) => a.decision === 'rejected');
+    const hasApproval = lead.approvals.some((a: any) => a.decision === 'approved');
     lead.status = hasRejection ? 'Rejected' : hasApproval ? 'Approved' : 'Pending';
 
     await lead.save();

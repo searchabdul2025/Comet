@@ -20,7 +20,7 @@ export async function GET() {
       success: true,
       data: bans.map((ban) => ({
         ...ban,
-        _id: ban._id.toString(),
+        _id: (ban as any)._id?.toString?.() ?? '',
       })),
     });
   } catch (error: any) {
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
-    const target = await User.findById(userId).lean();
+    const target = await User.findById(userId).lean<{ role?: string; name?: string; email?: string; username?: string }>();
     if (!target) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }

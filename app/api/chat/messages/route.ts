@@ -24,13 +24,13 @@ export async function GET() {
         .lean(),
       user.role === 'Admin'
         ? null
-        : ChatBan.findOne({ userId: user.id, active: true }).lean(),
+        : ChatBan.findOne({ userId: user.id, active: true }).lean<{ reason?: string }>(),
     ]);
 
     const messages = messagesRaw.reverse().map((msg) => ({
       ...msg,
-      _id: msg._id.toString(),
-      createdAt: msg.createdAt,
+      _id: (msg as any)._id?.toString?.() ?? '',
+      createdAt: (msg as any).createdAt,
     }));
 
     return NextResponse.json({
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     const limits = await getChatLimits();
 
     if (user.role !== 'Admin') {
-      const ban = await ChatBan.findOne({ userId: user.id, active: true }).lean();
+      const ban = (await ChatBan.findOne({ userId: user.id, active: true }).lean<{ reason?: string }>()) || null;
       if (ban) {
         return NextResponse.json(
           { success: false, error: ban.reason || 'You are banned from chat.' },
