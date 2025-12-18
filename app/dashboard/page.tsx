@@ -92,7 +92,6 @@ export default function DashboardPage() {
     { name: 'Forms', href: '/forms' },
     { name: 'Submissions', href: '/dashboard?tab=Submissions' },
     { name: 'Requests', href: '/requests' },
-    { name: 'IP Management', href: '/ip-management' },
     { name: 'User Management', href: '/user-management', adminOnly: true },
     { name: 'Reports', href: '/dashboard/reports', adminOnly: true },
   ].filter((tab) => !tab.adminOnly || isAdmin);

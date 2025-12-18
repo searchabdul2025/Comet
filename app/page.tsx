@@ -57,7 +57,41 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="mb-2" />
+        <div className="mb-4 flex gap-2">
+          <button
+            type="button"
+            onClick={() => handleRoleSelect('admin')}
+            className={`flex-1 py-2 px-4 rounded-lg border text-sm ${
+              selectedRole === 'admin'
+                ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300'
+            } transition-colors`}
+          >
+            Admin
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRoleSelect('supervisor')}
+            className={`flex-1 py-2 px-4 rounded-lg border text-sm ${
+              selectedRole === 'supervisor'
+                ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300'
+            } transition-colors`}
+          >
+            Supervisor
+          </button>
+          <button
+            type="button"
+            onClick={() => handleRoleSelect('user')}
+            className={`flex-1 py-2 px-4 rounded-lg border text-sm ${
+              selectedRole === 'user'
+                ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-emerald-300'
+            } transition-colors`}
+          >
+            Agent
+          </button>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
