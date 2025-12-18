@@ -36,12 +36,12 @@ export async function GET(_: NextRequest, context: { params: Promise<{ id: strin
 
     await connectDB();
     const target = await Target.findById(id).populate('user', 'name email username role').lean();
-    if (!target) {
+    if (!target || Array.isArray(target)) {
       return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     }
 
     const bonusCfg = await loadBonusConfig();
-    const { start, end } = getMonthRange(target.period);
+    const { start, end } = getMonthRange(target.period as string);
     const achieved = await FormSubmission.countDocuments({
       submittedBy: target.user,
       createdAt: { $gte: start, $lte: end },
