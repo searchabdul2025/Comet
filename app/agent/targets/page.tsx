@@ -99,8 +99,7 @@ export default function AgentTargetsPage() {
             <Trophy size={16} className="text-amber-500" />
             Bonus
           </div>
-          <div className="text-3xl font-semibold text-gray-900">${summary.bonus?.toLocaleString() || 0}</div>
-          <p className="text-xs text-slate-500">Based on admin bonus rules</p>
+          <div className="text-3xl font-semibold text-gray-900">{summary.bonus?.toLocaleString() || 0}</div>
         </div>
       </div>
 
