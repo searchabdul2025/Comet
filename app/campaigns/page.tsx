@@ -162,7 +162,6 @@ export default function CampaignsPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-800">Create Campaign</h2>
-            <span className="text-xs text-gray-500">Step 1 before creating a form</span>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
