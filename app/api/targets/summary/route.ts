@@ -5,6 +5,7 @@ import { requirePermission } from '@/lib/permissions';
 import Target from '@/models/Target';
 import FormSubmission from '@/models/FormSubmission';
 import { getSetting } from '@/lib/settings';
+import mongoose from 'mongoose';
 
 function getCurrentPeriod() {
   const now = new Date();
@@ -50,12 +51,24 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    const targetDoc = await Target.findOne({ user: targetUserId, period }).lean();
+    // Ensure targetUserId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid user ID' },
+        { status: 400 }
+      );
+    }
+
+    const targetDoc = await Target.findOne({ 
+      user: new mongoose.Types.ObjectId(targetUserId), 
+      period 
+    }).lean();
+    
     const { start, end } = getMonthRange(period);
 
     // Total submissions (submitted)
     const submitted = await FormSubmission.countDocuments({
-      submittedBy: targetUserId,
+      submittedBy: new mongoose.Types.ObjectId(targetUserId),
       createdAt: { $gte: start, $lte: end },
     });
 

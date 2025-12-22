@@ -78,6 +78,12 @@ export default function AgentTargetsPage() {
 
       {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">{error}</div>}
 
+      {loading && (
+        <div className="text-center py-8 text-gray-500">Loading target summary...</div>
+      )}
+
+      {!loading && (
+        <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5">
           <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
@@ -131,6 +137,8 @@ export default function AgentTargetsPage() {
           <span className="text-sm text-slate-700 font-medium">{progress}%</span>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
