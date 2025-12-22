@@ -58,6 +58,7 @@ export async function POST(
       submittedBy: dbUserId,
       ipAddress: body.ipAddress,
       phoneNumber: normalizedPhone,
+      productGrade: body.productGrade || undefined, // Product grade for bonus calculation
     });
 
     // Fire-and-forget Google Sheets append (do not block response)

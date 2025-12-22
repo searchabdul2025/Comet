@@ -7,6 +7,7 @@ export interface IFormSubmission extends Document {
   submittedAt: Date;
   ipAddress?: string;
   phoneNumber?: string; // normalized 10-digit US phone for de-dup + reporting
+  productGrade?: string; // Product grade for bonus calculation (e.g., "small egg", "bigger egg")
 }
 
 const FormSubmissionSchema = new Schema<IFormSubmission>(
@@ -33,6 +34,11 @@ const FormSubmissionSchema = new Schema<IFormSubmission>(
     },
     phoneNumber: {
       type: String,
+      index: true,
+    },
+    productGrade: {
+      type: String,
+      trim: true,
       index: true,
     },
   },

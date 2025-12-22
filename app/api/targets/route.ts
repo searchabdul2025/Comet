@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { requirePermission } from '@/lib/permissions';
 import Target from '@/models/Target';
 import FormSubmission from '@/models/FormSubmission';
-import { getSetting } from '@/lib/settings';
+import { calculateBonusForUser } from '@/lib/bonusCalculation';
 
 function getMonthRange(period: string) {
   const [yearStr, monthStr] = period.split('-');
@@ -13,17 +13,6 @@ function getMonthRange(period: string) {
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0, 23, 59, 59, 999);
   return { start, end };
-}
-
-async function loadBonusConfig() {
-  const [perSubmission, onTarget] = await Promise.all([
-    getSetting('BONUS_PER_SUBMISSION'),
-    getSetting('BONUS_TARGET_BONUS'),
-  ]);
-  return {
-    perSubmission: Number(perSubmission || 0),
-    onTarget: Number(onTarget || 0),
-  };
 }
 
 export async function GET(request: NextRequest) {
@@ -48,8 +37,6 @@ export async function GET(request: NextRequest) {
       .sort({ period: -1 })
       .lean();
 
-    const bonusCfg = await loadBonusConfig();
-
     const enriched = await Promise.all(
       targets.map(async (t: any) => {
         const { start, end } = getMonthRange(t.period);
@@ -57,7 +44,8 @@ export async function GET(request: NextRequest) {
           submittedBy: t.user,
           createdAt: { $gte: start, $lte: end },
         });
-        const bonus = achieved * bonusCfg.perSubmission + (achieved >= t.target ? bonusCfg.onTarget : 0);
+        // Calculate bonus using granular bonus rules
+        const bonus = await calculateBonusForUser(t.user, t.period, t.target);
         const completion = t.target > 0 ? Math.min(100, Math.round((achieved / t.target) * 100)) : 0;
         return { ...t, achieved, bonus, completion };
       })
@@ -102,13 +90,13 @@ export async function POST(request: NextRequest) {
       createdBy: user.id,
     });
 
-    const bonusCfg = await loadBonusConfig();
     const { start, end } = getMonthRange(period);
     const achieved = await FormSubmission.countDocuments({
       submittedBy: userId,
       createdAt: { $gte: start, $lte: end },
     });
-    const bonus = achieved * bonusCfg.perSubmission + (achieved >= target ? bonusCfg.onTarget : 0);
+    // Calculate bonus using granular bonus rules
+    const bonus = await calculateBonusForUser(userId, period, target);
     const completion = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 0;
     const populated = await created.populate('user', 'name email username role');
 

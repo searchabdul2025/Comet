@@ -34,6 +34,7 @@ export default function FormPreviewPage() {
   const [checkingDuplicate, setCheckingDuplicate] = useState(false);
   const [duplicateCheckPassed, setDuplicateCheckPassed] = useState(false);
   const [showDuplicateAlert, setShowDuplicateAlert] = useState(false);
+  const [productGrade, setProductGrade] = useState('');
 
   useEffect(() => {
     fetchForm();
@@ -216,12 +217,30 @@ export default function FormPreviewPage() {
         ? values[numberField.id] 
         : undefined;
 
+      // Try to extract productGrade from form data (check for common field names)
+      let extractedProductGrade = productGrade;
+      if (!extractedProductGrade) {
+        // Check form data for product grade fields
+        const productGradeFields = ['productGrade', 'product_grade', 'productType', 'product_type', 'grade', 'product'];
+        for (const fieldName of productGradeFields) {
+          const field = formData.fields.find(f => 
+            f.id.toLowerCase().includes(fieldName.toLowerCase()) || 
+            f.name.toLowerCase().includes(fieldName.toLowerCase())
+          );
+          if (field && payload[field.id]) {
+            extractedProductGrade = payload[field.id];
+            break;
+          }
+        }
+      }
+
       const resp = await fetch(`/api/forms/${formId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           formData: payload,
           phoneNumber: phoneVal ? normalizeUsPhone(phoneVal) : undefined,
+          productGrade: extractedProductGrade || undefined,
         }),
       });
 
@@ -234,6 +253,7 @@ export default function FormPreviewPage() {
       setSuccessMessage('Submitted successfully.');
       setValues({});
       setDuplicateCheckPassed(false);
+      setProductGrade('');
     } catch (err: any) {
       setError(err.message || 'Submission failed');
     } finally {
@@ -357,6 +377,22 @@ export default function FormPreviewPage() {
         ) : (
           // Step 2: Show full form after duplicate check passes
           <form className="space-y-6" onSubmit={handleSubmit}>
+            {/* Product Grade Selector - Optional */}
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Product Grade (Optional)
+              </label>
+              <input
+                type="text"
+                value={productGrade}
+                onChange={(e) => setProductGrade(e.target.value)}
+                placeholder="e.g., small egg, bigger egg, 12 eggs"
+                className="w-full px-4 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
+              />
+              <p className="text-xs text-gray-600 mt-1">
+                Select or enter the product grade for bonus calculation. This can also be extracted from form fields.
+              </p>
+            </div>
             {formData.fields.map((field, idx) => {
               const value = values[field.id] ?? '';
               const disabled = !!(numberField && field.id !== numberField.id && !canProceed);

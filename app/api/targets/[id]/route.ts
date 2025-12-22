@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { requirePermission } from '@/lib/permissions';
 import Target from '@/models/Target';
 import FormSubmission from '@/models/FormSubmission';
-import { getSetting } from '@/lib/settings';
+import { calculateBonusForUser } from '@/lib/bonusCalculation';
 
 function getMonthRange(period: string) {
   const [yearStr, monthStr] = period.split('-');
@@ -13,17 +13,6 @@ function getMonthRange(period: string) {
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0, 23, 59, 59, 999);
   return { start, end };
-}
-
-async function loadBonusConfig() {
-  const [perSubmission, onTarget] = await Promise.all([
-    getSetting('BONUS_PER_SUBMISSION'),
-    getSetting('BONUS_TARGET_BONUS'),
-  ]);
-  return {
-    perSubmission: Number(perSubmission || 0),
-    onTarget: Number(onTarget || 0),
-  };
 }
 
 export async function GET(_: NextRequest, context: { params: Promise<{ id: string }> }) {
@@ -40,13 +29,13 @@ export async function GET(_: NextRequest, context: { params: Promise<{ id: strin
       return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     }
 
-    const bonusCfg = await loadBonusConfig();
     const { start, end } = getMonthRange(target.period as string);
     const achieved = await FormSubmission.countDocuments({
       submittedBy: target.user,
       createdAt: { $gte: start, $lte: end },
     });
-    const bonus = achieved * bonusCfg.perSubmission + (achieved >= target.target ? bonusCfg.onTarget : 0);
+    // Calculate bonus using granular bonus rules
+    const bonus = await calculateBonusForUser(target.user, target.period as string, target.target);
     const completion = target.target > 0 ? Math.min(100, Math.round((achieved / target.target) * 100)) : 0;
 
     return NextResponse.json({
@@ -88,7 +77,6 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     }
 
-    const bonusCfg = await loadBonusConfig();
     const targetPeriod = updated.period;
     const { start, end } = getMonthRange(targetPeriod);
     const achieved = await FormSubmission.countDocuments({
@@ -96,7 +84,8 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       createdAt: { $gte: start, $lte: end },
     });
     const targetValue = typeof updated.target === 'number' ? updated.target : 0;
-    const bonus = achieved * bonusCfg.perSubmission + (targetValue && achieved >= targetValue ? bonusCfg.onTarget : 0);
+    // Calculate bonus using granular bonus rules
+    const bonus = await calculateBonusForUser(updated.user, targetPeriod, targetValue);
     const completion = targetValue > 0 ? Math.min(100, Math.round((achieved / targetValue) * 100)) : 0;
 
     return NextResponse.json({

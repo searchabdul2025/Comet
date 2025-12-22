@@ -4,7 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import { requirePermission } from '@/lib/permissions';
 import Target from '@/models/Target';
 import FormSubmission from '@/models/FormSubmission';
-import { getSetting } from '@/lib/settings';
+import { calculateBonusForUser } from '@/lib/bonusCalculation';
 import mongoose from 'mongoose';
 
 function getCurrentPeriod() {
@@ -22,16 +22,6 @@ function getMonthRange(period: string) {
   return { start, end };
 }
 
-async function loadBonusConfig() {
-  const [perSubmission, onTarget] = await Promise.all([
-    getSetting('BONUS_PER_SUBMISSION'),
-    getSetting('BONUS_TARGET_BONUS'),
-  ]);
-  return {
-    perSubmission: Number(perSubmission || 0),
-    onTarget: Number(onTarget || 0),
-  };
-}
 
 export async function GET(request: NextRequest) {
   try {
@@ -75,9 +65,11 @@ export async function GET(request: NextRequest) {
     // Achieved submissions (currently same as submitted, but can be filtered later)
     const achieved = submitted;
 
-    const bonusCfg = await loadBonusConfig();
     const targetValue = (!targetDoc || Array.isArray(targetDoc)) ? 0 : (targetDoc as any)?.target ?? 0;
-    const bonus = achieved * bonusCfg.perSubmission + (targetValue && achieved >= targetValue ? bonusCfg.onTarget : 0);
+    
+    // Calculate bonus using granular bonus rules
+    const bonus = await calculateBonusForUser(targetUserId, period, targetValue);
+    
     const completion = targetValue > 0 ? Math.min(100, Math.round((achieved / targetValue) * 100)) : 0;
 
     return NextResponse.json({
