@@ -184,20 +184,20 @@ function FormBuilderContent() {
   };
 
   return (
-    <div>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+    <div className="max-w-7xl mx-auto w-full">
+      <div className="mb-4 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
           {editingId ? 'Edit Form' : 'Form Builder'}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-sm md:text-base text-gray-600">
           {editingId ? 'Update your form configuration.' : 'Create dynamic forms with validation and multiple field types.'}
         </p>
         {loading && <p className="text-sm text-gray-500">Loading form...</p>}
       </div>
 
       {/* Form Information */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Form Information</h2>
+      <div className="bg-white rounded-lg shadow p-4 md:p-6 mb-4 md:mb-6">
+        <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-4">Form Information</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -266,24 +266,24 @@ function FormBuilderContent() {
       </div>
 
       {/* Form Fields */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Form Fields</h2>
+      <div className="bg-white rounded-lg shadow p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+          <h2 className="text-lg md:text-xl font-bold text-gray-800">Form Fields</h2>
           <button
             onClick={handleAddField}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 bg-blue-600 text-white px-3 md:px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm md:text-base w-full sm:w-auto"
           >
-            <Plus size={20} />
+            <Plus size={18} />
             Add Field
           </button>
         </div>
 
         {fields.length === 0 && !showAddField ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="text-center text-gray-500 py-8 text-sm md:text-base">
             No fields added yet. Click &quot;Add Field&quot; to get started.
           </p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
             {fields.map((field) => (
               <div key={field.id} className="border border-gray-200 rounded-md p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -317,8 +317,8 @@ function FormBuilderContent() {
 
         {showAddField && editingField && (
           <div className="mt-6 border-2 border-blue-500 rounded-md p-4 bg-blue-50">
-            <h3 className="font-bold text-gray-800 mb-4">Field Configuration</h3>
-            <div className="space-y-4">
+            <h3 className="font-bold text-gray-800 mb-4 text-base md:text-lg">Field Configuration</h3>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Field Name</label>
                 <input
@@ -404,9 +404,9 @@ function FormBuilderContent() {
           <div className="mt-6 flex justify-end">
             <button
               onClick={handleSaveForm}
-              className="flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition-colors font-medium"
+              className="flex items-center gap-2 bg-green-600 text-white px-4 md:px-6 py-2 md:py-3 rounded-md hover:bg-green-700 transition-colors font-medium text-sm md:text-base w-full sm:w-auto justify-center"
             >
-              <Save size={20} />
+              <Save size={18} />
               Save Form
             </button>
           </div>
