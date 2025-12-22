@@ -45,7 +45,6 @@ export default function UserManagementPage() {
     permissions: {
       canManageUsers: false,
       canManageForms: false,
-      canManageIPs: false,
       canViewSubmissions: false,
       canManageRequests: false,
       canDeleteForms: false,
@@ -127,7 +126,6 @@ export default function UserManagementPage() {
       permissions: {
         canManageUsers: false,
         canManageForms: false,
-        canManageIPs: false,
         canViewSubmissions: false,
         canManageRequests: false,
         canDeleteForms: false,
@@ -154,7 +152,6 @@ export default function UserManagementPage() {
       permissions: {
         canManageUsers: user.permissions?.canManageUsers ?? false,
         canManageForms: user.permissions?.canManageForms ?? false,
-        canManageIPs: user.permissions?.canManageIPs ?? false,
         canViewSubmissions: user.permissions?.canViewSubmissions ?? false,
         canManageRequests: user.permissions?.canManageRequests ?? false,
         canDeleteForms: user.permissions?.canDeleteForms ?? false,
