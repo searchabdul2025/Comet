@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import Form from '@/models/Form';
+import Form, { IFormField } from '@/models/Form';
 import { getCurrentUser } from '@/lib/auth';
 
 // GET all unique form field names from all forms
@@ -21,7 +21,7 @@ export async function GET() {
     const fieldMap = new Map<string, { name: string; id: string; type: string }>();
     
     forms.forEach(form => {
-      form.fields?.forEach(field => {
+      form.fields?.forEach((field: IFormField) => {
         // Use field name as key, but store both name and id
         if (!fieldMap.has(field.name)) {
           fieldMap.set(field.name, {
