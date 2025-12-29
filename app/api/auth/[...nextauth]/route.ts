@@ -78,7 +78,15 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || (() => {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'NEXTAUTH_SECRET is required in production. Please set it in your Vercel environment variables.'
+      );
+    }
+    // Development fallback (not secure, but allows dev to work)
+    return 'development-secret-change-in-production';
+  })(),
 };
 
 const handler = NextAuth(authOptions);
