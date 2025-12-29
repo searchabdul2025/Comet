@@ -8,6 +8,9 @@ export interface IFormSubmission extends Document {
   ipAddress?: string;
   phoneNumber?: string; // normalized 10-digit US phone for de-dup + reporting
   productGrade?: string; // Product grade for bonus calculation
+  deleted?: boolean; // Soft delete flag
+  deletedAt?: Date; // When it was deleted
+  deletedBy?: mongoose.Types.ObjectId; // Who deleted it
 }
 
 const FormSubmissionSchema = new Schema<IFormSubmission>(
@@ -40,6 +43,18 @@ const FormSubmissionSchema = new Schema<IFormSubmission>(
       type: String,
       trim: true,
       index: true,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+    },
+    deletedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
     },
   },
   {

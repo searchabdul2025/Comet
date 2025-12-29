@@ -45,6 +45,9 @@ export async function GET(request: NextRequest) {
       match.formId = { $in: formIds };
     }
 
+    // Exclude deleted submissions
+    match.deleted = { $ne: true };
+
     const submissions = await FormSubmission.find(match)
       .sort({ createdAt: -1 })
       .limit(limit)

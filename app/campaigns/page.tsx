@@ -260,7 +260,10 @@ export default function CampaignsPage() {
                       <p className="text-sm text-gray-600 mb-2">{campaign.description}</p>
                     )}
                     <p className="text-xs text-gray-500">
-                      Created {new Date(campaign.createdAt).toLocaleDateString()}
+                      Created {(() => {
+                        const { formatUSDate } = require('@/lib/dateFormat');
+                        return formatUSDate(campaign.createdAt);
+                      })()}
                     </p>
                   </>
                 )}

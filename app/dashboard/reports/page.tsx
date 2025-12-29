@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Download, FileSpreadsheet, FileText, FileDown, Sheet, Loader2 } from 'lucide-react';
+import { Download, FileSpreadsheet, FileText, FileDown, Sheet, Loader2, Trash2 } from 'lucide-react';
 import { getPermissions } from '@/lib/permissions';
 import { useSession } from 'next-auth/react';
 
@@ -128,6 +128,31 @@ export default function ReportsPage() {
       setError(err.message || 'Failed to load submissions');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (submissionId: string) => {
+    if (!confirm('Delete this submission? Choose where to delete from.')) return;
+    
+    const deleteFrom = prompt('Delete from:\n1. Portal Records only\n2. Google Sheets only\n3. Both\n\nEnter 1, 2, or 3:');
+    if (!deleteFrom || !['1', '2', '3'].includes(deleteFrom)) return;
+
+    const deleteMap: Record<string, string> = {
+      '1': 'portal',
+      '2': 'sheets',
+      '3': 'both',
+    };
+
+    try {
+      const res = await fetch(`/api/submissions/${submissionId}?deleteFrom=${deleteMap[deleteFrom]}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Failed to delete submission');
+      alert(json.message || 'Submission deleted successfully');
+      fetchSubs();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete submission');
     }
   };
 
@@ -320,13 +345,17 @@ export default function ReportsPage() {
                   <th className="px-4 py-2 text-left text-slate-700 font-semibold">IP</th>
                   <th className="px-4 py-2 text-left text-slate-700 font-semibold">User</th>
                   <th className="px-4 py-2 text-left text-slate-700 font-semibold">Data</th>
+                  <th className="px-4 py-2 text-left text-slate-700 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {submissions.map((s) => (
                   <tr key={s._id} className="border-t hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
-                      {s.createdAt ? new Date(s.createdAt).toLocaleString() : '-'}
+                      {(() => {
+                        const { formatUSDateTime } = require('@/lib/dateFormat');
+                        return formatUSDateTime(s.createdAt);
+                      })()}
                     </td>
                     <td className="px-4 py-2 text-slate-700">{s.phoneNumber || '-'}</td>
                     <td className="px-4 py-2 text-slate-700">{s.formId || '-'}</td>
@@ -336,6 +365,15 @@ export default function ReportsPage() {
                       <pre className="whitespace-pre-wrap text-xs text-slate-600">
                         {JSON.stringify(s.formData || {}, null, 2)}
                       </pre>
+                    </td>
+                    <td className="px-4 py-2 text-slate-700">
+                      <button
+                        onClick={() => handleDelete(s._id)}
+                        className="text-red-600 hover:text-red-700"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))}

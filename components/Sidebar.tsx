@@ -72,6 +72,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     { href: '/dashboard/reports', label: 'Reports', icon: Activity, permission: 'canManageUsers' as const },
     { href: '/monthly-targets', label: 'Monthly Targets', icon: Target, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
     { href: '/bonuses', label: 'Bonuses', icon: Gift, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
+    { href: '/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: 'canViewSubmissions' as const },
 
     // Agent / supervisor views (no special permissions, role-gated)
     { href: '/agent/reports', label: 'Reports', icon: Activity, permission: null, roles: ['User', 'Supervisor'] as const },
@@ -82,6 +83,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       ? ([{ href: '/agent/salary', label: 'My Salary & Bonus', icon: DollarSign, permission: null, roles: ['User', 'Supervisor'] as const }] as const)
       : ([] as const)),
     { href: '/agent/requests', label: 'Requests', icon: MessageSquare, permission: null, roles: ['User', 'Supervisor'] as const },
+    { href: '/agent/sales-approvals', label: 'My Sales Approvals', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
   ];
 
   // Filter nav items based on permissions

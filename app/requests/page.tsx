@@ -225,7 +225,10 @@ export default function RequestsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {request.createdAt ? new Date(request.createdAt).toLocaleString() : '—'}
+                      {(() => {
+                        const { formatUSDateTime } = require('@/lib/dateFormat');
+                        return formatUSDateTime(request.createdAt);
+                      })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {request.status === 'Pending' ? (
@@ -257,7 +260,10 @@ export default function RequestsPage() {
                         </div>
                       ) : (
                         <span className="text-xs text-gray-500">
-                          Reviewed {request.reviewedAt ? new Date(request.reviewedAt).toLocaleString() : ''}
+                          Reviewed {(() => {
+                            const { formatUSDateTime } = require('@/lib/dateFormat');
+                            return request.reviewedAt ? formatUSDateTime(request.reviewedAt) : '';
+                          })()}
                         </span>
                       )}
                     </td>

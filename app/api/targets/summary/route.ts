@@ -67,8 +67,16 @@ export async function GET(request: NextRequest) {
 
     const targetValue = (!targetDoc || Array.isArray(targetDoc)) ? 0 : (targetDoc as any)?.target ?? 0;
     
+    // Get user's base salary
+    const User = (await import('@/models/User')).default;
+    const userDoc = await User.findById(targetUserId).select('salary bonus').lean() as any;
+    const baseSalary = userDoc?.salary || 0;
+    
     // Calculate bonus using granular bonus rules
-    const bonus = await calculateBonusForUser(targetUserId, period, targetValue);
+    const calculatedBonus = await calculateBonusForUser(targetUserId, period, targetValue);
+    
+    // Total compensation = base salary + calculated bonus
+    const totalCompensation = baseSalary + calculatedBonus;
     
     const completion = targetValue > 0 ? Math.min(100, Math.round((achieved / targetValue) * 100)) : 0;
 
@@ -79,7 +87,9 @@ export async function GET(request: NextRequest) {
         target: targetValue,
         submitted,
         achieved,
-        bonus,
+        bonus: calculatedBonus,
+        baseSalary,
+        totalCompensation,
         completion,
         targetId: (!targetDoc || Array.isArray(targetDoc)) ? null : targetDoc._id || null,
       },

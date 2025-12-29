@@ -10,6 +10,7 @@ export interface IUserPermissions {
   canEditForms?: boolean;
   canCreateForms?: boolean;
   canManageSettings?: boolean;
+  canDeleteSubmissions?: boolean;
 }
 
 export interface IUser extends Document {
@@ -69,6 +70,7 @@ const UserSchema = new Schema<IUser>(
       canEditForms: { type: Boolean },
       canCreateForms: { type: Boolean },
       canManageSettings: { type: Boolean },
+      canDeleteSubmissions: { type: Boolean },
     },
     allowedFormFields: {
       type: [String],

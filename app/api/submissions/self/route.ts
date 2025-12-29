@@ -17,7 +17,10 @@ export async function GET(request: NextRequest) {
     const from = searchParams.get('from');
     const to = searchParams.get('to');
 
-    const match: any = { submittedBy: user.id };
+    const match: any = { 
+      submittedBy: user.id,
+      deleted: { $ne: true }, // Exclude deleted submissions
+    };
     if (from || to) {
       match.createdAt = {};
       if (from) match.createdAt.$gte = new Date(from);

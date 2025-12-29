@@ -570,7 +570,10 @@ export default function SettingsPage() {
                         Reason: {ban.reason || 'Not specified'}
                       </p>
                       <p className="text-xs text-gray-500">
-                        Banned {new Date(ban.createdAt).toLocaleString()} {ban.bannedByName ? `by ${ban.bannedByName}` : ''}
+                        Banned {(() => {
+                          const { formatUSDateTime } = require('@/lib/dateFormat');
+                          return formatUSDateTime(ban.createdAt);
+                        })()} {ban.bannedByName ? `by ${ban.bannedByName}` : ''}
                       </p>
                     </div>
                     <button
@@ -678,7 +681,10 @@ export default function SettingsPage() {
                           <p className="font-semibold text-gray-900">{c.name}</p>
                           {c.description && <p className="text-sm text-gray-600">{c.description}</p>}
                           <p className="text-xs text-gray-500">
-                            Created {new Date(c.createdAt).toLocaleDateString()}
+                            Created {(() => {
+                              const { formatUSDate } = require('@/lib/dateFormat');
+                              return formatUSDate(c.createdAt);
+                            })()}
                           </p>
                         </div>
                         <div className="flex gap-2">

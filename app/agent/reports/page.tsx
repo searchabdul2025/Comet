@@ -48,7 +48,10 @@ export default function AgentReportsPage() {
     };
   }, [submissions]);
 
-  const formatDate = (value: string) => new Date(value).toLocaleString();
+  const formatDate = (value: string) => {
+    const { formatUSDateTime } = require('@/lib/dateFormat');
+    return formatUSDateTime(value);
+  };
 
   return (
     <div className="space-y-5">
@@ -81,7 +84,10 @@ export default function AgentReportsPage() {
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
           <p className="text-xs text-slate-500">Last submission</p>
           <p className="text-base font-medium text-gray-900">
-            {metrics.last ? metrics.last.toLocaleString() : 'No submissions yet'}
+            {(() => {
+              const { formatUSDateTime } = require('@/lib/dateFormat');
+              return metrics.last ? formatUSDateTime(metrics.last) : 'No submissions yet';
+            })()}
           </p>
         </div>
       </div>

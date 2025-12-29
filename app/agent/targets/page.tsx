@@ -9,6 +9,8 @@ interface Summary {
   submitted: number;
   achieved: number;
   bonus: number;
+  baseSalary?: number;
+  totalCompensation?: number;
   completion: number;
 }
 
@@ -115,8 +117,13 @@ export default function AgentTargetsPage() {
             <Trophy size={16} className="text-amber-500" />
             Bonus
           </div>
-          <div className="text-3xl font-semibold text-gray-900">{summary.bonus?.toLocaleString() || 0}</div>
-          <p className="text-xs text-slate-500">Calculated bonus</p>
+          <div className="text-3xl font-semibold text-gray-900">${(summary.bonus || 0).toLocaleString()}</div>
+          <p className="text-xs text-slate-500">Calculated bonus (after base salary)</p>
+          {summary.baseSalary !== undefined && summary.baseSalary > 0 && (
+            <p className="text-xs text-emerald-600 mt-1">
+              Base: ${summary.baseSalary.toLocaleString()} | Total: ${(summary.totalCompensation || summary.baseSalary + summary.bonus || 0).toLocaleString()}
+            </p>
+          )}
         </div>
       </div>
 

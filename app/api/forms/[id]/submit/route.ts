@@ -73,6 +73,7 @@ export async function POST(
           formId: form.formId,
           submission: body.formData || {},
           phoneNumber: normalizedPhone,
+          submissionId: submission._id.toString(), // Store submission ID for deletion
         });
       } catch (err) {
         console.error('Sheets append failed', err);

@@ -45,7 +45,10 @@ export default function AgentSubmissionsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const formatDate = (value: string) => new Date(value).toLocaleString();
+  const formatDate = (value: string) => {
+    const { formatUSDateTime } = require('@/lib/dateFormat');
+    return formatUSDateTime(value);
+  };
 
   // Filter submissions based on search query
   const filteredSubmissions = useMemo(() => {
