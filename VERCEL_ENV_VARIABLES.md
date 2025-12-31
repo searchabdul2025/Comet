@@ -38,7 +38,11 @@ Go to your Vercel project dashboard:
 **⚠️ Important:** 
 - This is your MongoDB Atlas connection string
 - The database name `comet-portal` is included in the connection string
-- Make sure your MongoDB Atlas cluster allows connections from Vercel (Network Access settings)
+- **CRITICAL:** Make sure your MongoDB Atlas cluster allows connections from Vercel (Network Access settings)
+  - Go to MongoDB Atlas → **Network Access** → **Add IP Address**
+  - Click **"Allow Access from Anywhere"** (adds `0.0.0.0/0`)
+  - Wait 1-2 minutes for changes to take effect
+  - See `FIX_MONGODB_CONNECTION.md` for detailed instructions
 
 ### Variable 2: NEXTAUTH_SECRET
 
