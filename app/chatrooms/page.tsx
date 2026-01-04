@@ -238,7 +238,7 @@ export default function ChatRoomsPage() {
           onClick={() => {
             setShowAddModal(true);
             setEditingRoom(null);
-            setFormData({ name: '', description: '', maxParticipants: '', isActive: true });
+            setFormData({ name: '', description: '', maxParticipants: '', isActive: true, visibility: 'private', allowedRoles: [], allowedUsers: [], showInSidebar: true, requireApproval: false });
           }}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
         >
