@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     start(controller) {
-      const clientId = addClient(controller);
+      // Main team chat has chatroomId = null
+      const clientId = addClient(controller, null);
 
       const send = (message: string) => {
         controller.enqueue(new TextEncoder().encode(message));
@@ -48,6 +49,9 @@ export async function GET(request: NextRequest) {
 export function pushSystemMessage(message: string) {
   broadcast({ type: 'system', message });
 }
+
+
+
 
 
 

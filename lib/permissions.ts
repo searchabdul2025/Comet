@@ -11,6 +11,7 @@ export interface Permissions {
   canCreateForms: boolean;
   canManageSettings: boolean;
   canDeleteSubmissions: boolean;
+  canManageChatRooms: boolean;
 }
 
 type PartialPermissions = Partial<Permissions>;
@@ -29,6 +30,7 @@ export function basePermissions(role: UserRole): Permissions {
         canCreateForms: true,
         canManageSettings: true,
         canDeleteSubmissions: true,
+        canManageChatRooms: true,
       };
     case 'Supervisor':
       return {
@@ -42,6 +44,7 @@ export function basePermissions(role: UserRole): Permissions {
         canCreateForms: true,
         canManageSettings: false,
         canDeleteSubmissions: false,
+        canManageChatRooms: false,
       };
     case 'User':
     default:
@@ -56,6 +59,7 @@ export function basePermissions(role: UserRole): Permissions {
         canCreateForms: false,
         canManageSettings: false,
         canDeleteSubmissions: false,
+        canManageChatRooms: false,
       };
   }
 }

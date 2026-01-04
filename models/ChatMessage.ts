@@ -5,6 +5,7 @@ export interface IChatMessage extends Document {
   userName: string;
   userRole: 'Admin' | 'Supervisor' | 'User';
   content: string;
+  chatroomId?: mongoose.Types.ObjectId; // Optional: if null, it's the main team chat
   createdAt: Date;
   updatedAt: Date;
   isSystem?: boolean;
@@ -16,6 +17,11 @@ const ChatMessageSchema = new Schema<IChatMessage>(
     userName: { type: String, required: true, trim: true },
     userRole: { type: String, enum: ['Admin', 'Supervisor', 'User'], required: true },
     content: { type: String, required: true, trim: true, maxlength: 2000 },
+    chatroomId: {
+      type: Schema.Types.ObjectId,
+      ref: 'ChatRoom',
+      index: true,
+    },
     isSystem: { type: Boolean, default: false },
   },
   {
@@ -23,8 +29,13 @@ const ChatMessageSchema = new Schema<IChatMessage>(
   }
 );
 
+ChatMessageSchema.index({ chatroomId: 1, createdAt: -1 });
+
 export default mongoose.models.ChatMessage ||
   mongoose.model<IChatMessage>('ChatMessage', ChatMessageSchema);
+
+
+
 
 
 

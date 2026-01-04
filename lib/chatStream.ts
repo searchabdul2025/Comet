@@ -1,6 +1,7 @@
 type SSEClient = {
   id: string;
   controller: ReadableStreamDefaultController<Uint8Array>;
+  chatroomId?: string | null; // null for main team chat, string for specific chatroom
 };
 
 export type ChatEvent =
@@ -17,9 +18,9 @@ if (!globalAny.__chatClients) {
   globalAny.__chatClients = clients;
 }
 
-export function addClient(controller: ReadableStreamDefaultController<Uint8Array>) {
+export function addClient(controller: ReadableStreamDefaultController<Uint8Array>, chatroomId?: string | null) {
   const id = crypto.randomUUID();
-  clients.push({ id, controller });
+  clients.push({ id, controller, chatroomId: chatroomId ?? null });
   return id;
 }
 
@@ -31,16 +32,35 @@ export function removeClient(id: string) {
 }
 
 export function broadcast(event: ChatEvent) {
+  // Broadcast to main team chat (chatroomId is null)
   const payload = encoder.encode(`data: ${JSON.stringify(event)}\n\n`);
   clients.forEach((client) => {
-    try {
-      client.controller.enqueue(payload);
-    } catch (err) {
-      // Drop the broken client; stream likely closed
-      removeClient(client.id);
+    if (client.chatroomId === null || client.chatroomId === undefined) {
+      try {
+        client.controller.enqueue(payload);
+      } catch (err) {
+        removeClient(client.id);
+      }
     }
   });
 }
+
+export function broadcastToChatroom(chatroomId: string, event: ChatEvent) {
+  // Broadcast to specific chatroom
+  const payload = encoder.encode(`data: ${JSON.stringify(event)}\n\n`);
+  clients.forEach((client) => {
+    if (client.chatroomId === chatroomId) {
+      try {
+        client.controller.enqueue(payload);
+      } catch (err) {
+        removeClient(client.id);
+      }
+    }
+  });
+}
+
+
+
 
 
 

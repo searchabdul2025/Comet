@@ -18,7 +18,7 @@ export async function GET() {
     const limits = await getChatLimits();
 
     const [messagesRaw, ban] = await Promise.all([
-      ChatMessage.find()
+      ChatMessage.find({ chatroomId: null }) // Only main team chat messages
         .sort({ createdAt: -1 })
         .limit(limits.historyLimit)
         .lean(),
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       userName: user.name || user.email || 'Unknown User',
       userRole: user.role,
       content: safeContent,
+      chatroomId: null, // Main team chat
       isSystem: false,
     });
 

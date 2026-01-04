@@ -73,6 +73,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     { href: '/monthly-targets', label: 'Monthly Targets', icon: Target, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
     { href: '/bonuses', label: 'Bonuses', icon: Gift, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
     { href: '/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: 'canViewSubmissions' as const },
+    { href: '/chatrooms', label: 'Chatroom Management', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
 
     // Agent / supervisor views (no special permissions, role-gated)
     { href: '/agent/reports', label: 'Reports', icon: Activity, permission: null, roles: ['User', 'Supervisor'] as const },
