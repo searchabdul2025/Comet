@@ -80,8 +80,8 @@ export default function FormPreviewPage() {
   // Only auto-check duplicate if we've already passed the initial check
   useEffect(() => {
     if (!numberField || !duplicateCheckPassed) return;
-    const phone = values[numberField.id] || '';
-    if (!phone || (numberField.type === 'tel' && !isValidUsPhone(phone))) {
+    const value = values[numberField.id] || '';
+    if (!value || (numberField.type === 'tel' && !isValidUsPhone(value))) {
       setDuplicate(false);
       return;
     }
@@ -90,16 +90,26 @@ export default function FormPreviewPage() {
     const timer = setTimeout(async () => {
       try {
         setCheckingDuplicate(true);
-        // Only check phone numbers via API (number fields won't be checked automatically)
+        // Check phone numbers via API
         if (numberField.type === 'tel') {
-          const resp = await fetch(`/api/phone-check?phone=${encodeURIComponent(phone)}`, {
+          const resp = await fetch(`/api/phone-check?phone=${encodeURIComponent(value)}`, {
             signal: controller.signal,
           });
           const result = await resp.json();
           setDuplicate(Boolean(result.duplicate));
+        } else if (numberField.type === 'number' && formData?._id) {
+          // Auto-check number fields for duplicates
+          const resp = await fetch(
+            `/api/number-check?formId=${encodeURIComponent(formData._id)}&fieldId=${encodeURIComponent(numberField.id)}&value=${encodeURIComponent(value)}`,
+            { signal: controller.signal }
+          );
+          const result = await resp.json();
+          if (result.success) {
+            setDuplicate(Boolean(result.duplicate));
+          }
         }
       } catch (err) {
-        console.error('Phone check failed', err);
+        console.error('Duplicate check failed', err);
       } finally {
         setCheckingDuplicate(false);
       }
@@ -109,7 +119,7 @@ export default function FormPreviewPage() {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [numberField, values, duplicateCheckPassed]);
+  }, [numberField, values, duplicateCheckPassed, formData]);
 
   const canProceed =
     !numberField ||
@@ -169,9 +179,29 @@ export default function FormPreviewPage() {
           setError(result.error || 'Failed to check duplicate');
         }
       } else {
-        // For number fields, we might need a different check
-        // For now, just allow proceeding if number is entered
-        setDuplicateCheckPassed(true);
+        // For number fields, check for duplicates in formData
+        if (!formData?._id) {
+          setError('Form data not loaded');
+          return;
+        }
+        
+        const resp = await fetch(
+          `/api/number-check?formId=${encodeURIComponent(formData._id)}&fieldId=${encodeURIComponent(numberField.id)}&value=${encodeURIComponent(numberValue)}`
+        );
+        const result = await resp.json();
+        
+        if (result.success) {
+          if (result.duplicate) {
+            setDuplicate(true);
+            setShowDuplicateAlert(true);
+            setDuplicateCheckPassed(false);
+          } else {
+            setDuplicate(false);
+            setDuplicateCheckPassed(true);
+          }
+        } else {
+          setError(result.error || 'Failed to check duplicate');
+        }
       }
     } catch (err: any) {
       console.error('Duplicate check failed', err);
@@ -515,11 +545,14 @@ export default function FormPreviewPage() {
                 )}
                 {field.type === 'number' && (
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={value}
                     disabled={disabled}
                     onChange={(e) => handleInputChange(field, e.target.value)}
-                    className={`${baseInput} border-gray-300 focus:ring-blue-500`}
+                    className={`${baseInput} border-gray-300 focus:ring-blue-500 ${
+                      duplicate && field.id === numberField?.id ? 'border-red-500 focus:ring-red-500' : ''
+                    }`}
                     placeholder={field.validation || ''}
                     {...clipboardProps}
                   />
@@ -527,7 +560,7 @@ export default function FormPreviewPage() {
                 {field.validation && !field.options && (
                   <p className="text-xs text-gray-500 mt-1">{field.validation}</p>
                 )}
-                {field.type === 'tel' && duplicateCheckPassed && (
+                {((field.type === 'tel' || field.type === 'number') && duplicateCheckPassed && field.id === numberField?.id) && (
                   <p className="text-xs text-green-600 mt-1">
                     ✓ Duplicate check passed. You can proceed with the form.
                   </p>
