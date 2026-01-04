@@ -1,8 +1,19 @@
+import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
+
 export default function SalesApprovalsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Header />
+      <div className="flex">
+        <Sidebar requestCount={1} />
+        <main className="flex-1 p-6">{children}</main>
+      </div>
+    </div>
+  );
 }
 
