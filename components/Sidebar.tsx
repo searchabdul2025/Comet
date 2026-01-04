@@ -32,6 +32,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   const { data: session } = useSession();
   const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Portal' });
   const [showSalaryBonus, setShowSalaryBonus] = useState(true);
+  const [accessibleChatrooms, setAccessibleChatrooms] = useState<Array<{ _id: string; name: string; description?: string }>>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -54,6 +55,22 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     };
     loadBrand();
   }, []);
+
+  useEffect(() => {
+    const loadAccessibleChatrooms = async () => {
+      if (!session?.user) return;
+      try {
+        const res = await fetch('/api/chatrooms/accessible');
+        const result = await res.json();
+        if (result.success) {
+          setAccessibleChatrooms(result.data || []);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    loadAccessibleChatrooms();
+  }, [session]);
 
   const userRole = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
   const userPermOverrides = session?.user?.permissions;
@@ -180,6 +197,48 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
             </Link>
           );
         })}
+
+        {/* Accessible Chatrooms */}
+        {accessibleChatrooms.length > 0 && (
+          <>
+            <div className="pt-4 mt-4 border-t border-white/20">
+              <p className="text-xs font-semibold text-white/70 uppercase tracking-wider px-4 mb-2">
+                Chatrooms
+              </p>
+            </div>
+            {accessibleChatrooms.map((chatroom) => {
+              const isActive = pathname === `/chatroom/${chatroom._id}` || pathname?.startsWith(`/chatroom/${chatroom._id}/`);
+              return (
+                <Link
+                  key={chatroom._id}
+                  href={`/chatroom-login?id=${chatroom._id}`}
+                  className={`group relative flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${
+                    isActive
+                      ? 'bg-white text-emerald-900 border-white/60 shadow-lg shadow-emerald-900/10'
+                      : 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div
+                    className={`h-9 w-9 rounded-lg flex items-center justify-center transition ${
+                      isActive ? 'bg-emerald-900 text-white' : 'bg-white/10 text-white'
+                    }`}
+                  >
+                    <MessageSquare size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-medium block truncate">{chatroom.name}</span>
+                    {chatroom.description && (
+                      <span className="text-xs opacity-70 block truncate">{chatroom.description}</span>
+                    )}
+                  </div>
+                  {isActive && (
+                    <span className="absolute left-0 top-0 h-full w-1 rounded-full bg-gradient-to-b from-emerald-400 to-blue-500" />
+                  )}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
       {session?.user && (
         <div className="mt-6 rounded-xl bg-white/5 border border-white/10 p-4 text-sm text-white/80">

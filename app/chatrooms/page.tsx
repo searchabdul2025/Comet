@@ -17,6 +17,11 @@ interface ChatRoom {
   };
   isActive: boolean;
   maxParticipants?: number;
+  visibility: 'public' | 'private' | 'invite-only';
+  allowedRoles?: ('Admin' | 'Supervisor' | 'User')[];
+  allowedUsers?: string[];
+  showInSidebar: boolean;
+  requireApproval: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,7 +57,13 @@ export default function ChatRoomsPage() {
     description: '',
     maxParticipants: '',
     isActive: true,
+    visibility: 'private' as 'public' | 'private' | 'invite-only',
+    allowedRoles: [] as ('Admin' | 'Supervisor' | 'User')[],
+    allowedUsers: [] as string[],
+    showInSidebar: true,
+    requireApproval: false,
   });
+  const [allUsers, setAllUsers] = useState<Array<{ _id: string; name: string; email?: string }>>([]);
 
   const permissions = useMemo(() => {
     const role = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
@@ -108,12 +119,17 @@ export default function ChatRoomsPage() {
           name: formData.name,
           description: formData.description || undefined,
           maxParticipants: formData.maxParticipants ? Number(formData.maxParticipants) : undefined,
+          visibility: formData.visibility,
+          allowedRoles: formData.allowedRoles.length > 0 ? formData.allowedRoles : undefined,
+          allowedUsers: formData.allowedUsers.length > 0 ? formData.allowedUsers : undefined,
+          showInSidebar: formData.showInSidebar,
+          requireApproval: formData.requireApproval,
         }),
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.error || 'Failed to create chatroom');
       setShowAddModal(false);
-      setFormData({ name: '', description: '', maxParticipants: '', isActive: true });
+      setFormData({ name: '', description: '', maxParticipants: '', isActive: true, visibility: 'private', allowedRoles: [], allowedUsers: [], showInSidebar: true, requireApproval: false });
       fetchChatrooms();
     } catch (err: any) {
       alert(err.message || 'Failed to create chatroom');
@@ -136,7 +152,7 @@ export default function ChatRoomsPage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error || 'Failed to update chatroom');
       setEditingRoom(null);
-      setFormData({ name: '', description: '', maxParticipants: '', isActive: true });
+      setFormData({ name: '', description: '', maxParticipants: '', isActive: true, visibility: 'private', allowedRoles: [], allowedUsers: [], showInSidebar: true, requireApproval: false });
       fetchChatrooms();
     } catch (err: any) {
       alert(err.message || 'Failed to update chatroom');
@@ -283,6 +299,11 @@ export default function ChatRoomsPage() {
                             description: room.description || '',
                             maxParticipants: room.maxParticipants?.toString() || '',
                             isActive: room.isActive,
+                            visibility: room.visibility || 'private',
+                            allowedRoles: room.allowedRoles || [],
+                            allowedUsers: room.allowedUsers || [],
+                            showInSidebar: room.showInSidebar !== undefined ? room.showInSidebar : true,
+                            requireApproval: room.requireApproval || false,
                           });
                           setShowAddModal(true);
                         }}
@@ -310,7 +331,7 @@ export default function ChatRoomsPage() {
       {/* Add/Edit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 space-y-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-gray-900">
               {editingRoom ? 'Edit Chatroom' : 'Create Chatroom'}
             </h2>
@@ -346,6 +367,91 @@ export default function ChatRoomsPage() {
                   min="1"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Visibility *</label>
+                <select
+                  value={formData.visibility}
+                  onChange={(e) => setFormData({ ...formData, visibility: e.target.value as 'public' | 'private' | 'invite-only' })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="private">Private (Credentials Only)</option>
+                  <option value="public">Public (Role-based Access)</option>
+                  <option value="invite-only">Invite Only (Specific Users)</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {formData.visibility === 'private' && 'Only users with credentials can access'}
+                  {formData.visibility === 'public' && 'Users with allowed roles can access'}
+                  {formData.visibility === 'invite-only' && 'Only specific users or those with credentials can access'}
+                </p>
+              </div>
+
+              {(formData.visibility === 'public' || formData.visibility === 'invite-only') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Allowed Roles</label>
+                  <div className="space-y-2">
+                    {['Admin', 'Supervisor', 'User'].map((role) => (
+                      <label key={role} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.allowedRoles.includes(role as 'Admin' | 'Supervisor' | 'User')}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFormData({ ...formData, allowedRoles: [...formData.allowedRoles, role as 'Admin' | 'Supervisor' | 'User'] });
+                            } else {
+                              setFormData({ ...formData, allowedRoles: formData.allowedRoles.filter(r => r !== role) });
+                            }
+                          }}
+                          className="rounded"
+                        />
+                        <span className="text-sm text-gray-700">{role}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {formData.visibility === 'invite-only' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Allowed Users</label>
+                  <select
+                    multiple
+                    value={formData.allowedUsers}
+                    onChange={(e) => {
+                      const selected = Array.from(e.target.selectedOptions, option => option.value);
+                      setFormData({ ...formData, allowedUsers: selected });
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+                  >
+                    {allUsers.map((user) => (
+                      <option key={user._id} value={user._id}>
+                        {user.name} {user.email && `(${user.email})`}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple users</p>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.showInSidebar}
+                  onChange={(e) => setFormData({ ...formData, showInSidebar: e.target.checked })}
+                  className="rounded"
+                />
+                <label className="text-sm font-medium text-gray-700">Show in Sidebar</label>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={formData.requireApproval}
+                  onChange={(e) => setFormData({ ...formData, requireApproval: e.target.checked })}
+                  className="rounded"
+                />
+                <label className="text-sm font-medium text-gray-700">Require Approval to Join</label>
+              </div>
+
               {editingRoom && (
                 <div className="flex items-center gap-2">
                   <input
@@ -369,7 +475,7 @@ export default function ChatRoomsPage() {
                 onClick={() => {
                   setShowAddModal(false);
                   setEditingRoom(null);
-                  setFormData({ name: '', description: '', maxParticipants: '', isActive: true });
+                  setFormData({ name: '', description: '', maxParticipants: '', isActive: true, visibility: 'private', allowedRoles: [], allowedUsers: [], showInSidebar: true, requireApproval: false });
                 }}
                 className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
               >

@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, maxParticipants } = body;
+    const { name, description, maxParticipants, visibility, allowedRoles, allowedUsers, showInSidebar, requireApproval } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json({ success: false, error: 'Chatroom name is required' }, { status: 400 });
@@ -97,6 +97,11 @@ export async function POST(request: NextRequest) {
       name: name.trim(),
       description: description?.trim() || undefined,
       maxParticipants: maxParticipants ? Number(maxParticipants) : undefined,
+      visibility: visibility || 'private',
+      allowedRoles: allowedRoles || [],
+      allowedUsers: allowedUsers || [],
+      showInSidebar: showInSidebar !== undefined ? Boolean(showInSidebar) : true,
+      requireApproval: requireApproval !== undefined ? Boolean(requireApproval) : false,
       createdBy: dbUser._id,
       isActive: true,
     });

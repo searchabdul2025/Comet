@@ -77,13 +77,18 @@ export async function PUT(
 
     const { id } = await resolveParams(params);
     const body = await request.json();
-    const { name, description, isActive, maxParticipants } = body;
+    const { name, description, isActive, maxParticipants, visibility, allowedRoles, allowedUsers, showInSidebar, requireApproval } = body;
 
     const updateData: any = {};
     if (name !== undefined) updateData.name = name.trim();
     if (description !== undefined) updateData.description = description?.trim() || undefined;
     if (isActive !== undefined) updateData.isActive = Boolean(isActive);
     if (maxParticipants !== undefined) updateData.maxParticipants = maxParticipants ? Number(maxParticipants) : undefined;
+    if (visibility !== undefined) updateData.visibility = visibility;
+    if (allowedRoles !== undefined) updateData.allowedRoles = allowedRoles || [];
+    if (allowedUsers !== undefined) updateData.allowedUsers = allowedUsers || [];
+    if (showInSidebar !== undefined) updateData.showInSidebar = Boolean(showInSidebar);
+    if (requireApproval !== undefined) updateData.requireApproval = Boolean(requireApproval);
 
     const chatroom = await ChatRoom.findByIdAndUpdate(id, updateData, { new: true })
       .populate('createdBy', 'name email username')
