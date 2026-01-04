@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LogIn, MessageSquare, Loader2 } from 'lucide-react';
 
-export default function ChatroomLoginPage() {
+function ChatroomLoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const chatroomId = searchParams.get('id');
@@ -157,6 +157,21 @@ export default function ChatroomLoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function ChatroomLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 size={32} className="animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ChatroomLoginContent />
+    </Suspense>
   );
 }
 
