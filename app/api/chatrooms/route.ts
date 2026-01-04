@@ -103,19 +103,19 @@ export async function POST(request: NextRequest) {
 
     const populated = await ChatRoom.findById(chatroom._id)
       .populate('createdBy', 'name email username')
-      .lean();
+      .lean() as any;
 
     return NextResponse.json({
       success: true,
       data: {
-        _id: populated!._id.toString(),
-        name: populated!.name,
-        description: populated!.description,
-        createdBy: populated!.createdBy,
-        isActive: populated!.isActive,
-        maxParticipants: populated!.maxParticipants,
-        createdAt: populated!.createdAt,
-        updatedAt: populated!.updatedAt,
+        _id: populated._id.toString(),
+        name: populated.name,
+        description: populated.description,
+        createdBy: populated.createdBy,
+        isActive: populated.isActive,
+        maxParticipants: populated.maxParticipants,
+        createdAt: populated.createdAt,
+        updatedAt: populated.updatedAt,
       },
     }, { status: 201 });
   } catch (error: any) {
