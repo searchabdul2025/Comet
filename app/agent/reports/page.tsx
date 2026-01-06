@@ -124,7 +124,7 @@ export default function AgentReportsPage() {
               })}
               {!submissions.length && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-sm text-slate-500">
+                  <td colSpan={3} className="px-4 py-6 text-center text-sm text-slate-500">
                     {loading ? 'Loading submissions...' : 'No submissions found.'}
                   </td>
                 </tr>
