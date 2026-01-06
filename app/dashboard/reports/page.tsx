@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Download, FileSpreadsheet, FileText, FileDown, Sheet, Loader2, Trash2 } from 'lucide-react';
+import { Download, FileSpreadsheet, FileText, FileDown, Sheet, Loader2, Trash2, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
 import { getPermissions } from '@/lib/permissions';
 import { useSession } from 'next-auth/react';
 
@@ -43,6 +43,7 @@ export default function ReportsPage() {
   const [campaigns, setCampaigns] = useState<CampaignOption[]>([]);
   const [userFilter, setUserFilter] = useState('');
   const [campaignFilter, setCampaignFilter] = useState('');
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const presets = [
     { label: 'Today', range: () => {
       const d = new Date();
@@ -338,9 +339,9 @@ export default function ReportsPage() {
           <button
             onClick={fetchSubs}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md bg-slate-100 hover:bg-slate-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
           >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+            {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
             {loading ? 'Loading' : 'Refresh'}
           </button>
         </div>
@@ -369,34 +370,82 @@ export default function ReportsPage() {
                 </tr>
               </thead>
               <tbody>
-                {submissions.map((s) => (
-                  <tr key={s._id} className="border-t hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
-                      {(() => {
-                        const { formatUSDateTime } = require('@/lib/dateFormat');
-                        return formatUSDateTime(s.createdAt);
-                      })()}
-                    </td>
-                    <td className="px-4 py-2 text-slate-700">{s.phoneNumber || '-'}</td>
-                    <td className="px-4 py-2 text-slate-700">{s.formId || '-'}</td>
-                    <td className="px-4 py-2 text-slate-700">{s.ipAddress || '-'}</td>
-                    <td className="px-4 py-2 text-slate-700">{s.submittedBy || '-'}</td>
-                    <td className="px-4 py-2 text-slate-700">
-                      <pre className="whitespace-pre-wrap text-xs text-slate-600">
-                        {JSON.stringify(s.formData || {}, null, 2)}
-                      </pre>
-                    </td>
-                    <td className="px-4 py-2 text-slate-700">
-                      <button
-                        onClick={() => handleDelete(s._id)}
-                        className="text-red-600 hover:text-red-700"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {submissions.map((s) => {
+                  const isExpanded = expandedRows.has(s._id);
+                  const formDataKeys = Object.keys(s.formData || {});
+                  const formDataPreview = formDataKeys.length > 0 
+                    ? `${formDataKeys.length} field${formDataKeys.length !== 1 ? 's' : ''}`
+                    : 'No data';
+                  const formDataPreviewSample = formDataKeys.slice(0, 2).map(key => {
+                    const value = s.formData?.[key];
+                    return `${key}: ${typeof value === 'string' && value.length > 20 ? value.substring(0, 20) + '...' : value}`;
+                  }).join(', ');
+
+                  return (
+                    <>
+                      <tr key={s._id} className="border-t hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
+                          {(() => {
+                            const { formatUSDateTime } = require('@/lib/dateFormat');
+                            return formatUSDateTime(s.createdAt);
+                          })()}
+                        </td>
+                        <td className="px-4 py-2 text-slate-700">{s.phoneNumber || '-'}</td>
+                        <td className="px-4 py-2 text-slate-700 font-mono text-xs">{s.formId || '-'}</td>
+                        <td className="px-4 py-2 text-slate-700">{s.ipAddress || '-'}</td>
+                        <td className="px-4 py-2 text-slate-700 font-mono text-xs">{s.submittedBy || '-'}</td>
+                        <td className="px-4 py-2 text-slate-700">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                const newExpanded = new Set(expandedRows);
+                                if (isExpanded) {
+                                  newExpanded.delete(s._id);
+                                } else {
+                                  newExpanded.add(s._id);
+                                }
+                                setExpandedRows(newExpanded);
+                              }}
+                              className="text-blue-600 hover:text-blue-700 transition"
+                              title={isExpanded ? 'Collapse' : 'Expand'}
+                            >
+                              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                            </button>
+                            {!isExpanded ? (
+                              <span className="text-xs text-slate-600">
+                                {formDataPreview}
+                                {formDataPreviewSample && ` • ${formDataPreviewSample}${formDataKeys.length > 2 ? '...' : ''}`}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-slate-500">Click to collapse</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-2 text-slate-700">
+                          <button
+                            onClick={() => handleDelete(s._id)}
+                            className="text-red-600 hover:text-red-700 transition"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={`${s._id}-expanded`} className="border-t bg-slate-50">
+                          <td colSpan={7} className="px-4 py-3">
+                            <div className="bg-white rounded-lg border border-slate-200 p-3">
+                              <div className="text-xs font-semibold text-slate-700 mb-2">Form Data:</div>
+                              <pre className="whitespace-pre-wrap text-xs text-slate-600 max-h-96 overflow-y-auto">
+                                {JSON.stringify(s.formData || {}, null, 2)}
+                              </pre>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
               </tbody>
             </table>
           )}
