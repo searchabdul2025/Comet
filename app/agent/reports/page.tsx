@@ -69,7 +69,7 @@ export default function AgentReportsPage() {
           Refresh
         </button>
       </div>
-      <p className="text-gray-600">Only your submissions are shown here. For privacy, only customer names are visible.</p>
+      <p className="text-gray-600">Only your submissions are shown here.</p>
 
       {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">{error}</div>}
 
