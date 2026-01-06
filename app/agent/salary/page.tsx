@@ -87,7 +87,7 @@ export default function AgentSalaryPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Monthly Salary</p>
-                <h2 className="text-2xl font-bold text-gray-900">${salary.toLocaleString()}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Rs {salary.toLocaleString()}</h2>
               </div>
             </div>
             <p className="text-sm text-gray-500">Your base monthly salary amount</p>
@@ -100,7 +100,7 @@ export default function AgentSalaryPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Bonus</p>
-                <h2 className="text-2xl font-bold text-gray-900">${bonus.toLocaleString()}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Rs {bonus.toLocaleString()}</h2>
               </div>
             </div>
             <p className="text-sm text-gray-500">Your performance bonus amount</p>
@@ -113,7 +113,7 @@ export default function AgentSalaryPage() {
               </div>
               <div>
                 <p className="text-sm text-emerald-700 font-medium">Total Compensation</p>
-                <h2 className="text-3xl font-bold text-emerald-900">${(salary + bonus).toLocaleString()}</h2>
+                <h2 className="text-3xl font-bold text-emerald-900">Rs {(salary + bonus).toLocaleString()}</h2>
               </div>
             </div>
             <p className="text-sm text-emerald-700">Combined monthly salary and bonus</p>

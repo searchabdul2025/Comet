@@ -307,7 +307,7 @@ export default function BonusesPage() {
                   <td className="px-4 py-3 text-sm text-slate-800">{r.period}</td>
                   <td className="px-4 py-3 text-sm text-slate-800">{r.target}</td>
                   <td className="px-4 py-3 text-sm text-slate-800">{r.achieved ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">${(r.bonus ?? 0).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-slate-800">Rs {(r.bonus ?? 0).toLocaleString()}</td>
                 </tr>
               ))}
               {!rows.length && (
@@ -352,7 +352,7 @@ export default function BonusesPage() {
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-800">{rule.campaign?.name || '—'}</td>
                   <td className="px-4 py-3 text-sm text-slate-800 font-medium">{rule.productGrade}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">${rule.bonusAmount.toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-slate-800">Rs {rule.bonusAmount.toLocaleString()}</td>
                   <td className="px-4 py-3 text-sm text-slate-800">{rule.target || '—'}</td>
                   <td className="px-4 py-3 text-sm">
                     <span

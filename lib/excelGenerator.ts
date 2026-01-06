@@ -210,7 +210,7 @@ function applyWorksheetFormatting(worksheet: XLSX.WorkSheet, rows: any[]) {
 
   // Set column widths (auto-width based on content)
   const maxWidth = 50;
-  const minWidth = 10;
+  const minWidth = 12;
   const colWidths: number[] = [];
 
   // Get all column names
@@ -227,14 +227,49 @@ function applyWorksheetFormatting(worksheet: XLSX.WorkSheet, rows: any[]) {
     });
 
     // Set width with min/max constraints
-    const width = Math.min(Math.max(maxLen + 2, minWidth), maxWidth);
+    const width = Math.min(Math.max(maxLen + 3, minWidth), maxWidth);
     colWidths.push(width);
   });
 
   worksheet['!cols'] = colWidths.map((width) => ({ wch: width }));
 
-  // Freeze first row (header)
+  // Freeze first row (header) for better navigation
   worksheet['!freeze'] = { xSplit: 0, ySplit: 1, topLeftCell: 'A2', activePane: 'bottomLeft' };
+
+  // Apply header formatting (bold, background color)
+  const headerRange = XLSX.utils.decode_range(worksheet['!ref'] || 'A1');
+  if (headerRange.s.r >= 0) {
+    for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+      if (!worksheet[cellAddress]) continue;
+      
+      // Make header bold and add background color
+      worksheet[cellAddress].s = {
+        font: { bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '4472C4' } }, // Professional blue background
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+        border: {
+          top: { style: 'thin', color: { rgb: '000000' } },
+          bottom: { style: 'thin', color: { rgb: '000000' } },
+          left: { style: 'thin', color: { rgb: '000000' } },
+          right: { style: 'thin', color: { rgb: '000000' } },
+        },
+      };
+    }
+  }
+
+  // Format date columns
+  const dateColumns = ['Date', 'Submitted', 'Submission Date'];
+  columnNames.forEach((colName, colIndex) => {
+    if (dateColumns.some(dc => colName.includes(dc))) {
+      for (let rowIndex = 1; rowIndex <= rows.length; rowIndex++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c: colIndex });
+        if (worksheet[cellAddress]) {
+          worksheet[cellAddress].z = 'mm/dd/yyyy'; // US date format
+        }
+      }
+    }
+  });
 }
 
 /**

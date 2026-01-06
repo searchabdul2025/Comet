@@ -316,7 +316,7 @@ export default function MonthlyTargetsPage() {
             </div>
             <div className="flex justify-between">
               <span>Projected bonus</span>
-              <span>${summary.bonus.toLocaleString()}</span>
+              <span>Rs {summary.bonus.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -352,7 +352,7 @@ export default function MonthlyTargetsPage() {
                   <td className="px-4 py-3 text-sm text-slate-800">{t.period}</td>
                   <td className="px-4 py-3 text-sm text-slate-800">{t.target}</td>
                   <td className="px-4 py-3 text-sm text-slate-800">{t.achieved ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">${(t.bonus ?? 0).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-sm text-slate-800">Rs {(t.bonus ?? 0).toLocaleString()}</td>
                   <td className="px-4 py-3 text-sm text-slate-800">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">

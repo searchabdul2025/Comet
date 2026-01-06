@@ -355,7 +355,7 @@ export default function SalesApprovalsPage() {
                     ) : (
                       <>
                         <td className="px-4 py-3 text-sm text-slate-800 font-medium">
-                          {approval.amount ? `$${approval.amount.toLocaleString()}` : '—'}
+                          {approval.amount ? `Rs ${approval.amount.toLocaleString()}` : '—'}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(approval.status)}`}>
