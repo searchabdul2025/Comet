@@ -9,6 +9,7 @@ interface SubmissionRow {
   formId: string;
   phoneNumber?: string;
   formData?: Record<string, any>;
+  customerName?: string; // Extracted customer name for easy display
 }
 
 export default function AgentReportsPage() {
