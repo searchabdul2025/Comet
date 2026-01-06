@@ -4,11 +4,12 @@ import bcrypt from 'bcryptjs';
 export interface IChatRoomCredential extends Document {
   chatRoom: mongoose.Types.ObjectId; // Reference to ChatRoom
   username: string; // Unique username for this chatroom
-  password: string; // Hashed password
+  password: string; // Hashed password (or special marker for account-linked credentials)
   displayName?: string; // Optional display name
   isActive: boolean;
   lastUsedAt?: Date;
   createdBy: mongoose.Types.ObjectId; // Admin who created it
+  linkedUserId?: mongoose.Types.ObjectId; // Reference to User account if using account credentials
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +49,11 @@ const ChatRoomCredentialSchema = new Schema<IChatRoomCredential>(
       ref: 'User',
       required: true,
     },
+    linkedUserId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -57,10 +63,14 @@ const ChatRoomCredentialSchema = new Schema<IChatRoomCredential>(
 // Ensure unique username per chatroom
 ChatRoomCredentialSchema.index({ chatRoom: 1, username: 1 }, { unique: true });
 
-// Hash password before saving
+// Hash password before saving (unless it's the account credential marker)
 ChatRoomCredentialSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   try {
+    // If password is the account credential marker, don't hash it
+    if (this.password === 'ACCOUNT_CREDENTIAL_LINKED') {
+      return next();
+    }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();

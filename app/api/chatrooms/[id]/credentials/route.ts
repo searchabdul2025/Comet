@@ -100,15 +100,7 @@ export async function POST(
 
     const { id } = await resolveParams(params);
     const body = await request.json();
-    const { username, password, displayName } = body;
-
-    if (!username || !username.trim()) {
-      return NextResponse.json({ success: false, error: 'Username is required' }, { status: 400 });
-    }
-
-    if (!password || password.length < 4) {
-      return NextResponse.json({ success: false, error: 'Password must be at least 4 characters' }, { status: 400 });
-    }
+    const { username, password, displayName, useAccountCredentials, userId } = body;
 
     // Verify chatroom exists
     const chatroom = await ChatRoom.findById(id).lean();
@@ -116,13 +108,56 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'Chatroom not found' }, { status: 404 });
     }
 
+    let finalUsername = '';
+    let finalPassword = '';
+    let linkedUserId = undefined;
+
+    if (useAccountCredentials && userId) {
+      // Use supervisor's account credentials
+      const targetUser = await User.findById(userId).lean() as any;
+      if (!targetUser) {
+        return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+      }
+      if (targetUser.role !== 'Supervisor') {
+        return NextResponse.json({ success: false, error: 'Only supervisors can use account credentials' }, { status: 400 });
+      }
+      finalUsername = (targetUser.username || targetUser.email || '').toLowerCase().trim();
+      if (!finalUsername) {
+        return NextResponse.json({ success: false, error: 'User must have username or email' }, { status: 400 });
+      }
+      // Store a reference to the user account - password will be checked against user account during login
+      linkedUserId = targetUser._id;
+      // Use a placeholder password - actual password check will be against user account
+      finalPassword = 'ACCOUNT_CREDENTIAL_LINKED';
+    } else {
+      // Custom credentials
+      if (!username || !username.trim()) {
+        return NextResponse.json({ success: false, error: 'Username is required' }, { status: 400 });
+      }
+      if (!password || password.length < 4) {
+        return NextResponse.json({ success: false, error: 'Password must be at least 4 characters' }, { status: 400 });
+      }
+      finalUsername = username.trim().toLowerCase();
+      finalPassword = password;
+    }
+
+    // Check if username already exists for this chatroom
+    const existingCred = await ChatRoomCredential.findOne({
+      chatRoom: id,
+      username: finalUsername,
+    }).lean();
+    if (existingCred) {
+      return NextResponse.json({ success: false, error: 'Username already exists for this chatroom' }, { status: 409 });
+    }
+
     const credential = await ChatRoomCredential.create({
       chatRoom: id,
-      username: username.trim().toLowerCase(),
-      password: password, // Will be hashed by pre-save hook
+      username: finalUsername,
+      password: finalPassword, // Will be hashed by pre-save hook (or stored as special marker)
       displayName: displayName?.trim() || undefined,
       createdBy: dbUser._id,
       isActive: true,
+      linkedUserId: linkedUserId, // Store reference to user account if using account credentials
     });
 
     const populated = await ChatRoomCredential.findById(credential._id)

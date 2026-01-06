@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import ChatRoom from '@/models/ChatRoom';
 import ChatRoomCredential from '@/models/ChatRoomCredential';
+import User from '@/models/User';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,14 +34,27 @@ export async function POST(request: NextRequest) {
       chatRoom: chatroomId,
       username: username.trim().toLowerCase(),
       isActive: true,
-    });
+    }).populate('linkedUserId');
 
     if (!credential) {
       return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
     }
 
     // Verify password
-    const isValid = await (credential as any).comparePassword(password);
+    let isValid = false;
+    const cred = credential as any;
+    
+    if (cred.linkedUserId) {
+      // This credential is linked to a user account - verify against user's password
+      const linkedUser = await User.findById(cred.linkedUserId).lean() as any;
+      if (linkedUser) {
+        isValid = await bcrypt.compare(password, linkedUser.password);
+      }
+    } else {
+      // Regular credential - verify against credential password
+      isValid = await cred.comparePassword(password);
+    }
+    
     if (!isValid) {
       return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 });
     }

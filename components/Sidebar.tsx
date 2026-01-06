@@ -59,6 +59,18 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   useEffect(() => {
     const loadAccessibleChatrooms = async () => {
       if (!session?.user) return;
+      
+      // Check if user has canManageChatRooms permission
+      const userRole = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
+      const userPermOverrides = session?.user?.permissions;
+      const userPermissions = userRole ? getPermissions(userRole, userPermOverrides || undefined) : null;
+      
+      // Only show chatrooms if user has canManageChatRooms permission
+      if (!userPermissions?.canManageChatRooms) {
+        setAccessibleChatrooms([]);
+        return;
+      }
+      
       try {
         const res = await fetch('/api/chatrooms/accessible');
         const result = await res.json();

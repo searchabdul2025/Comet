@@ -4,6 +4,8 @@ import { getCurrentUser } from '@/lib/auth';
 import ChatRoom from '@/models/ChatRoom';
 import ChatRoomCredential from '@/models/ChatRoomCredential';
 import User from '@/models/User';
+import { requirePermission } from '@/lib/permissions';
+import mongoose from 'mongoose';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,6 +20,18 @@ export async function GET(request: NextRequest) {
     const dbUser = await User.findOne({ email: user.email }).lean() as any;
     if (!dbUser) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+    }
+
+    // Check if user has canManageChatRooms permission
+    const canManageChatRooms = requirePermission(
+      dbUser.role as any,
+      'canManageChatRooms',
+      dbUser.permissions as any
+    );
+
+    if (!canManageChatRooms) {
+      // User doesn't have permission - return empty list
+      return NextResponse.json({ success: true, data: [] });
     }
 
     const userRole = dbUser.role as 'Admin' | 'Supervisor' | 'User';

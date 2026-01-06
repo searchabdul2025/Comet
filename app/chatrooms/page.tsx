@@ -49,9 +49,10 @@ export default function ChatRoomsPage() {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [showCredentials, setShowCredentials] = useState(false);
-  const [newCredential, setNewCredential] = useState({ username: '', password: '', displayName: '' });
+  const [newCredential, setNewCredential] = useState({ username: '', password: '', displayName: '', useAccountCredentials: false, selectedUserId: '' });
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [supervisors, setSupervisors] = useState<Array<{ _id: string; name: string; username?: string; email?: string }>>([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -74,8 +75,23 @@ export default function ChatRoomsPage() {
   useEffect(() => {
     if (canManage) {
       fetchChatrooms();
+      fetchSupervisors();
     }
   }, [canManage]);
+
+  const fetchSupervisors = async () => {
+    try {
+      const res = await fetch('/api/users');
+      const json = await res.json();
+      if (json.success) {
+        // Filter only supervisors
+        const supervisorsList = (json.data || []).filter((u: any) => u.role === 'Supervisor');
+        setSupervisors(supervisorsList);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch supervisors:', err);
+    }
+  };
 
   useEffect(() => {
     if (selectedRoom) {
@@ -182,7 +198,30 @@ export default function ChatRoomsPage() {
 
   const handleCreateCredential = async () => {
     if (!selectedRoom) return;
-    if (!newCredential.username || !newCredential.password) {
+    
+    // If using account credentials, we need to fetch the user's password
+    let username = newCredential.username;
+    let password = newCredential.password;
+    
+    if (newCredential.useAccountCredentials && newCredential.selectedUserId) {
+      // Fetch user details to get username/password
+      try {
+        const userRes = await fetch(`/api/users/${newCredential.selectedUserId}`);
+        const userJson = await userRes.json();
+        if (userJson.success && userJson.data) {
+          const user = userJson.data;
+          username = user.username || user.email || '';
+          // We need to get the password from the user - but we can't retrieve hashed passwords
+          // So we'll use a special flag to indicate account credentials should be used
+          // The API will handle this differently
+        }
+      } catch (err) {
+        alert('Failed to fetch user details');
+        return;
+      }
+    }
+    
+    if (!username || (!password && !newCredential.useAccountCredentials)) {
       alert('Username and password are required');
       return;
     }
@@ -192,16 +231,18 @@ export default function ChatRoomsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: newCredential.username,
-          password: newCredential.password,
+          username,
+          password: newCredential.useAccountCredentials ? undefined : password,
           displayName: newCredential.displayName || undefined,
+          useAccountCredentials: newCredential.useAccountCredentials,
+          userId: newCredential.useAccountCredentials ? newCredential.selectedUserId : undefined,
         }),
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.error || 'Failed to create credential');
       
-      setGeneratedPassword(json.data.plainPassword || newCredential.password);
-      setNewCredential({ username: '', password: '', displayName: '' });
+      setGeneratedPassword(json.data.plainPassword || (newCredential.useAccountCredentials ? 'Same as account password' : password));
+      setNewCredential({ username: '', password: '', displayName: '', useAccountCredentials: false, selectedUserId: '' });
       fetchCredentials(selectedRoom);
     } catch (err: any) {
       alert(err.message || 'Failed to create credential');
@@ -526,33 +567,86 @@ export default function ChatRoomsPage() {
               <h3 className="text-sm font-semibold text-gray-900 mb-3">Create New Credential</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
-                  <input
-                    type="text"
-                    value={newCredential.username}
-                    onChange={(e) => setNewCredential({ ...newCredential, username: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="username"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
-                  <div className="flex gap-2">
+                  <label className="flex items-center gap-2 mb-2">
                     <input
-                      type="text"
-                      value={newCredential.password}
-                      onChange={(e) => setNewCredential({ ...newCredential, password: e.target.value })}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter password or generate"
+                      type="checkbox"
+                      checked={newCredential.useAccountCredentials}
+                      onChange={(e) => {
+                        setNewCredential({ 
+                          ...newCredential, 
+                          useAccountCredentials: e.target.checked,
+                          username: e.target.checked ? '' : newCredential.username,
+                          password: e.target.checked ? '' : newCredential.password,
+                        });
+                      }}
+                      className="rounded"
                     />
-                    <button
-                      onClick={() => setNewCredential({ ...newCredential, password: generatePassword() })}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
-                    >
-                      Generate
-                    </button>
-                  </div>
+                    <span className="text-sm font-medium text-gray-700">Use Supervisor Account Credentials</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mb-3">
+                    If checked, the supervisor's account username and password will be used. Otherwise, create custom credentials.
+                  </p>
                 </div>
+                
+                {newCredential.useAccountCredentials ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Supervisor *</label>
+                    <select
+                      value={newCredential.selectedUserId}
+                      onChange={(e) => {
+                        const selected = supervisors.find(s => s._id === e.target.value);
+                        setNewCredential({ 
+                          ...newCredential, 
+                          selectedUserId: e.target.value,
+                          username: selected?.username || selected?.email || '',
+                        });
+                      }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Select a supervisor...</option>
+                      {supervisors.map((supervisor) => (
+                        <option key={supervisor._id} value={supervisor._id}>
+                          {supervisor.name} {supervisor.username && `(${supervisor.username})`} {supervisor.email && `[${supervisor.email}]`}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      The supervisor's account username and password will be used for this chatroom credential.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                      <input
+                        type="text"
+                        value={newCredential.username}
+                        onChange={(e) => setNewCredential({ ...newCredential, username: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="username"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newCredential.password}
+                          onChange={(e) => setNewCredential({ ...newCredential, password: e.target.value })}
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter password or generate"
+                        />
+                        <button
+                          onClick={() => setNewCredential({ ...newCredential, password: generatePassword() })}
+                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+                        >
+                          Generate
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Display Name (Optional)</label>
                   <input

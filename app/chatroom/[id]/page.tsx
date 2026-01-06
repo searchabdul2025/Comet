@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { Send, LogOut, MessageSquare, Loader2 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Send, LogOut, MessageSquare, Loader2, Trash2, Ban, Shield } from 'lucide-react';
+import { getPermissions } from '@/lib/permissions';
 
 type ChatMessage = {
   _id: string;
@@ -19,6 +21,7 @@ const DEFAULT_LIMITS = { rateLimitPerMinute: 15, maxMessageLength: 500, historyL
 export default function ChatroomChatPage() {
   const router = useRouter();
   const params = useParams();
+  const { data: session } = useSession();
   const chatroomId = params.id as string;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -29,7 +32,17 @@ export default function ChatroomChatPage() {
   const [limits, setLimits] = useState(DEFAULT_LIMITS);
   const [chatroomInfo, setChatroomInfo] = useState<{ name?: string; description?: string } | null>(null);
   const [userInfo, setUserInfo] = useState<{ username?: string; displayName?: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  // Check if user is admin
+  useEffect(() => {
+    if (session?.user) {
+      const role = session.user.role as 'Admin' | 'Supervisor' | 'User' | undefined;
+      const permissions = role ? getPermissions(role, session.user.permissions || undefined) : null;
+      setIsAdmin(role === 'Admin' || !!permissions?.canManageChatRooms);
+    }
+  }, [session]);
 
   useEffect(() => {
     verifySession();
@@ -153,6 +166,84 @@ export default function ChatroomChatPage() {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+    
+    try {
+      const res = await fetch(`/api/chatrooms/${chatroomId}/admin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Failed to delete message');
+      }
+      // Remove message from local state
+      setMessages(prev => prev.filter(m => m._id !== messageId));
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete message');
+    }
+  };
+
+  const handleDeleteAllMessages = async () => {
+    if (!confirm('Are you sure you want to delete all messages in this chatroom? This cannot be undone.')) return;
+    
+    try {
+      const res = await fetch(`/api/chatrooms/${chatroomId}/admin?action=delete-messages`, {
+        method: 'DELETE',
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Failed to delete messages');
+      }
+      setMessages([]);
+      alert(`Deleted ${result.deletedCount || 0} messages`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete messages');
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    if (!confirm('Are you sure you want to delete this entire chatroom? This will delete all messages and deactivate all credentials. This cannot be undone.')) return;
+    
+    try {
+      const res = await fetch(`/api/chatrooms/${chatroomId}/admin?action=delete-chat`, {
+        method: 'DELETE',
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Failed to delete chatroom');
+      }
+      alert('Chatroom deleted successfully');
+      router.push('/chatrooms');
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete chatroom');
+    }
+  };
+
+  const handleBanUser = async (userId: string) => {
+    const reason = prompt('Enter reason for ban (optional):');
+    if (reason === null) return; // User cancelled
+    
+    try {
+      const res = await fetch(`/api/chatrooms/${chatroomId}/admin?action=ban-user`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, reason: reason || undefined }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Failed to ban user');
+      }
+      // Remove messages from banned user
+      setMessages(prev => prev.filter(m => m.userId !== userId));
+      alert('User banned successfully');
+    } catch (err: any) {
+      alert(err.message || 'Failed to ban user');
+    }
+  };
+
   if (!chatroomInfo || !userInfo) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -187,6 +278,26 @@ export default function ChatroomChatPage() {
           >
             {status === 'live' ? 'Live' : status === 'connecting' ? 'Connecting...' : 'Offline'}
           </div>
+          {isAdmin && (
+            <div className="flex items-center gap-2 border-r border-gray-200 pr-3">
+              <button
+                onClick={handleDeleteAllMessages}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition-colors"
+                title="Delete all messages"
+              >
+                <Trash2 size={14} />
+                Clear Chat
+              </button>
+              <button
+                onClick={handleDeleteChat}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition-colors"
+                title="Delete entire chatroom"
+              >
+                <Shield size={14} />
+                Delete Chat
+              </button>
+            </div>
+          )}
           <button
             onClick={handleLogout}
             className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
@@ -205,19 +316,39 @@ export default function ChatroomChatPage() {
           messages.map((msg) => {
             const isSystem = msg.isSystem;
             return (
-              <div key={msg._id} className={`flex ${isSystem ? 'justify-center' : 'justify-start'}`}>
-                <div
-                  className={`max-w-xl rounded-2xl px-3 py-2 shadow-sm border text-sm ${
-                    isSystem
-                      ? 'bg-slate-100 text-slate-700 border-slate-200'
-                      : 'bg-white text-slate-900 border-slate-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 text-[11px] mb-1">
-                    <span className="font-semibold">{isSystem ? 'System' : msg.userName}</span>
-                    <span className="text-slate-500">{formatTime(msg.createdAt)}</span>
+              <div key={msg._id} className={`flex ${isSystem ? 'justify-center' : 'justify-start'} group`}>
+                <div className="flex items-start gap-2">
+                  <div
+                    className={`max-w-xl rounded-2xl px-3 py-2 shadow-sm border text-sm ${
+                      isSystem
+                        ? 'bg-slate-100 text-slate-700 border-slate-200'
+                        : 'bg-white text-slate-900 border-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 text-[11px] mb-1">
+                      <span className="font-semibold">{isSystem ? 'System' : msg.userName}</span>
+                      <span className="text-slate-500">{formatTime(msg.createdAt)}</span>
+                    </div>
+                    <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                   </div>
-                  <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                  {isAdmin && !isSystem && (
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleDeleteMessage(msg._id)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="Delete message"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleBanUser(msg.userId)}
+                        className="p-1 text-orange-600 hover:bg-orange-50 rounded transition-colors"
+                        title="Ban user"
+                      >
+                        <Ban size={14} />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
