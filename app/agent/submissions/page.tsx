@@ -8,10 +8,12 @@ interface SubmissionRow {
   createdAt: string;
   formId: {
     _id: string;
+    title?: string;
     fields?: Array<{ id: string; name: string; type: string }>;
   } | string;
   phoneNumber?: string;
   formData?: Record<string, any>;
+  customerName?: string; // Extracted customer name for easy display
 }
 
 export default function AgentSubmissionsPage() {
@@ -56,20 +58,20 @@ export default function AgentSubmissionsPage() {
     
     const query = searchQuery.toLowerCase();
     return submissions.filter(submission => {
-      // Search in phone number
-      if (submission.phoneNumber?.toLowerCase().includes(query)) return true;
+      // Search in customer name
+      if (submission.customerName?.toLowerCase().includes(query)) return true;
       
-      // Search in form data values
+      // Search in form data values (only customer name is visible)
       if (submission.formData) {
         const formDataStr = JSON.stringify(submission.formData).toLowerCase();
         if (formDataStr.includes(query)) return true;
       }
       
-      // Search in form ID
-      const formIdStr = typeof submission.formId === 'string' 
-        ? submission.formId 
-        : submission.formId?._id || '';
-      if (formIdStr.toLowerCase().includes(query)) return true;
+      // Search in form title/ID
+      const formTitle = typeof submission.formId === 'object' 
+        ? submission.formId?.title || submission.formId?._id || ''
+        : submission.formId || '';
+      if (String(formTitle).toLowerCase().includes(query)) return true;
       
       return false;
     });
@@ -101,6 +103,23 @@ export default function AgentSubmissionsPage() {
           <RefreshCw size={16} />
           Refresh
         </button>
+      </div>
+
+      {/* Privacy Notice */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-blue-900">Data Privacy Notice</h3>
+            <p className="text-sm text-blue-800 mt-1">
+              For privacy protection, you can only see customer names in your submissions. All other customer information (phone numbers, email addresses, addresses, etc.) is restricted to admin access only.
+            </p>
+          </div>
+        </div>
       </div>
 
       {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">{error}</div>}
@@ -149,7 +168,7 @@ export default function AgentSubmissionsPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by phone, form data, or form ID..."
+            placeholder="Search by customer name or form name..."
             className="w-full px-3 py-2 border border-slate-200 rounded-md text-black bg-white"
           />
         </div>
@@ -160,7 +179,7 @@ export default function AgentSubmissionsPage() {
           <div>
             <h3 className="text-lg font-semibold text-gray-900">Recent submissions</h3>
             <p className="text-sm text-gray-600">
-              Limited to your user account.
+              Limited to your user account. Only customer names are visible for privacy.
               {searchQuery && ` Showing ${filteredSubmissions.length} of ${submissions.length} results`}
             </p>
           </div>
@@ -171,39 +190,32 @@ export default function AgentSubmissionsPage() {
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Submitted</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Form</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Phone</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Form Data</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Customer Name</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredSubmissions.map((s) => (
-                <tr key={s._id} className="hover:bg-slate-50/50">
-                  <td className="px-4 py-3 text-sm text-slate-800">{formatDate(s.createdAt)}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">
-                    {typeof s.formId === 'string' ? s.formId : s.formId?._id || '—'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-800">{s.phoneNumber || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">
-                    {s.formData && Object.keys(s.formData).length > 0 ? (
-                      <div className="space-y-1">
-                        {Object.entries(s.formData).map(([fieldId, value]) => (
-                          <div key={fieldId} className="text-xs">
-                            <span className="font-medium text-slate-700">
-                              {getFieldName(s, fieldId)}:
-                            </span>{' '}
-                            <span className="text-slate-600">{String(value || '—')}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-slate-400">No data</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {filteredSubmissions.map((s) => {
+                // Get customer name from formData or customerName field
+                const customerName = s.customerName || 
+                  (s.formData && Object.values(s.formData)[0] ? String(Object.values(s.formData)[0]) : null) ||
+                  '—';
+                const formTitle = typeof s.formId === 'object' 
+                  ? s.formId?.title || s.formId?._id || '—'
+                  : s.formId || '—';
+                
+                return (
+                  <tr key={s._id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 text-sm text-slate-800">{formatDate(s.createdAt)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800">{formTitle}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800 font-medium">
+                      {customerName !== '—' ? customerName : <span className="text-slate-400">No name available</span>}
+                    </td>
+                  </tr>
+                );
+              })}
               {!filteredSubmissions.length && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-sm text-slate-500">
+                  <td colSpan={3} className="px-4 py-6 text-center text-sm text-slate-500">
                     {loading ? 'Loading submissions...' : searchQuery ? 'No submissions match your search.' : 'No submissions found.'}
                   </td>
                 </tr>

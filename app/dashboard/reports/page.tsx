@@ -163,6 +163,8 @@ export default function ReportsPage() {
         const params = new URLSearchParams();
         if (fromDate) params.append('from', fromDate);
         if (toDate) params.append('to', toDate);
+        if (userFilter) params.append('userId', userFilter);
+        if (campaignFilter) params.append('campaignId', campaignFilter);
         const res = await fetch(`/api/reports/export/sheets?${params.toString()}`, { method: 'POST' });
         const result = await res.json();
         if (!result.success) {
@@ -173,6 +175,9 @@ export default function ReportsPage() {
       const params = new URLSearchParams({ format });
       if (fromDate) params.append('from', fromDate);
       if (toDate) params.append('to', toDate);
+      if (userFilter) params.append('userId', userFilter);
+      if (campaignFilter) params.append('campaignId', campaignFilter);
+      
       const res = await fetch(`/api/reports/export?${params.toString()}`);
       if (!res.ok) {
         setError('Export failed');
@@ -182,7 +187,19 @@ export default function ReportsPage() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `submissions.${format === 'xlsx' ? 'xlsx' : format === 'pdf' ? 'pdf' : 'csv'}`;
+      
+      // Generate filename with agent name if filtered
+      let filename = 'submissions';
+      if (userFilter && users.length > 0) {
+        const selectedUser = users.find(u => u.id === userFilter);
+        if (selectedUser) {
+          filename = `${selectedUser.name.replace(/\s+/g, '_')}_submissions`;
+        }
+      }
+      const dateStr = new Date().toISOString().split('T')[0];
+      filename = `${filename}_${dateStr}`;
+      
+      a.download = `${filename}.${format === 'xlsx' ? 'xlsx' : format === 'pdf' ? 'pdf' : 'csv'}`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -209,6 +226,9 @@ export default function ReportsPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-1">Reports</h1>
           <p className="text-gray-600">Export submissions as PDF, CSV, XLSX, or push to Google Sheets.</p>
+          <p className="text-sm text-blue-600 mt-1">
+            ℹ️ Excel exports include all customer data (phone, email, address, etc.). Agents can only see customer names in the portal.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <label className="text-sm font-medium text-slate-800">From</label>

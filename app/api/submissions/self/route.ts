@@ -4,6 +4,7 @@ import { getCurrentUser } from '@/lib/auth';
 import FormSubmission from '@/models/FormSubmission';
 import User from '@/models/User';
 import Form from '@/models/Form';
+import { filterAgentVisibleData } from '@/lib/agentDataFilter';
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,39 +34,65 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
-    // Get user's allowed form fields
-    const dbUser = await User.findById(user.id).select('allowedFormFields');
-    const allowedFields = dbUser?.allowedFormFields || [];
+    // Get user's role to determine data visibility
+    const dbUser = await User.findById(user.id).select('role allowedFormFields').lean() as any;
+    const isAgent = dbUser?.role === 'User';
 
     const submissions = await FormSubmission.find(match)
-      .populate('formId', 'fields')
+      .populate('formId', 'fields title')
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
 
-    // Filter formData based on allowed fields if restrictions exist
+    // Filter data based on user role - agents can only see customer names
     const filteredSubmissions = submissions.map((submission: any) => {
-      if (allowedFields.length > 0 && submission.formData && submission.formId?.fields) {
-        // Create a map of field ID to field name
-        const fieldIdToName = new Map<string, string>();
-        submission.formId.fields.forEach((field: any) => {
-          fieldIdToName.set(field.id, field.name);
-        });
+      // For agents, only show customer name field
+      if (isAgent && submission.formData && submission.formId?.fields) {
+        const { customerName, customerNameField } = filterAgentVisibleData(
+          submission.formData,
+          submission.formId.fields
+        );
 
-        const filteredFormData: Record<string, any> = {};
-        Object.keys(submission.formData).forEach(key => {
-          const fieldName = fieldIdToName.get(key);
-          // Check if this field name is in the allowed list
-          if (fieldName && allowedFields.includes(fieldName)) {
-            filteredFormData[key] = submission.formData[key];
-          }
-        });
-        
+        // Return only customer name in formData, hide all other fields
+        const restrictedFormData: Record<string, any> = {};
+        if (customerNameField && customerName) {
+          restrictedFormData[customerNameField] = customerName;
+        }
+
         return {
           ...submission,
-          formData: filteredFormData,
+          formData: restrictedFormData,
+          customerName: customerName, // Add as separate field for easier access
+          // Hide phone number from agents
+          phoneNumber: undefined,
         };
       }
+
+      // For admin/supervisor, check allowedFormFields if restrictions exist
+      if (!isAgent && submission.formData && submission.formId?.fields) {
+        const allowedFields = dbUser?.allowedFormFields || [];
+        if (allowedFields.length > 0) {
+          const fieldIdToName = new Map<string, string>();
+          submission.formId.fields.forEach((field: any) => {
+            fieldIdToName.set(field.id, field.name);
+          });
+
+          const filteredFormData: Record<string, any> = {};
+          Object.keys(submission.formData).forEach(key => {
+            const fieldName = fieldIdToName.get(key);
+            if (fieldName && allowedFields.includes(fieldName)) {
+              filteredFormData[key] = submission.formData[key];
+            }
+          });
+          
+          return {
+            ...submission,
+            formData: filteredFormData,
+          };
+        }
+      }
+
+      // For admin/supervisor with no restrictions, return all data
       return submission;
     });
 

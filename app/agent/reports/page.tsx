@@ -68,7 +68,7 @@ export default function AgentReportsPage() {
           Refresh
         </button>
       </div>
-      <p className="text-gray-600">Only your submissions are shown here.</p>
+      <p className="text-gray-600">Only your submissions are shown here. For privacy, only customer names are visible.</p>
 
       {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">{error}</div>}
 
@@ -103,23 +103,24 @@ export default function AgentReportsPage() {
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Submitted</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Form</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Phone</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Preview</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Customer Name</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {submissions.map((s) => (
-                <tr key={s._id} className="hover:bg-slate-50/50">
-                  <td className="px-4 py-3 text-sm text-slate-800">{formatDate(s.createdAt)}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">{s.formId}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">{s.phoneNumber || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">
-                    <pre className="text-xs text-slate-600 bg-slate-50 border border-slate-100 rounded-md p-2 max-w-xs overflow-auto">
-                      {JSON.stringify(s.formData || {}, null, 2)}
-                    </pre>
-                  </td>
-                </tr>
-              ))}
+              {submissions.map((s) => {
+                const customerName = s.customerName || 
+                  (s.formData && Object.values(s.formData)[0] ? String(Object.values(s.formData)[0]) : null) ||
+                  '—';
+                return (
+                  <tr key={s._id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 text-sm text-slate-800">{formatDate(s.createdAt)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800">{s.formId}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800 font-medium">
+                      {customerName !== '—' ? customerName : <span className="text-slate-400">No name available</span>}
+                    </td>
+                  </tr>
+                );
+              })}
               {!submissions.length && (
                 <tr>
                   <td colSpan={4} className="px-4 py-6 text-center text-sm text-slate-500">

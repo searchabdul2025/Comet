@@ -3,6 +3,9 @@ import connectDB from '@/lib/mongodb';
 import FormSubmission from '@/models/FormSubmission';
 import { getCurrentUser } from '@/lib/auth';
 import { requirePermission } from '@/lib/permissions';
+import { generateExcelWorkbook } from '@/lib/excelGenerator';
+import User from '@/models/User';
+import Form from '@/models/Form';
 export const runtime = 'nodejs';
 
 function submissionsToRows(submissions: any[]) {
@@ -56,7 +59,13 @@ export async function GET(request: NextRequest) {
       match.formId = { $in: formIds };
     }
 
-    const submissions = await FormSubmission.find(match).sort({ createdAt: -1 }).lean();
+    // Fetch submissions with populated form fields
+    const submissions = await FormSubmission.find(match)
+      .populate('formId', 'fields title')
+      .populate('submittedBy', 'name')
+      .sort({ createdAt: -1 })
+      .lean();
+    
     const rows = submissionsToRows(submissions);
 
     if (format === 'csv') {
@@ -87,16 +96,53 @@ export async function GET(request: NextRequest) {
     }
 
     if (format === 'xlsx') {
+      // Extract agent names and form titles from populated submissions
+      const agentNames = new Map<string, string>();
+      const formTitles = new Map<string, string>();
+      
+      submissions.forEach((s: any) => {
+        // Extract agent name
+        if (s.submittedBy) {
+          const agentId = typeof s.submittedBy === 'string' 
+            ? s.submittedBy 
+            : s.submittedBy._id?.toString() || '';
+          const agentName = typeof s.submittedBy === 'object' 
+            ? s.submittedBy.name || 'Unknown'
+            : 'Unknown';
+          if (agentId) agentNames.set(agentId, agentName);
+        }
+
+        // Extract form title
+        if (s.formId) {
+          const formId = typeof s.formId === 'string' 
+            ? s.formId 
+            : s.formId._id?.toString() || '';
+          const formTitle = typeof s.formId === 'object' 
+            ? s.formId.title || 'Unknown Form'
+            : 'Unknown Form';
+          if (formId) formTitles.set(formId, formTitle);
+        }
+      });
+
+      // Generate enhanced Excel workbook
+      const workbook = generateExcelWorkbook({
+        submissions: submissions,
+        agentNames,
+        formTitles,
+        includeSummary: true,
+        sheetName: 'Submissions',
+      });
+
       const XLSX = await import('xlsx');
-      const worksheet = XLSX.utils.json_to_sheet(rows);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Submissions');
       const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+      
+      // Generate filename with date
+      const dateStr = new Date().toISOString().split('T')[0];
       return new NextResponse(buffer, {
         status: 200,
         headers: {
           'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          'Content-Disposition': 'attachment; filename="submissions.xlsx"',
+          'Content-Disposition': `attachment; filename="submissions_${dateStr}.xlsx"`,
         },
       });
     }
