@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Edit, Trash2, Key } from 'lucide-react';
+import { Plus, Edit, Trash2, Key, Eye, EyeOff, X, UserPlus, Save } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -36,6 +36,7 @@ export default function UserManagementPage() {
   const [availableFields, setAvailableFields] = useState<FormField[]>([]);
   const [loadingFields, setLoadingFields] = useState(false);
   const [showSalaryBonus, setShowSalaryBonus] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -118,6 +119,7 @@ export default function UserManagementPage() {
   const handleAddUser = () => {
     if (!canManageUsers) return;
     setEditingUser(null);
+    setShowPassword(false);
     setFormData({
       name: '',
       email: '',
@@ -145,6 +147,7 @@ export default function UserManagementPage() {
   const handleEdit = (user: User) => {
     if (!canManageUsers) return;
     setEditingUser(user);
+    setShowPassword(false);
     setFormData({
       name: user.name,
       email: user.email || '',
@@ -260,6 +263,7 @@ export default function UserManagementPage() {
       
       if (result.success) {
         setShowAddModal(false);
+        setEditingUser(null);
         fetchUsers(); // Refresh the list
       } else {
         alert(result.error || 'Failed to save user');
@@ -269,72 +273,347 @@ export default function UserManagementPage() {
     }
   };
 
+  const handleCancel = () => {
+    setShowAddModal(false);
+    setEditingUser(null);
+    setShowPassword(false);
+    setFormData({
+      name: '',
+      email: '',
+      username: '',
+      password: '',
+      role: 'User',
+      permissions: {
+        canManageUsers: false,
+        canManageForms: false,
+        canViewSubmissions: false,
+        canManageRequests: false,
+        canDeleteForms: false,
+        canEditForms: false,
+        canCreateForms: false,
+        canManageSettings: false,
+        canManageChatRooms: false,
+      },
+      allowedFormFields: [],
+      salary: 0,
+      bonus: 0,
+    });
+  };
+
   return (
-    <div className="p-4 md:p-6 bg-[#f6f9fc] min-h-screen">
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold text-gray-900">User Management</h1>
+    <div className="p-4 md:p-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 min-h-screen">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
         <p className="text-sm text-gray-600">Manage system users and their roles</p>
       </div>
 
       {!canManageUsers && (
-        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-amber-800">
+        <div className="mb-4 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 text-amber-800 shadow-sm">
           You do not have permission to manage users. Contact an admin for access.
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-slate-200">
-          <div className="text-sm text-gray-700">
-            Total Users <span className="font-semibold">({users.length})</span>
+      {showAddModal && (
+        <div className="mb-6 bg-white rounded-2xl shadow-2xl border border-slate-200/60 overflow-hidden">
+          <div className="bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 px-6 py-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  {editingUser ? <Edit className="text-white" size={24} /> : <UserPlus className="text-white" size={24} />}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white">
+                    {editingUser ? 'Edit User' : 'Add New User'}
+                  </h3>
+                  <p className="text-emerald-50 text-sm mt-0.5">
+                    {editingUser ? 'Update user information' : 'Create a new user account'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleCancel}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white"
+                aria-label="Close"
+              >
+                <X size={24} />
+              </button>
+            </div>
           </div>
-          <button
-            onClick={handleAddUser}
-            disabled={!canManageUsers}
-            className="inline-flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-md hover:bg-emerald-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            <Plus size={18} />
-            Add User
-          </button>
+
+          <div className="p-6 md:p-8 overflow-y-auto max-h-[calc(100vh-300px)]">
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                    placeholder="John Doe"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="user@example.com"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                  <input
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    placeholder="username (required if no email)"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {editingUser ? 'New Password (leave blank to keep current)' : 'Password'}
+                    {!editingUser && <span className="text-red-500">*</span>}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-emerald-600 focus:outline-none transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Role <span className="text-red-500">*</span></label>
+                  <select
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'Admin' | 'Supervisor' | 'User' })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                  >
+                    <option value="User">User</option>
+                    <option value="Supervisor">Supervisor</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              {showSalaryBonus && (formData.role === 'User' || formData.role === 'Supervisor') && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Salary</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                      <input
+                        type="number"
+                        value={formData.salary}
+                        onChange={(e) => setFormData({ ...formData, salary: parseFloat(e.target.value) || 0 })}
+                        placeholder="0.00"
+                        className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Bonus</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                      <input
+                        type="number"
+                        value={formData.bonus}
+                        onChange={(e) => setFormData({ ...formData, bonus: parseFloat(e.target.value) || 0 })}
+                        placeholder="0.00"
+                        className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(formData.role === 'User' || formData.role === 'Supervisor') && (
+                <div className="pt-4 border-t border-gray-200">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Permission Overrides</label>
+                  <p className="text-xs text-gray-500 mb-4">
+                    Overrides add or restrict abilities beyond the base role. Leave unchecked to inherit defaults.
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {Object.entries(formData.permissions).map(([key, val]) => (
+                      <label 
+                        key={key} 
+                        className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-emerald-50/50 hover:border-emerald-300 cursor-pointer transition-all"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={val}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              permissions: { ...formData.permissions, [key]: e.target.checked },
+                            })
+                          }
+                          className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                        />
+                        <span className="text-sm text-gray-700 font-medium">
+                          {key
+                            .replace('can', '')
+                            .replace(/([A-Z])/g, ' $1')
+                            .trim()}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {formData.role === 'User' && (
+                <div className="pt-4 border-t border-gray-200">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Allowed Form Fields (for submissions view)
+                  </label>
+                  <p className="text-xs text-gray-500 mb-4">
+                    Select which form fields this agent can see in their submissions. Leave empty to show all fields.
+                  </p>
+                  {loadingFields ? (
+                    <div className="text-center py-8 text-gray-500">Loading fields...</div>
+                  ) : availableFields.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 border border-gray-200 rounded-xl bg-gray-50">
+                      No form fields available. Create forms first.
+                    </div>
+                  ) : (
+                    <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-xl p-4 bg-gradient-to-br from-gray-50 to-slate-50 space-y-2">
+                      {availableFields.map((field) => (
+                        <label 
+                          key={field.name} 
+                          className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-white hover:shadow-sm cursor-pointer transition-all bg-white/50"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.allowedFormFields.includes(field.name)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({
+                                  ...formData,
+                                  allowedFormFields: [...formData.allowedFormFields, field.name],
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  allowedFormFields: formData.allowedFormFields.filter(f => f !== field.name),
+                                });
+                              }
+                            }}
+                            className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+                          />
+                          <span className="text-sm text-gray-700 font-medium">
+                            {field.name} <span className="text-gray-400 text-xs">({field.type})</span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-4 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleSave}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl font-semibold"
+                >
+                  <Save size={20} />
+                  {editingUser ? 'Update User' : 'Create User'}
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-6 bg-gradient-to-r from-slate-50 to-gray-50 border-b border-slate-200">
+          <div className="text-sm text-gray-700">
+            <span className="font-semibold text-gray-900">Total Users:</span> <span className="text-emerald-600 font-bold text-lg">{users.length}</span>
+          </div>
+          {!showAddModal && (
+            <button
+              onClick={handleAddUser}
+              disabled={!canManageUsers}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-6 py-3 rounded-xl hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed font-semibold"
+            >
+              <Plus size={20} />
+              Add New User
+            </button>
+          )}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-slate-600">
+          <table className="w-full">
+            <thead className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700">
               <tr>
-                <th className="px-4 py-3 text-left">User ID</th>
-                <th className="px-4 py-3 text-left">Name</th>
-                <th className="px-4 py-3 text-left">Email</th>
-                <th className="px-4 py-3 text-left">Username</th>
-                <th className="px-4 py-3 text-left">Role</th>
-                <th className="px-4 py-3 text-left">Overrides</th>
-                <th className="px-4 py-3 text-left">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">User ID</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Email</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Username</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Role</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Overrides</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-4 text-center text-gray-500">
-                    Loading users...
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+                    <p className="mt-2">Loading users...</p>
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-4 text-center text-gray-500">
-                    No users found
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <p className="text-lg">No users found</p>
+                    <p className="text-sm mt-1">Click "Add New User" to get started</p>
                   </td>
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user._id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-slate-800">{user._id}</td>
-                    <td className="px-4 py-3 text-slate-800">{user.name}</td>
-                    <td className="px-4 py-3 text-slate-700">{user.email || '—'}</td>
-                    <td className="px-4 py-3 text-slate-700">{user.username || '—'}</td>
-                    <td className="px-4 py-3">
-                      <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                  <tr key={user._id} className="hover:bg-gradient-to-r hover:from-emerald-50/50 hover:to-teal-50/30 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">{user._id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-semibold text-gray-900">{user.name}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.email || '—'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{user.username || '—'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
+                        user.role === 'Admin' ? 'bg-purple-100 text-purple-800' :
+                        user.role === 'Supervisor' ? 'bg-blue-100 text-blue-800' :
+                        'bg-emerald-100 text-emerald-800'
+                      }`}>
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-600">
+                    <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
                       {user.permissions
                         ? Object.entries(user.permissions)
                             .filter(([_, v]) => v)
@@ -342,12 +621,12 @@ export default function UserManagementPage() {
                             .join(', ') || '—'
                         : '—'}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => handleEdit(user)}
                           disabled={!canManageUsers}
-                          className="inline-flex items-center gap-1 border border-slate-200 text-slate-700 px-3 py-1 rounded hover:bg-slate-100 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <Edit size={14} />
                           Edit
@@ -355,7 +634,7 @@ export default function UserManagementPage() {
                         <button
                           onClick={() => handleDelete(user._id)}
                           disabled={!canManageUsers}
-                          className="inline-flex items-center gap-1 border border-red-200 text-red-700 px-3 py-1 rounded hover:bg-red-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <Trash2 size={14} />
                           Delete
@@ -363,10 +642,10 @@ export default function UserManagementPage() {
                         <button
                           onClick={() => handleResetPassword(user._id)}
                           disabled={!canManageUsers}
-                          className="inline-flex items-center gap-1 border border-amber-200 text-amber-700 px-3 py-1 rounded hover:bg-amber-50 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 hover:border-amber-300 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                           <Key size={14} />
-                          Reset Password
+                          Reset
                         </button>
                       </div>
                     </td>
@@ -377,184 +656,6 @@ export default function UserManagementPage() {
           </table>
         </div>
       </div>
-
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start md:items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg shadow-xl p-4 md:p-6 w-full max-w-md md:max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              {editingUser ? 'Edit User' : 'Add New User'}
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="user@example.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  placeholder="username (required if no email)"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {editingUser ? 'New Password (leave blank to keep current)' : 'Password'}
-                </label>
-                <input
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <select
-                  value={formData.role}
-                  onChange={(e) => setFormData({ ...formData, role: e.target.value as 'Admin' | 'Supervisor' | 'User' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-                >
-                  <option value="User">User</option>
-                  <option value="Supervisor">Supervisor</option>
-                  <option value="Admin">Admin</option>
-                </select>
-              </div>
-              {showSalaryBonus && (formData.role === 'User' || formData.role === 'Supervisor') && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Salary</p>
-                  <input
-                    type="number"
-                    value={formData.salary}
-                    onChange={(e) => setFormData({ ...formData, salary: parseFloat(e.target.value) || 0 })}
-                    placeholder="Enter salary amount"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-                  />
-                </div>
-              )}
-              {showSalaryBonus && (formData.role === 'User' || formData.role === 'Supervisor') && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Bonus</p>
-                  <input
-                    type="number"
-                    value={formData.bonus}
-                    onChange={(e) => setFormData({ ...formData, bonus: parseFloat(e.target.value) || 0 })}
-                    placeholder="Enter bonus amount"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-                  />
-                </div>
-              )}
-              {(formData.role === 'User' || formData.role === 'Supervisor') && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">Permission Overrides (optional)</p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                    {Object.entries(formData.permissions).map(([key, val]) => (
-                      <label key={key} className="inline-flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={val}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              permissions: { ...formData.permissions, [key]: e.target.checked },
-                            })
-                          }
-                          className="rounded"
-                        />
-                        <span className="text-gray-700">
-                          {key
-                            .replace('can', '')
-                            .replace(/([A-Z])/g, ' $1')
-                            .trim()}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Overrides add or restrict abilities beyond the base role. Leave unchecked to inherit defaults.
-                  </p>
-                </div>
-              )}
-              {formData.role === 'User' && (
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">
-                    Allowed Form Fields (for submissions view)
-                  </p>
-                  <p className="text-xs text-gray-500 mb-2">
-                    Select which form fields this agent can see in their submissions. Leave empty to show all fields.
-                  </p>
-                  {loadingFields ? (
-                    <p className="text-sm text-gray-500">Loading fields...</p>
-                  ) : availableFields.length === 0 ? (
-                    <p className="text-sm text-gray-500">No form fields available. Create forms first.</p>
-                  ) : (
-                    <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md p-3 bg-gray-50">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                        {availableFields.map((field) => (
-                          <label key={field.name} className="inline-flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={formData.allowedFormFields.includes(field.name)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setFormData({
-                                    ...formData,
-                                    allowedFormFields: [...formData.allowedFormFields, field.name],
-                                  });
-                                } else {
-                                  setFormData({
-                                    ...formData,
-                                    allowedFormFields: formData.allowedFormFields.filter(f => f !== field.name),
-                                  });
-                                }
-                              }}
-                              className="rounded"
-                            />
-                            <span className="text-gray-700">
-                              {field.name} <span className="text-gray-400 text-xs">({field.type})</span>
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-              <div className="flex gap-2 pt-4">
-                <button
-                  onClick={handleSave}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
