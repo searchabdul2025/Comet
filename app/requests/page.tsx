@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Check, X, Loader2, RefreshCcw } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { getPermissions } from '@/lib/permissions';
 
 interface Request {
   id: string;
@@ -27,6 +29,7 @@ interface Request {
 }
 
 export default function RequestsPage() {
+  const { data: session } = useSession();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState('');
@@ -35,6 +38,13 @@ export default function RequestsPage() {
   const [createError, setCreateError] = useState('');
   const [newType, setNewType] = useState('');
   const [newDetails, setNewDetails] = useState('');
+
+  const permissions = useMemo(() => {
+    const role = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
+    return role ? getPermissions(role, session?.user?.permissions || undefined) : null;
+  }, [session]);
+  
+  const canManageRequests = !!permissions?.canManageRequests;
 
   const fetchRequests = async () => {
     try {
@@ -136,46 +146,62 @@ export default function RequestsPage() {
         </button>
       </div>
 
-      <div className="mb-6 bg-white rounded-lg shadow p-4 border border-slate-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">Submit a request</h3>
-        {createError && (
-          <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-amber-800 text-sm">
-            {createError}
+      {!canManageRequests && (
+        <div className="mb-6 bg-white rounded-lg shadow p-4 border border-slate-200">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Submit a request</h3>
+          {createError && (
+            <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-amber-800 text-sm">
+              {createError}
+            </div>
+          )}
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-slate-700">Type</label>
+              <input
+                type="text"
+                value={newType}
+                onChange={(e) => setNewType(e.target.value)}
+                placeholder="e.g. Access request"
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div className="flex flex-col gap-1 md:col-span-1">
+              <label className="text-sm font-medium text-slate-700">Details</label>
+              <textarea
+                value={newDetails}
+                onChange={(e) => setNewDetails(e.target.value)}
+                placeholder="Describe the request..."
+                rows={2}
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
-        )}
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-slate-700">Type</label>
-            <input
-              type="text"
-              value={newType}
-              onChange={(e) => setNewType(e.target.value)}
-              placeholder="e.g. Access request"
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex flex-col gap-1 md:col-span-1">
-            <label className="text-sm font-medium text-slate-700">Details</label>
-            <textarea
-              value={newDetails}
-              onChange={(e) => setNewDetails(e.target.value)}
-              placeholder="Describe the request..."
-              rows={2}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={createRequest}
+              disabled={creating}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {creating ? <Loader2 size={16} className="animate-spin" /> : null}
+              Submit
+            </button>
           </div>
         </div>
-        <div className="mt-3 flex justify-end">
-          <button
-            onClick={createRequest}
-            disabled={creating}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {creating ? <Loader2 size={16} className="animate-spin" /> : null}
-            Submit
-          </button>
+      )}
+
+      {canManageRequests && (
+        <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Check className="text-blue-600" size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">Manage Requests</h3>
+              <p className="text-sm text-gray-600">Review and respond to user requests below</p>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {error && (
         <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-amber-800 text-sm">
@@ -231,39 +257,46 @@ export default function RequestsPage() {
                       })()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {request.status === 'Pending' ? (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => updateStatus(request.id, 'Approved')}
-                            disabled={!!actionId}
-                            className="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition-colors disabled:opacity-60"
-                          >
-                            {actionId === request.id ? (
-                              <Loader2 size={14} className="inline mr-1 animate-spin" />
-                            ) : (
-                              <Check size={14} className="inline mr-1" />
-                            )}
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => updateStatus(request.id, 'Rejected')}
-                            disabled={!!actionId}
-                            className="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition-colors disabled:opacity-60"
-                          >
-                            {actionId === request.id ? (
-                              <Loader2 size={14} className="inline mr-1 animate-spin" />
-                            ) : (
-                              <X size={14} className="inline mr-1" />
-                            )}
-                            Reject
-                          </button>
-                        </div>
+                      {canManageRequests ? (
+                        request.status === 'Pending' ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => updateStatus(request.id, 'Approved')}
+                              disabled={!!actionId}
+                              className="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 transition-colors disabled:opacity-60"
+                            >
+                              {actionId === request.id ? (
+                                <Loader2 size={14} className="inline mr-1 animate-spin" />
+                              ) : (
+                                <Check size={14} className="inline mr-1" />
+                              )}
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => updateStatus(request.id, 'Rejected')}
+                              disabled={!!actionId}
+                              className="bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 transition-colors disabled:opacity-60"
+                            >
+                              {actionId === request.id ? (
+                                <Loader2 size={14} className="inline mr-1 animate-spin" />
+                              ) : (
+                                <X size={14} className="inline mr-1" />
+                              )}
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">
+                            Reviewed {(() => {
+                              const { formatUSDateTime } = require('@/lib/dateFormat');
+                              return request.reviewedAt ? formatUSDateTime(request.reviewedAt) : '';
+                            })()}
+                            {request.reviewedBy && ` by ${request.reviewedBy.name}`}
+                          </span>
+                        )
                       ) : (
                         <span className="text-xs text-gray-500">
-                          Reviewed {(() => {
-                            const { formatUSDateTime } = require('@/lib/dateFormat');
-                            return request.reviewedAt ? formatUSDateTime(request.reviewedAt) : '';
-                          })()}
+                          {request.status}
                         </span>
                       )}
                     </td>
