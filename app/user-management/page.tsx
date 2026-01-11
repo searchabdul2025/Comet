@@ -421,26 +421,46 @@ export default function UserManagementPage() {
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Salary</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">PKR</span>
                       <input
                         type="number"
-                        value={formData.salary}
-                        onChange={(e) => setFormData({ ...formData, salary: parseFloat(e.target.value) || 0 })}
-                        placeholder="0.00"
-                        className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                        value={formData.salary === 0 ? '' : formData.salary}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData({ ...formData, salary: value === '' ? 0 : parseFloat(value) || 0 });
+                        }}
+                        onFocus={(e) => {
+                          if (formData.salary === 0) {
+                            e.target.select();
+                          }
+                        }}
+                        placeholder="0"
+                        min="0"
+                        step="0.01"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
                       />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Bonus</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">PKR</span>
                       <input
                         type="number"
-                        value={formData.bonus}
-                        onChange={(e) => setFormData({ ...formData, bonus: parseFloat(e.target.value) || 0 })}
-                        placeholder="0.00"
-                        className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
+                        value={formData.bonus === 0 ? '' : formData.bonus}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setFormData({ ...formData, bonus: value === '' ? 0 : parseFloat(value) || 0 });
+                        }}
+                        onFocus={(e) => {
+                          if (formData.bonus === 0) {
+                            e.target.select();
+                          }
+                        }}
+                        placeholder="0"
+                        min="0"
+                        step="0.01"
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
                       />
                     </div>
                   </div>
