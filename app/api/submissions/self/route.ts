@@ -34,6 +34,9 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
+    // Ensure Form model is registered before populating
+    await import('@/models/Form');
+
     // Get user's role to determine data visibility
     const dbUser = await User.findById(user.id).select('role allowedFormFields').lean() as any;
     const isAgent = dbUser?.role === 'User';

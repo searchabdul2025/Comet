@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { CheckCircle2, XCircle, Clock, DollarSign, FileText, Loader2, Check, X, MessageSquare, Save } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, DollarSign, FileText, Loader2, Check, X, MessageSquare, Save, Plus } from 'lucide-react';
 import { getPermissions } from '@/lib/permissions';
 import { formatUSDateTime } from '@/lib/dateFormat';
 
 interface SalesApproval {
   _id: string;
+  isPendingCreation?: boolean; // Flag for submissions without approvals
   agent: {
     _id: string;
     name?: string;
@@ -111,6 +112,48 @@ export default function SalesApprovalsPage() {
   const handleCancelEdit = () => {
     setEditingId(null);
     setEditForm({ status: 'pending', comments: '', amount: '' });
+  };
+
+  const handleCreateApproval = async (approval: SalesApproval) => {
+    if (!approval.isPendingCreation || !approval.submission?._id) return;
+
+    try {
+      const res = await fetch('/api/sales-approvals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submissionId: approval.submission._id,
+          status: 'pending',
+          amount: undefined,
+        }),
+      });
+
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Failed to create approval');
+
+      // Reload approvals to get the newly created one
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (statusFilter) params.append('status', statusFilter);
+      if (agentFilter) params.append('agentId', agentFilter);
+      const reloadRes = await fetch(`/api/sales-approvals?${params.toString()}`);
+      const reloadJson = await reloadRes.json();
+      
+      if (reloadJson.success) {
+        setApprovals(reloadJson.data || []);
+        // Find and edit the newly created approval
+        const newApproval = (reloadJson.data || []).find((a: SalesApproval) => 
+          a.submission?._id === approval.submission?._id && !a.isPendingCreation
+        );
+        if (newApproval) {
+          handleEdit(newApproval);
+        }
+      }
+      setLoading(false);
+    } catch (err: any) {
+      setLoading(false);
+      alert(err.message || 'Failed to create approval');
+    }
   };
 
   const handleSave = async (id: string) => {
@@ -280,12 +323,18 @@ export default function SalesApprovalsPage() {
               ) : approvals.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-6 text-center text-sm text-gray-500">
-                    No sales approvals found.
+                    <div>
+                      <p className="text-lg font-medium text-gray-700 mb-1">No sales approvals found</p>
+                      <p className="text-sm">No submissions or approvals available to display</p>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 approvals.map((approval) => (
-                  <tr key={approval._id} className="hover:bg-slate-50/50">
+                  <tr 
+                    key={approval._id} 
+                    className={`hover:bg-slate-50/50 ${approval.isPendingCreation ? 'bg-amber-50/30 border-l-4 border-amber-400' : ''}`}
+                  >
                     <td className="px-4 py-3 text-sm text-slate-800">
                       {approval.submission?.createdAt ? formatUSDateTime(approval.submission.createdAt) : '—'}
                     </td>
@@ -367,13 +416,24 @@ export default function SalesApprovalsPage() {
                           {approval.comments || '—'}
                         </td>
                         <td className="px-4 py-3 text-sm">
-                          <button
-                            onClick={() => handleEdit(approval)}
-                            className="text-blue-600 hover:text-blue-700"
-                            title="Edit"
-                          >
-                            <MessageSquare size={16} />
-                          </button>
+                          {approval.isPendingCreation ? (
+                            <button
+                              onClick={() => handleCreateApproval(approval)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 hover:border-emerald-300 transition-all"
+                              title="Create Approval"
+                            >
+                              <Plus size={14} />
+                              Create
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleEdit(approval)}
+                              className="text-blue-600 hover:text-blue-700"
+                              title="Edit"
+                            >
+                              <MessageSquare size={16} />
+                            </button>
+                          )}
                         </td>
                       </>
                     )}

@@ -60,6 +60,67 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .lean();
 
+    // For admins/supervisors, also include submissions that don't have sales approvals yet
+    if (dbUser?.role !== 'User') {
+      const canView = requirePermission(
+        dbUser.role as any,
+        'canViewSubmissions',
+        dbUser.permissions as any
+      );
+      
+      if (canView) {
+        // Get all submission IDs that already have approvals
+        const existingSubmissionIds = approvals
+          .map((a: any) => a.submission?._id?.toString())
+          .filter(Boolean);
+
+        // Find submissions without approvals
+        const submissionMatch: any = {
+          deleted: { $ne: true },
+          submittedBy: { $exists: true, $ne: null }, // Only submissions with an agent
+        };
+
+        if (agentId) {
+          submissionMatch.submittedBy = new mongoose.Types.ObjectId(agentId);
+        }
+
+        // Exclude submissions that already have approvals
+        if (existingSubmissionIds.length > 0) {
+          submissionMatch._id = { $nin: existingSubmissionIds.map((id: string) => new mongoose.Types.ObjectId(id)) };
+        }
+
+        const pendingSubmissions = await FormSubmission.find(submissionMatch)
+          .populate('submittedBy', 'name email username')
+          .populate('formId', 'title')
+          .sort({ createdAt: -1 })
+          .limit(1000) // Limit to recent submissions
+          .lean();
+
+        // Convert submissions to approval-like format for display
+        const submissionApprovals = pendingSubmissions.map((sub: any) => ({
+          _id: `pending_${sub._id}`, // Temporary ID
+          isPendingCreation: true, // Flag to indicate this needs approval creation
+          agent: sub.submittedBy || null,
+          submission: {
+            _id: sub._id.toString(),
+            formId: sub.formId?._id?.toString(),
+            phoneNumber: sub.phoneNumber,
+            formData: sub.formData,
+            createdAt: sub.createdAt,
+          },
+          status: 'pending' as const,
+          amount: undefined,
+          comments: undefined,
+          reviewedBy: undefined,
+          reviewedAt: undefined,
+          createdAt: sub.createdAt,
+        }));
+
+        // Combine existing approvals with pending submissions
+        return NextResponse.json({ success: true, data: [...approvals, ...submissionApprovals] });
+      }
+    }
+
     return NextResponse.json({ success: true, data: approvals });
   } catch (error: any) {
     console.error('Get sales approvals error:', error);

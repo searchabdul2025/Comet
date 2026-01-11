@@ -104,16 +104,17 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     { href: '/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: 'canViewSubmissions' as const },
     { href: '/chatrooms', label: 'Chatroom Management', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
 
-    // Agent / supervisor views (no special permissions, role-gated)
+    // Agent / supervisor views (no special permissions, role-gated) - Ordered for agent portal
+    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null, roles: ['User', 'Supervisor'] as const },
+    { href: '/agent/campaigns', label: 'Campaigns Forms', icon: FolderKanban, permission: null, roles: ['User', 'Supervisor'] as const },
+    { href: '/agent/submissions', label: 'My Submissions', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
+    { href: '/agent/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
     { href: '/agent/reports', label: 'Reports', icon: Activity, permission: null, roles: ['User', 'Supervisor'] as const },
     { href: '/agent/targets', label: 'My Target', icon: Target, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/submissions', label: 'My Submissions', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/campaigns', label: 'Campaign Forms', icon: FolderKanban, permission: null, roles: ['User', 'Supervisor'] as const },
     ...(showSalaryBonus
       ? ([{ href: '/agent/salary', label: 'My Salary & Bonus', icon: DollarSign, permission: null, roles: ['User', 'Supervisor'] as const }] as const)
       : ([] as const)),
     { href: '/agent/requests', label: 'Requests', icon: MessageSquare, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/sales-approvals', label: 'My Sales Approvals', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
   ];
 
   // Filter nav items based on permissions
@@ -140,7 +141,9 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
           </div>
         )}
         <div className="leading-tight">
-          <p className="text-xs text-white/70">Admin Space</p>
+          <p className="text-xs text-white/70">
+            {userRole === 'User' ? 'Agent Space' : userRole === 'Supervisor' ? 'Supervisor Space' : 'Admin Space'}
+          </p>
           <p className="text-sm font-semibold">{brand.name}</p>
         </div>
       </div>
