@@ -112,8 +112,10 @@ export default function DashboardPage() {
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
   const [topAgents, setTopAgents] = useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchStats();
     fetchChart();
     fetchRecentAndTop();
