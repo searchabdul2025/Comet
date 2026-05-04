@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { getPermissions } from '@/lib/permissions';
-import { Pencil, Save, Trash2, X, MessageCircle, ShieldX, Ban, UserCheck } from 'lucide-react';
+import { Pencil, Save, Trash2, X, MessageCircle, ShieldX, Ban, UserCheck, Sparkles, Activity } from 'lucide-react';
 
 interface SettingsData {
   GOOGLE_SHEETS_ID?: string | null;
