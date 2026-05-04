@@ -1,16 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import AgentLaunch from './AgentLaunch';
+import { Search, Bell } from 'lucide-react';
 
 export default function Header() {
-  const router = useRouter();
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Portal' });
-  const accent = 'bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500';
 
   useEffect(() => {
     setMounted(true);
@@ -31,20 +29,11 @@ export default function Header() {
     loadBrand();
   }, []);
 
-  const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push('/');
-    router.refresh();
-  };
-
-  // Prevent hydration mismatch by not rendering until mounted
   if (!mounted || status === 'loading') {
     return (
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">{brand.name}</h1>
-        <div className="flex items-center gap-4">
-          <div className="w-20 h-6 bg-gray-200 rounded animate-pulse"></div>
-        </div>
+      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+        <div className="h-6 w-24 bg-slate-100 rounded-lg animate-pulse" />
+        <div className="h-8 w-32 bg-slate-100 rounded-lg animate-pulse" />
       </header>
     );
   }
@@ -52,36 +41,54 @@ export default function Header() {
   if (!session?.user) return null;
 
   const user = session.user;
+  const roleColor =
+    user.role === 'Admin'
+      ? 'from-indigo-500 to-violet-600 text-white'
+      : user.role === 'Supervisor'
+      ? 'from-amber-500 to-orange-600 text-white'
+      : 'from-emerald-500 to-teal-600 text-white';
 
   return (
     <>
       <AgentLaunch />
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+        {/* Left: Breadcrumb / Title */}
         <div className="flex items-center gap-3">
-          {brand.logo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={brand.logo} alt={brand.name} className="h-8 w-8 rounded-md object-contain" />
-          ) : (
-            <div className={`h-8 w-8 rounded-md text-white flex items-center justify-center font-semibold ${accent}`}>
-              {brand.name.slice(0, 2).toUpperCase()}
-            </div>
-          )}
-          <h1 className="text-xl font-bold text-gray-800">{brand.name}</h1>
+          <h1 className="text-lg font-semibold text-slate-800">{brand.name}</h1>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-700">{user.name || user.email}</span>
-          <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-md font-medium">
-            {user.role}
-          </span>
-          <button
-            onClick={handleLogout}
-            className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
-          >
-            Logout
+
+        {/* Right: Controls */}
+        <div className="flex items-center gap-3">
+          {/* Search (placeholder) */}
+          <div className="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-2 text-sm text-slate-400 hover:border-indigo-300 transition-colors cursor-pointer">
+            <Search size={15} />
+            <span className="text-slate-400 select-none">Search...</span>
+            <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-slate-400 bg-slate-100 border border-slate-200">
+              ⌘K
+            </kbd>
+          </div>
+
+          {/* Notification bell */}
+          <button className="h-9 w-9 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all relative">
+            <Bell size={17} />
           </button>
+
+          {/* Divider */}
+          <div className="h-6 w-px bg-slate-200" />
+
+          {/* User Info */}
+          <div className="flex items-center gap-2.5">
+            <span className="text-sm font-medium text-slate-700 hidden sm:block">
+              {user.name || user.email}
+            </span>
+            <span
+              className={`bg-gradient-to-r ${roleColor} px-2.5 py-1 rounded-lg text-[11px] font-semibold shadow-sm`}
+            >
+              {user.role}
+            </span>
+          </div>
         </div>
       </header>
     </>
   );
 }
-

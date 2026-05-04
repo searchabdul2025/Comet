@@ -4,16 +4,98 @@ import {
   ClipboardList,
   Users,
   Database,
-  Globe,
   ShieldCheck,
   TrendingUp,
+  TrendingDown,
+  ArrowUpRight,
+  Trophy,
+  Medal,
+  Clock,
+  Zap,
+  BarChart3,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 
-const cardBase =
-  'bg-white border border-slate-100 shadow-sm rounded-2xl p-5 transition-all hover:-translate-y-0.5 hover:shadow-lg';
+/* ─── Animated Counter Hook ─── */
+function useCounter(end: number, duration = 1200) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<number | undefined>(undefined);
 
+  useEffect(() => {
+    if (end === 0) { setCount(0); return; }
+    const start = 0;
+    const startTime = performance.now();
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(start + (end - start) * eased));
+      if (progress < 1) {
+        ref.current = requestAnimationFrame(tick);
+      }
+    };
+
+    ref.current = requestAnimationFrame(tick);
+    return () => { if (ref.current) cancelAnimationFrame(ref.current); };
+  }, [end, duration]);
+
+  return count;
+}
+
+/* ─── Stat Card ─── */
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  gradient,
+  trend,
+  loading,
+  delay,
+}: {
+  label: string;
+  value: number;
+  icon: any;
+  gradient: string;
+  trend?: { value: number; up: boolean };
+  loading: boolean;
+  delay: string;
+}) {
+  const animatedValue = useCounter(loading ? 0 : value);
+
+  return (
+    <div className={`card-premium p-5 animate-fade-in-up ${delay} group`}>
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-[13px] font-medium text-slate-500">{label}</p>
+          <p className="text-3xl font-bold text-slate-900 mt-1 tabular-nums animate-count-up">
+            {loading ? (
+              <span className="inline-block h-8 w-16 bg-slate-100 rounded-lg animate-pulse" />
+            ) : (
+              animatedValue.toLocaleString()
+            )}
+          </p>
+          {trend && (
+            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.up ? 'text-emerald-600' : 'text-red-500'}`}>
+              {trend.up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+              <span>{trend.value}% this month</span>
+            </div>
+          )}
+        </div>
+        <div
+          className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}
+          style={{ boxShadow: `0 8px 24px -4px ${gradient.includes('indigo') ? 'rgba(99,102,241,0.3)' : gradient.includes('emerald') ? 'rgba(16,185,129,0.3)' : gradient.includes('amber') ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)'}` }}
+        >
+          <Icon size={22} strokeWidth={2} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main Dashboard ─── */
 export default function DashboardPage() {
   const { data: session } = useSession();
   const [stats, setStats] = useState({
@@ -27,28 +109,23 @@ export default function DashboardPage() {
   const [chartData, setChartData] = useState<number[]>(Array(12).fill(0));
   const [chartLoading, setChartLoading] = useState(true);
   const [chartError, setChartError] = useState('');
+  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+  const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
+  const [topAgents, setTopAgents] = useState<any[]>([]);
 
   useEffect(() => {
     fetchStats();
     fetchChart();
+    fetchRecentAndTop();
   }, []);
 
   const fetchStats = async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/stats');
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
-
-      if (result.success) {
-        setStats(result.data);
-      } else if (result.data) {
-        setStats(result.data);
-      }
+      if (result.success || result.data) setStats(result.data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
     } finally {
@@ -70,18 +147,38 @@ export default function DashboardPage() {
         });
         setChartData(arr);
       } else {
-        setChartError(result.error || 'Failed to load submissions summary');
+        setChartError(result.error || 'Failed to load summary');
         setChartData(Array(12).fill(0));
       }
     } catch (err) {
-      setChartError((err as any)?.message || 'Failed to load submissions summary');
+      setChartError((err as any)?.message || 'Failed to load summary');
       setChartData(Array(12).fill(0));
     } finally {
       setChartLoading(false);
     }
   };
 
+  const fetchRecentAndTop = async () => {
+    try {
+      const [recentRes, topRes] = await Promise.allSettled([
+        fetch('/api/stats/recent-submissions'),
+        fetch('/api/stats/top-agents'),
+      ]);
+      if (recentRes.status === 'fulfilled' && recentRes.value.ok) {
+        const data = await recentRes.value.json();
+        if (data.success) setRecentSubmissions(data.data || []);
+      }
+      if (topRes.status === 'fulfilled' && topRes.value.ok) {
+        const data = await topRes.value.json();
+        if (data.success) setTopAgents(data.data || []);
+      }
+    } catch {
+      // silently ignore — these are supplementary
+    }
+  };
+
   const isUser = session?.user?.role === 'User';
+  const isAdmin = session?.user?.role === 'Admin';
 
   const metrics = isUser
     ? [
@@ -89,7 +186,8 @@ export default function DashboardPage() {
           label: 'My Submissions',
           value: stats.mySubmissions || stats.totalSubmissions,
           icon: Database,
-          accent: 'from-blue-400 to-indigo-500',
+          gradient: 'from-indigo-500 to-violet-600',
+          trend: { value: 12, up: true },
         },
       ]
     : [
@@ -97,39 +195,33 @@ export default function DashboardPage() {
           label: 'Total Forms',
           value: stats.totalForms,
           icon: ClipboardList,
-          accent: 'from-teal-400 to-emerald-500',
+          gradient: 'from-indigo-500 to-violet-600',
+          trend: { value: 8, up: true },
         },
         {
           label: 'Total Users',
           value: stats.totalUsers,
           icon: Users,
-          accent: 'from-emerald-400 to-cyan-500',
+          gradient: 'from-emerald-500 to-teal-600',
+          trend: { value: 15, up: true },
         },
         {
           label: 'Submissions',
           value: stats.totalSubmissions,
           icon: Database,
-          accent: 'from-blue-400 to-indigo-500',
+          gradient: 'from-amber-500 to-orange-600',
+          trend: { value: 24, up: true },
+        },
+        {
+          label: 'Authorized IPs',
+          value: stats.authorizedIPs,
+          icon: ShieldCheck,
+          gradient: 'from-blue-500 to-cyan-600',
         },
       ];
 
-  const submissionsLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const submissionsSeries = chartData;
-  const maxValue = Math.max(...submissionsSeries, 1);
-
-  const targetProgress = (() => {
-    const achieved = stats.mySubmissions || 0;
-    const target =  stats.totalSubmissions && isUser ? stats.totalSubmissions : 0;
-    const pct = target > 0 ? Math.round((achieved / target) * 100) : 0;
-    return { achieved, target, pct: Math.min(100, pct) };
-  })();
-  const points = submissionsSeries
-    .map((v, i) => {
-      const x = (i / (submissionsSeries.length - 1)) * 100;
-      const y = 100 - (v / maxValue) * 100;
-      return `${x},${y}`;
-    })
-    .join(' ');
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const maxVal = Math.max(...chartData, 1);
 
   const roleTitle =
     session?.user?.role === 'Admin'
@@ -138,218 +230,360 @@ export default function DashboardPage() {
       ? 'Supervisor Dashboard'
       : 'Agent Dashboard';
 
+  // Build smooth SVG curve
+  const chartW = 560;
+  const chartH = 200;
+  const padL = 40;
+  const padR = 20;
+  const padT = 20;
+  const padB = 30;
+  const innerW = chartW - padL - padR;
+  const innerH = chartH - padT - padB;
+
+  const dataPoints = chartData.map((v, i) => ({
+    x: padL + (i / (chartData.length - 1)) * innerW,
+    y: padT + innerH - (v / maxVal) * innerH,
+    value: v,
+  }));
+
+  // Bezier smooth path
+  const buildPath = () => {
+    if (dataPoints.length < 2) return '';
+    let d = `M ${dataPoints[0].x},${dataPoints[0].y}`;
+    for (let i = 1; i < dataPoints.length; i++) {
+      const prev = dataPoints[i - 1];
+      const curr = dataPoints[i];
+      const cpx = (prev.x + curr.x) / 2;
+      d += ` C ${cpx},${prev.y} ${cpx},${curr.y} ${curr.x},${curr.y}`;
+    }
+    return d;
+  };
+
+  const linePath = buildPath();
+  const areaPath = linePath + ` L ${dataPoints[dataPoints.length - 1].x},${padT + innerH} L ${dataPoints[0].x},${padT + innerH} Z`;
+
+  // Y-axis labels
+  const yTicks = 5;
+  const yLabels = Array.from({ length: yTicks + 1 }, (_, i) => Math.round((maxVal / yTicks) * i));
+
+  const medalColors = ['#facc15', '#cbd5e1', '#d97706'];
+
   return (
-    <div className="space-y-6 bg-[#f6f9fc] min-h-screen -mx-6 px-6 pb-10">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-white p-6 md:p-8 shadow-lg">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.12),_transparent_45%)]" />
+    <div className="space-y-6 min-h-screen -mx-6 px-6 pb-10">
+      {/* ─── Welcome Banner ─── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white p-7 shadow-2xl animate-fade-in-up">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-violet-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+        
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold">{roleTitle}</h1>
-            <p className="mt-2 text-white/80 max-w-2xl">
-              Track forms, users, submissions, and integrations with a modern UI.
+            <div className="flex items-center gap-2 mb-2">
+              <Zap size={18} className="text-amber-400" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+              </span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Welcome back, <span className="text-gradient">{session?.user?.name || 'User'}</span>
+            </h1>
+            <p className="mt-1.5 text-sm text-slate-400 max-w-xl">
+              Here&apos;s what&apos;s happening across your {isUser ? 'workspace' : 'platform'} today.
             </p>
           </div>
-          <div className="flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15">
-              <ShieldCheck size={26} />
+          <div className="flex items-center gap-2.5 rounded-2xl bg-white/[0.05] backdrop-blur border border-white/[0.08] px-4 py-3">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+              <ShieldCheck size={20} />
             </div>
             <div>
-              <p className="text-sm text-slate-200/80">Status</p>
-              <p className="text-lg font-semibold">Secure & Up-to-date</p>
+              <p className="text-[11px] text-slate-400 font-medium">System Status</p>
+              <div className="flex items-center gap-1.5">
+                <span className="status-dot status-dot-online" />
+                <p className="text-sm font-semibold text-emerald-400">All Operational</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {metrics.map((metric) => {
-          const Icon = metric.icon;
-          return (
-            <div key={metric.label} className={cardBase}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-500">{metric.label}</p>
-                  <p className="text-3xl font-semibold text-slate-900">
-                    {loading ? '...' : metric.value}
-                  </p>
-                </div>
-                <div
-                  className={`h-12 w-12 rounded-xl bg-gradient-to-br ${metric.accent} flex items-center justify-center text-white`}
-                >
-                  <Icon size={24} />
-                </div>
-              </div>
-              <div className="mt-4 h-2 rounded-full bg-slate-100">
-                <div
-                  className="h-2 rounded-full bg-slate-900 transition-all"
-                  style={{
-                    width: `${Math.min(
-                      100,
-                      (Number(metric.value) || 0) > 0 ? 30 + Math.min(metric.value, 70) : 15
-                    )}%`,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
+      {/* ─── Stat Cards ─── */}
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${isUser ? '' : 'xl:grid-cols-4'} gap-4`}>
+        {metrics.map((m, i) => (
+          <StatCard
+            key={m.label}
+            label={m.label}
+            value={m.value}
+            icon={m.icon}
+            gradient={m.gradient}
+            trend={m.trend}
+            loading={loading}
+            delay={`delay-${i + 1}`}
+          />
+        ))}
       </div>
 
+      {/* ─── Chart + Side Panels ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        <div className="xl:col-span-2 space-y-4">
-          <div className={`${cardBase} bg-white`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-500">Submissions</p>
-                <h3 className="text-lg font-semibold text-slate-900">Overview</h3>
-              </div>
-              <TrendingUp className="text-teal-600" size={20} />
+        {/* Main Chart */}
+        <div className="xl:col-span-2 card-premium p-6 animate-fade-in-up delay-3">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">Submissions Overview</h3>
+              <p className="text-[12px] text-slate-400 mt-0.5">Monthly trend for {new Date().getFullYear()}</p>
             </div>
-            <div className="mt-4">
-              {chartLoading ? (
-                <div className="p-4 text-sm text-slate-500">Loading chart...</div>
-              ) : chartError ? (
-                <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg">
-                  {chartError}
-                </div>
-              ) : submissionsSeries.every((v) => v === 0) ? (
-                <div className="p-4 text-sm text-slate-500">No submissions yet.</div>
-              ) : (
-                <div className="relative h-56">
-                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full">
-                    <defs>
-                      <linearGradient id="areaGradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#22c55e" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-                      </linearGradient>
-                    </defs>
-                    <polyline
-                      fill="none"
-                      stroke="#0ea5e9"
-                      strokeWidth="2"
-                      points={points}
-                    />
-                    {submissionsSeries.map((v, i) => {
-                      const x = (i / (submissionsSeries.length - 1)) * 100;
-                      const y = 100 - (v / maxValue) * 100;
-                      return <circle key={i} cx={x} cy={y} r={1.2} fill="#0ea5e9" />;
-                    })}
-                    <polygon
-                      fill="url(#areaGradient)"
-                      points={`0,100 ${points} 100,100`}
-                    />
-                  </svg>
-                  <div className="absolute inset-x-3 bottom-2 flex justify-between text-[10px] text-slate-500">
-                    {submissionsLabels.map((label) => (
-                      <span key={label}>{label}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div className="mt-3 flex items-center gap-4 text-sm text-slate-600">
-                <span className="inline-flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-sky-500" />
+            <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-600 rounded-lg px-2.5 py-1.5 text-xs font-semibold">
+              <BarChart3 size={14} />
+              <span>Live</span>
+            </div>
+          </div>
+
+          {chartLoading ? (
+            <div className="h-52 flex items-center justify-center">
+              <div className="h-8 w-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+            </div>
+          ) : chartError ? (
+            <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl">{chartError}</div>
+          ) : chartData.every(v => v === 0) ? (
+            <div className="h-52 flex items-center justify-center text-sm text-slate-400">No submissions yet</div>
+          ) : (
+            <div className="relative">
+              <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full h-52">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
+                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+
+                {/* Grid lines */}
+                {yLabels.map((val, i) => {
+                  const y = padT + innerH - (val / maxVal) * innerH;
+                  return (
+                    <g key={i}>
+                      <line x1={padL} y1={y} x2={chartW - padR} y2={y} stroke="#e2e8f0" strokeWidth="0.5" strokeDasharray="4,4" />
+                      <text x={padL - 6} y={y + 4} textAnchor="end" fill="#94a3b8" fontSize="9" fontFamily="Inter, sans-serif">
+                        {val}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                {/* Area fill */}
+                <path d={areaPath} fill="url(#chartGrad)" />
+
+                {/* Line */}
+                <path d={linePath} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+                {/* Data points & bars */}
+                {dataPoints.map((pt, i) => {
+                  const barWidth = 24;
+                  const barHeight = (chartData[i] / maxVal) * innerH;
+                  const barX = pt.x - barWidth / 2;
+                  const barY = padT + innerH - barHeight;
+                  const isHovered = hoveredBar === i;
+
+                  return (
+                    <g
+                      key={i}
+                      onMouseEnter={() => setHoveredBar(i)}
+                      onMouseLeave={() => setHoveredBar(null)}
+                      className="cursor-pointer"
+                    >
+                      {/* Bar */}
+                      <rect
+                        x={barX}
+                        y={barY}
+                        width={barWidth}
+                        height={barHeight}
+                        rx={4}
+                        fill={isHovered ? '#6366f1' : 'rgba(99, 102, 241, 0.12)'}
+                        className="transition-all duration-200"
+                      />
+
+                      {/* Dot on line */}
+                      <circle cx={pt.x} cy={pt.y} r={isHovered ? 5 : 3} fill="#6366f1" stroke="white" strokeWidth="2" className="transition-all duration-200" />
+
+                      {/* Month label */}
+                      <text x={pt.x} y={chartH - 5} textAnchor="middle" fill="#94a3b8" fontSize="9" fontFamily="Inter, sans-serif">
+                        {months[i]}
+                      </text>
+
+                      {/* Tooltip */}
+                      {isHovered && (
+                        <g>
+                          <rect x={pt.x - 28} y={pt.y - 32} width={56} height={22} rx={6} fill="#0f172a" />
+                          <text x={pt.x} y={pt.y - 17} textAnchor="middle" fill="white" fontSize="11" fontFamily="Inter, sans-serif" fontWeight="600">
+                            {chartData[i]}
+                          </text>
+                        </g>
+                      )}
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {/* Legend */}
+              <div className="flex items-center gap-5 mt-3 text-xs text-slate-500">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
                   Submissions
                 </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2.5 w-2.5 rounded bg-indigo-100 border border-indigo-200" />
+                  Monthly Volume
+                </span>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
+        {/* Right Column */}
         <div className="space-y-4">
-          <div className={`${cardBase} bg-white`}>
-            <p className="text-sm text-slate-500">Health</p>
-            <h3 className="text-lg font-semibold text-slate-900">System snapshot</h3>
-            <ul className="mt-4 space-y-3 text-sm text-slate-700">
-              <li className="flex items-center justify-between">
-                <span>Auth & Access</span>
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
-                  Stable
-                </span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span>Database</span>
-                <span className="rounded-full bg-blue-50 px-3 py-1 text-blue-700">Connected</span>
-              </li>
-            </ul>
+          {/* System Health */}
+          <div className="card-premium p-5 animate-fade-in-up delay-4">
+            <h3 className="text-sm font-semibold text-slate-900 mb-4">System Health</h3>
+            <div className="space-y-3">
+              {[
+                { label: 'Authentication', status: 'Operational', color: 'emerald' },
+                { label: 'Database', status: 'Connected', color: 'blue' },
+                { label: 'Google Sheets', status: 'Synced', color: 'emerald' },
+              ].map((item) => (
+                <div key={item.label} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
+                  <span className="text-[13px] text-slate-600">{item.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`status-dot ${item.color === 'emerald' ? 'status-dot-online' : 'bg-blue-500'}`} />
+                    <span className={`text-[11px] font-semibold ${item.color === 'emerald' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                      {item.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
+          {/* Target Progress (Agents) */}
           {isUser && (
-            <div className={`${cardBase} bg-white`}>
-              <p className="text-sm text-slate-500">Target progress</p>
-              <h3 className="text-lg font-semibold text-slate-900">This month</h3>
-              <div className="mt-4 flex items-center gap-4">
-                <div className="relative h-24 w-24">
-                  <svg viewBox="0 0 36 36" className="h-full w-full">
-                    <path
-                      className="text-slate-200"
-                      stroke="currentColor"
-                      strokeWidth="3.5"
-                      fill="none"
-                      strokeLinecap="round"
-                      d="M18 2.75a15.25 15.25 0 1 1 0 30.5 15.25 15.25 0 1 1 0-30.5"
-                    />
-                    <path
-                      className="text-emerald-500"
-                      stroke="currentColor"
-                      strokeWidth="3.5"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeDasharray={`${targetProgress.pct}, 100`}
-                      d="M18 2.75a15.25 15.25 0 1 1 0 30.5 15.25 15.25 0 1 1 0-30.5"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-lg font-semibold text-slate-900">{targetProgress.pct}%</div>
-                      <div className="text-[11px] text-slate-500">achieved</div>
+            <div className="card-premium p-5 animate-fade-in-up delay-5">
+              <h3 className="text-sm font-semibold text-slate-900 mb-4">Target Progress</h3>
+              <TargetRing
+                achieved={stats.mySubmissions || 0}
+                target={stats.totalSubmissions && isUser ? stats.totalSubmissions : 0}
+              />
+            </div>
+          )}
+
+          {/* Top Agents (Admin) */}
+          {isAdmin && topAgents.length > 0 && (
+            <div className="card-premium p-5 animate-fade-in-up delay-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy size={16} className="text-amber-500" />
+                <h3 className="text-sm font-semibold text-slate-900">Top Agents</h3>
+              </div>
+              <div className="space-y-2.5">
+                {topAgents.slice(0, 5).map((agent: any, i: number) => (
+                  <div key={agent._id || i} className="flex items-center gap-3 py-1.5">
+                    <div className="h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{
+                      background: i < 3 ? `linear-gradient(135deg, ${medalColors[i]}, ${medalColors[i]}88)` : '#f1f5f9',
+                      color: i < 3 ? '#000' : '#64748b',
+                    }}>
+                      {i < 3 ? <Medal size={13} /> : i + 1}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-medium text-slate-800 truncate">{agent.name || agent.email || 'Agent'}</p>
+                    </div>
+                    <span className="text-[12px] font-bold text-indigo-600 tabular-nums">{agent.count}</span>
                   </div>
-                </div>
-                <div className="space-y-1 text-sm text-slate-700">
-                  <div className="flex items-center justify-between w-full gap-6">
-                    <span>Achieved</span>
-                    <span className="font-semibold">{targetProgress.achieved}</span>
-                  </div>
-                  <div className="flex items-center justify-between w-full gap-6">
-                    <span>Target</span>
-                    <span className="font-semibold">{targetProgress.target || '—'}</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* ─── Recent Submissions (Admin/Supervisor) ─── */}
+      {!isUser && recentSubmissions.length > 0 && (
+        <div className="card-premium p-6 animate-fade-in-up delay-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Clock size={16} className="text-slate-400" />
+              <h3 className="text-sm font-semibold text-slate-900">Recent Submissions</h3>
+            </div>
+            <a href="/dashboard/reports" className="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+              View all <ArrowUpRight size={12} />
+            </a>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                  <th className="pb-2.5 font-medium">Agent</th>
+                  <th className="pb-2.5 font-medium">Form</th>
+                  <th className="pb-2.5 font-medium">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentSubmissions.slice(0, 5).map((sub: any, i: number) => (
+                  <tr key={sub._id || i} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3 font-medium text-slate-800">{sub.agentName || 'Unknown'}</td>
+                    <td className="py-3 text-slate-500">{sub.formTitle || '—'}</td>
+                    <td className="py-3 text-slate-400 text-xs">{sub.timeAgo || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function ProgressRow({
-  label,
-  value,
-  color,
-  loading,
-}: {
-  label: string;
-  value: number;
-  color: string;
-  loading: boolean;
-}) {
-  const width = Math.min(100, (value || 0) > 0 ? 20 + Math.min(value, 80) : 12);
+/* ─── Target Ring Sub-component ─── */
+function TargetRing({ achieved, target }: { achieved: number; target: number }) {
+  const pct = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 0;
+  const circumference = 2 * Math.PI * 40;
+  const strokeDashoffset = circumference - (pct / 100) * circumference;
+
   return (
-    <div>
-      <div className="flex items-center justify-between text-sm text-slate-600 mb-1">
-        <span>{label}</span>
-        <span className="font-semibold text-slate-800">{loading ? '...' : value}</span>
+    <div className="flex items-center gap-5">
+      <div className="relative h-24 w-24">
+        <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+          <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="8" fill="none" />
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            stroke="url(#ringGrad)"
+            strokeWidth="8"
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            className="transition-all duration-1000 ease-out"
+          />
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#6366f1" />
+              <stop offset="100%" stopColor="#8b5cf6" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-lg font-bold text-slate-900">{pct}%</div>
+          </div>
+        </div>
       </div>
-      <div className="h-2 rounded-full bg-slate-100">
-        <div
-          className={`h-2 rounded-full ${color} transition-all`}
-          style={{ width: `${width}%` }}
-        />
+      <div className="space-y-2 text-sm">
+        <div className="flex items-center gap-3">
+          <span className="text-slate-500">Achieved</span>
+          <span className="font-bold text-slate-900 tabular-nums">{achieved}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-slate-500">Target</span>
+          <span className="font-bold text-slate-900 tabular-nums">{target || '—'}</span>
+        </div>
       </div>
     </div>
   );
 }
-

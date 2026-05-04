@@ -6,29 +6,47 @@ import {
   LayoutDashboard,
   FileText,
   Bell,
-  Network,
   Users,
   Sparkles,
   Activity,
   Megaphone,
   Target,
   Gift,
-  Trophy,
   FolderKanban,
   DollarSign,
   MessageSquare,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { getPermissions } from '@/lib/permissions';
+import { useRouter } from 'next/navigation';
 
 interface SidebarProps {
   requestCount?: number;
 }
 
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+interface NavItem {
+  href: string;
+  label: string;
+  icon: any;
+  badge?: number;
+  permission: string | null;
+  roles?: readonly string[];
+}
+
 export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const { data: session } = useSession();
   const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Portal' });
   const [showSalaryBonus, setShowSalaryBonus] = useState(true);
@@ -60,12 +78,10 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     const loadAccessibleChatrooms = async () => {
       if (!session?.user) return;
       
-      // Check if user has canManageChatRooms permission
       const userRole = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
       const userPermOverrides = session?.user?.permissions;
       const userPermissions = userRole ? getPermissions(userRole, userPermOverrides || undefined) : null;
       
-      // Only show chatrooms if user has canManageChatRooms permission
       if (!userPermissions?.canManageChatRooms) {
         setAccessibleChatrooms([]);
         return;
@@ -88,181 +104,318 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   const userPermOverrides = session?.user?.permissions;
   const permissions = userRole ? getPermissions(userRole, userPermOverrides || undefined) : null;
 
-  const allNavItems = [
-    // Common / everyone
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null },
-
-    // Admin / supervisors
-    { href: '/campaigns', label: 'Campaigns', icon: Megaphone, permission: 'canManageForms' as const },
-    { href: '/forms', label: 'Forms', icon: FileText, permission: 'canManageForms' as const, roles: ['Supervisor'] as const },
-    { href: '/requests', label: 'Requests', icon: Bell, badge: requestCount, permission: 'canManageRequests' as const },
-    { href: '/user-management', label: 'User Management', icon: Users, permission: 'canManageUsers' as const },
-    { href: '/settings', label: 'Settings', icon: Sparkles, permission: 'canManageSettings' as const },
-    { href: '/dashboard/reports', label: 'Reports', icon: Activity, permission: 'canManageUsers' as const },
-    { href: '/monthly-targets', label: 'Monthly Targets', icon: Target, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
-    { href: '/bonuses', label: 'Bonuses', icon: Gift, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
-    { href: '/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: 'canViewSubmissions' as const },
-    { href: '/chatrooms', label: 'Chatroom Management', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
-
-    // Agent / supervisor views (no special permissions, role-gated) - Ordered for agent portal
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/campaigns', label: 'Campaigns Forms', icon: FolderKanban, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/submissions', label: 'My Submissions', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/reports', label: 'Reports', icon: Activity, permission: null, roles: ['User', 'Supervisor'] as const },
-    { href: '/agent/targets', label: 'My Target', icon: Target, permission: null, roles: ['User', 'Supervisor'] as const },
-    ...(showSalaryBonus
-      ? ([{ href: '/agent/salary', label: 'My Salary & Bonus', icon: DollarSign, permission: null, roles: ['User', 'Supervisor'] as const }] as const)
-      : ([] as const)),
-    { href: '/agent/requests', label: 'Requests', icon: MessageSquare, permission: null, roles: ['User', 'Supervisor'] as const },
+  // Build grouped navigation
+  const adminGroups: NavGroup[] = [
+    {
+      label: 'Overview',
+      items: [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null },
+      ],
+    },
+    {
+      label: 'Management',
+      items: [
+        { href: '/campaigns', label: 'Campaigns', icon: Megaphone, permission: 'canManageForms' as const },
+        { href: '/forms', label: 'Forms', icon: FileText, permission: 'canManageForms' as const, roles: ['Supervisor'] as const },
+        { href: '/requests', label: 'Requests', icon: Bell, badge: requestCount, permission: 'canManageRequests' as const },
+        { href: '/user-management', label: 'User Management', icon: Users, permission: 'canManageUsers' as const },
+      ],
+    },
+    {
+      label: 'Analytics',
+      items: [
+        { href: '/dashboard/reports', label: 'Reports', icon: Activity, permission: 'canManageUsers' as const },
+        { href: '/monthly-targets', label: 'Monthly Targets', icon: Target, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
+        { href: '/bonuses', label: 'Bonuses', icon: Gift, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
+        { href: '/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: 'canViewSubmissions' as const },
+      ],
+    },
+    {
+      label: 'System',
+      items: [
+        { href: '/settings', label: 'Settings', icon: Sparkles, permission: 'canManageSettings' as const },
+        { href: '/chatrooms', label: 'Chatrooms', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
+      ],
+    },
   ];
 
-  // Filter nav items based on permissions
-  const navItems = allNavItems.filter(item => {
-    // role gate first if specified
-    if (item.roles && (!userRole || !(item.roles as readonly string[]).includes(userRole))) {
-      return false;
-    }
-    if (!item.permission) return true; // visible if no permission requirement
-    if (!permissions) return false;
-    return permissions[item.permission];
-  });
+  const agentGroups: NavGroup[] = [
+    {
+      label: 'Overview',
+      items: [
+        { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null, roles: ['User', 'Supervisor'] as const },
+      ],
+    },
+    {
+      label: 'Work',
+      items: [
+        { href: '/agent/campaigns', label: 'Campaigns Forms', icon: FolderKanban, permission: null, roles: ['User', 'Supervisor'] as const },
+        { href: '/agent/submissions', label: 'My Submissions', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
+        { href: '/agent/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
+      ],
+    },
+    {
+      label: 'Performance',
+      items: [
+        { href: '/agent/reports', label: 'Reports', icon: Activity, permission: null, roles: ['User', 'Supervisor'] as const },
+        { href: '/agent/targets', label: 'My Target', icon: Target, permission: null, roles: ['User', 'Supervisor'] as const },
+        ...(showSalaryBonus
+          ? [{ href: '/agent/salary', label: 'My Salary & Bonus', icon: DollarSign, permission: null, roles: ['User', 'Supervisor'] as const }]
+          : []),
+      ],
+    },
+    {
+      label: 'Communication',
+      items: [
+        { href: '/agent/requests', label: 'Requests', icon: MessageSquare, permission: null, roles: ['User', 'Supervisor'] as const },
+      ],
+    },
+  ];
 
-  // Prevent hydration mismatch - usePathname can differ on server/client
-  const Shell = ({ children }: { children: React.ReactNode }) => (
-    <div className="w-64 bg-gradient-to-b from-cyan-700 via-teal-700 to-emerald-700 text-white min-h-screen p-4">
-      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/10 mb-4 shadow-lg shadow-emerald-900/20">
-        {brand.logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={brand.logo} alt={brand.name} className="h-9 w-9 rounded-lg object-contain bg-white/10" />
-        ) : (
-          <div className="h-9 w-9 rounded-lg bg-white/20 flex items-center justify-center font-semibold">
-            {brand.name.slice(0, 2).toUpperCase()}
-          </div>
-        )}
-        <div className="leading-tight">
-          <p className="text-xs text-white/70">
-            {userRole === 'User' ? 'Agent Space' : userRole === 'Supervisor' ? 'Supervisor Space' : 'Admin Space'}
-          </p>
-          <p className="text-sm font-semibold">{brand.name}</p>
-        </div>
-      </div>
-      {children}
-    </div>
-  );
+  const isAgent = userRole === 'User' || userRole === 'Supervisor';
+  const rawGroups = isAgent ? agentGroups : adminGroups;
+
+  // Filter items by permissions
+  const navGroups = rawGroups
+    .map(group => ({
+      ...group,
+      items: group.items.filter(item => {
+        if (item.roles && (!userRole || !(item.roles as readonly string[]).includes(userRole))) {
+          return false;
+        }
+        if (!item.permission) return true;
+        if (!permissions) return false;
+        return permissions[item.permission as keyof typeof permissions];
+      }),
+    }))
+    .filter(group => group.items.length > 0);
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push('/');
+    router.refresh();
+  };
+
+  const roleLabel = userRole === 'User' ? 'Agent' : userRole === 'Supervisor' ? 'Supervisor' : 'Admin';
+  const initials = session?.user?.name
+    ? session.user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : session?.user?.email?.slice(0, 2).toUpperCase() || 'U';
 
   if (!mounted) {
     return (
-      <Shell>
-        <div className="space-y-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={item.href}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-white/10 border border-white/10"
-              >
-                <Icon size={20} />
-                <span className="font-medium">{item.label}</span>
-              </div>
-            );
-          })}
+      <aside className="w-[260px] bg-[#0f172a] min-h-screen flex flex-col">
+        <div className="p-4 animate-pulse">
+          <div className="h-12 bg-white/5 rounded-xl" />
         </div>
-      </Shell>
+      </aside>
     );
   }
 
   return (
-    <Shell>
-      <nav className="space-y-2">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+    <aside
+      className={`${
+        collapsed ? 'w-[72px]' : 'w-[260px]'
+      } bg-[#0f172a] min-h-screen flex flex-col transition-all duration-300 ease-in-out relative`}
+    >
+      {/* ─── Brand Header ─── */}
+      <div className={`p-4 ${collapsed ? 'px-3' : 'px-5'} flex items-center gap-3 border-b border-white/[0.06]`}>
+        {brand.logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={brand.logo}
+            alt={brand.name}
+            className="h-9 w-9 rounded-xl object-contain bg-white/5 flex-shrink-0"
+          />
+        ) : (
+          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-lg shadow-indigo-500/25">
+            {brand.name.slice(0, 2).toUpperCase()}
+          </div>
+        )}
+        {!collapsed && (
+          <div className="overflow-hidden animate-fade-in">
+            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+              {roleLabel} Panel
+            </p>
+            <p className="text-sm font-semibold text-white truncate">{brand.name}</p>
+          </div>
+        )}
+      </div>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`group relative flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${
-                isActive
-                  ? 'bg-white text-emerald-900 border-white/60 shadow-lg shadow-emerald-900/10'
-                  : 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'
-              }`}
-            >
-              <div
-                className={`h-9 w-9 rounded-lg flex items-center justify-center transition ${
-                  isActive ? 'bg-emerald-900 text-white' : 'bg-white/10 text-white'
-                }`}
-              >
-                <Icon size={18} />
-              </div>
-              <span className="font-medium">{item.label}</span>
-              {item.badge !== undefined && item.badge > 0 && (
-                <span
-                  className={`ml-auto text-xs px-2 py-1 rounded-full ${
-                    isActive ? 'bg-slate-900 text-white' : 'bg-red-500 text-white'
-                  }`}
-                >
-                  {item.badge}
-                </span>
-              )}
-              {isActive && (
-                <span className="absolute left-0 top-0 h-full w-1 rounded-full bg-gradient-to-b from-emerald-400 to-blue-500" />
-              )}
-            </Link>
-          );
-        })}
+      {/* ─── Collapse Toggle ─── */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3 top-[52px] h-6 w-6 rounded-full bg-[#1e293b] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 transition-all z-50 shadow-lg"
+        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+      >
+        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+      </button>
+
+      {/* ─── Navigation ─── */}
+      <nav className="flex-1 overflow-y-auto sidebar-scroll py-4 px-3">
+        {navGroups.map((group, gi) => (
+          <div key={group.label} className={gi > 0 ? 'mt-6' : ''}>
+            {/* Group Label */}
+            {!collapsed && (
+              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+                {group.label}
+              </p>
+            )}
+            {collapsed && gi > 0 && (
+              <div className="mx-3 mb-3 border-t border-white/[0.06]" />
+            )}
+
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+
+                return (
+                  <Link
+                    key={item.href + item.label}
+                    href={item.href}
+                    title={collapsed ? item.label : undefined}
+                    className={`group relative flex items-center gap-3 rounded-xl transition-all duration-200 ${
+                      collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
+                    } ${
+                      isActive
+                        ? 'bg-indigo-500/[0.12] text-white'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    {/* Active Indicator Bar */}
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-gradient-to-b from-indigo-400 to-violet-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                    )}
+
+                    {/* Icon */}
+                    <div
+                      className={`flex-shrink-0 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                        collapsed ? 'h-10 w-10' : 'h-8 w-8'
+                      } ${
+                        isActive
+                          ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30'
+                          : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      <Icon size={collapsed ? 20 : 17} strokeWidth={isActive ? 2.2 : 1.8} />
+                    </div>
+
+                    {/* Label */}
+                    {!collapsed && (
+                      <span className="text-[13px] font-medium truncate">{item.label}</span>
+                    )}
+
+                    {/* Badge */}
+                    {item.badge !== undefined && item.badge > 0 && (
+                      <span
+                        className={`${
+                          collapsed ? 'absolute -top-0.5 -right-0.5 h-4 w-4 text-[9px]' : 'ml-auto text-[10px] px-1.5 py-0.5'
+                        } rounded-full font-semibold flex items-center justify-center ${
+                          isActive
+                            ? 'bg-indigo-500 text-white'
+                            : 'bg-red-500/90 text-white'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
         {/* Accessible Chatrooms */}
         {accessibleChatrooms.length > 0 && (
-          <>
-            <div className="pt-4 mt-4 border-t border-white/20">
-              <p className="text-xs font-semibold text-white/70 uppercase tracking-wider px-4 mb-2">
+          <div className="mt-6">
+            {!collapsed && (
+              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
                 Chatrooms
               </p>
-            </div>
-            {accessibleChatrooms.map((chatroom) => {
-              const isActive = pathname === `/chatroom/${chatroom._id}` || pathname?.startsWith(`/chatroom/${chatroom._id}/`);
-              return (
-                <Link
-                  key={chatroom._id}
-                  href={`/chatroom-login?id=${chatroom._id}`}
-                  className={`group relative flex items-center gap-3 px-4 py-3 rounded-lg border transition-all ${
-                    isActive
-                      ? 'bg-white text-emerald-900 border-white/60 shadow-lg shadow-emerald-900/10'
-                      : 'bg-white/5 text-white border-white/10 hover:bg-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div
-                    className={`h-9 w-9 rounded-lg flex items-center justify-center transition ${
-                      isActive ? 'bg-emerald-900 text-white' : 'bg-white/10 text-white'
+            )}
+            {collapsed && <div className="mx-3 mb-3 border-t border-white/[0.06]" />}
+            <div className="space-y-0.5">
+              {accessibleChatrooms.map((chatroom) => {
+                const isActive = pathname === `/chatroom/${chatroom._id}` || pathname?.startsWith(`/chatroom/${chatroom._id}/`);
+                return (
+                  <Link
+                    key={chatroom._id}
+                    href={`/chatroom-login?id=${chatroom._id}`}
+                    title={collapsed ? chatroom.name : undefined}
+                    className={`group relative flex items-center gap-3 rounded-xl transition-all duration-200 ${
+                      collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
+                    } ${
+                      isActive
+                        ? 'bg-indigo-500/[0.12] text-white'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
                     }`}
                   >
-                    <MessageSquare size={18} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-medium block truncate">{chatroom.name}</span>
-                    {chatroom.description && (
-                      <span className="text-xs opacity-70 block truncate">{chatroom.description}</span>
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-gradient-to-b from-indigo-400 to-violet-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
                     )}
-                  </div>
-                  {isActive && (
-                    <span className="absolute left-0 top-0 h-full w-1 rounded-full bg-gradient-to-b from-emerald-400 to-blue-500" />
-                  )}
-                </Link>
-              );
-            })}
-          </>
+                    <div
+                      className={`flex-shrink-0 flex items-center justify-center rounded-lg transition-all ${
+                        collapsed ? 'h-10 w-10' : 'h-8 w-8'
+                      } ${
+                        isActive
+                          ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30'
+                          : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      <MessageSquare size={collapsed ? 20 : 17} strokeWidth={isActive ? 2.2 : 1.8} />
+                    </div>
+                    {!collapsed && (
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[13px] font-medium block truncate">{chatroom.name}</span>
+                        {chatroom.description && (
+                          <span className="text-[10px] text-slate-500 block truncate">{chatroom.description}</span>
+                        )}
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         )}
       </nav>
+
+      {/* ─── User Card Footer ─── */}
       {session?.user && (
-        <div className="mt-6 rounded-xl bg-white/5 border border-white/10 p-4 text-sm text-white/80">
-          <p className="text-xs uppercase tracking-wide text-white/60 mb-1">Signed in</p>
-          <p className="font-semibold text-white">{session.user.name || session.user.email}</p>
-          <p className="text-xs text-white/60">{session.user.role}</p>
+        <div className={`border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-4'}`}>
+          <div
+            className={`flex items-center gap-3 ${
+              collapsed ? 'justify-center' : 'rounded-xl bg-white/[0.03] border border-white/[0.06] p-3'
+            }`}
+          >
+            {/* Avatar */}
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-lg shadow-indigo-500/20">
+              {initials}
+            </div>
+
+            {!collapsed && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-white truncate">
+                    {session.user.name || session.user.email}
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">
+                    {roleLabel}
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                  title="Logout"
+                >
+                  <LogOut size={15} />
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
-    </Shell>
+    </aside>
   );
 }
-
