@@ -8,15 +8,28 @@ type AppendRowParams = {
 };
 
 function getSheetsClient() {
+  // 1. Try the full JSON key first (most reliable)
+  if (process.env.GOOGLE_SA_JSON_KEY) {
+    try {
+      const credentials = JSON.parse(process.env.GOOGLE_SA_JSON_KEY);
+      const auth = new google.auth.GoogleAuth({
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      });
+      return google.sheets({ version: 'v4', auth });
+    } catch (err) {
+      console.error('Failed to parse GOOGLE_SA_JSON_KEY:', err);
+    }
+  }
+
+  // 2. Fallback to individual variables
   const clientEmail = process.env.GOOGLE_SA_EMAIL;
   const privateKey = process.env.GOOGLE_SA_PRIVATE_KEY;
 
   if (!clientEmail || !privateKey) {
-    throw new Error('Google Sheets credentials are missing. Set GOOGLE_SA_EMAIL and GOOGLE_SA_PRIVATE_KEY.');
+    throw new Error('Google Sheets credentials are missing. Set GOOGLE_SA_JSON_KEY or both GOOGLE_SA_EMAIL and GOOGLE_SA_PRIVATE_KEY.');
   }
 
-  // The "Holy Grail" fix for Google Keys on Vercel:
-  // This handles the double-escaping that Vercel sometimes does to backslashes.
   const cleanKey = privateKey
     .split(String.raw`\n`)
     .join('\n')
