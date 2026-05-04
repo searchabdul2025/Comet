@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, RefreshCw } from 'lucide-react';
+import { formatUSDateTime } from '@/lib/dateFormat';
 
 interface SubmissionRow {
   _id: string;
@@ -54,11 +55,6 @@ export default function AgentReportsPage() {
     };
   }, [submissions]);
 
-  const formatDate = (value: string) => {
-    const { formatUSDateTime } = require('@/lib/dateFormat');
-    return formatUSDateTime(value);
-  };
-
   if (!mounted) return null;
 
   return (
@@ -92,10 +88,7 @@ export default function AgentReportsPage() {
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-4">
           <p className="text-xs text-slate-500">Last submission</p>
           <p className="text-base font-medium text-gray-900">
-            {(() => {
-              const { formatUSDateTime } = require('@/lib/dateFormat');
-              return metrics.last ? formatUSDateTime(metrics.last) : 'No submissions yet';
-            })()}
+            {metrics.last ? formatUSDateTime(metrics.last) : 'No submissions yet'}
           </p>
         </div>
       </div>
@@ -121,7 +114,7 @@ export default function AgentReportsPage() {
                   '—';
                 return (
                   <tr key={s._id} className="hover:bg-slate-50/50">
-                    <td className="px-4 py-3 text-sm text-slate-800">{formatDate(s.createdAt)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800">{formatUSDateTime(s.createdAt)}</td>
                     <td className="px-4 py-3 text-sm text-slate-800">{s.formId}</td>
                     <td className="px-4 py-3 text-sm text-slate-800 font-medium">
                       {customerName !== '—' ? customerName : <span className="text-slate-400">No name available</span>}
