@@ -230,41 +230,22 @@ export default function DashboardPage() {
       ? 'Supervisor Dashboard'
       : 'Agent Dashboard';
 
-  // Build smooth SVG curve
-  const chartW = 560;
-  const chartH = 200;
-  const padL = 40;
-  const padR = 20;
-  const padT = 20;
-  const padB = 30;
+  // Chart dimensions
+  const chartW = 600;
+  const chartH = 220;
+  const padL = 44;
+  const padR = 16;
+  const padT = 16;
+  const padB = 28;
   const innerW = chartW - padL - padR;
   const innerH = chartH - padT - padB;
+  const barGap = 8;
+  const barW = Math.max(8, Math.floor((innerW - barGap * 11) / 12));
 
-  const dataPoints = chartData.map((v, i) => ({
-    x: padL + (i / (chartData.length - 1)) * innerW,
-    y: padT + innerH - (v / maxVal) * innerH,
-    value: v,
-  }));
-
-  // Bezier smooth path
-  const buildPath = () => {
-    if (dataPoints.length < 2) return '';
-    let d = `M ${dataPoints[0].x},${dataPoints[0].y}`;
-    for (let i = 1; i < dataPoints.length; i++) {
-      const prev = dataPoints[i - 1];
-      const curr = dataPoints[i];
-      const cpx = (prev.x + curr.x) / 2;
-      d += ` C ${cpx},${prev.y} ${cpx},${curr.y} ${curr.x},${curr.y}`;
-    }
-    return d;
-  };
-
-  const linePath = buildPath();
-  const areaPath = linePath + ` L ${dataPoints[dataPoints.length - 1].x},${padT + innerH} L ${dataPoints[0].x},${padT + innerH} Z`;
-
-  // Y-axis labels
+  // Y-axis: nice round ticks
+  const niceMax = maxVal <= 5 ? 5 : Math.ceil(maxVal / 5) * 5;
   const yTicks = 5;
-  const yLabels = Array.from({ length: yTicks + 1 }, (_, i) => Math.round((maxVal / yTicks) * i));
+  const yLabels = Array.from({ length: yTicks + 1 }, (_, i) => Math.round((niceMax / yTicks) * i));
 
   const medalColors = ['#facc15', '#cbd5e1', '#d97706'];
 
@@ -338,99 +319,98 @@ export default function DashboardPage() {
           </div>
 
           {chartLoading ? (
-            <div className="h-52 flex items-center justify-center">
+            <div className="h-56 flex items-center justify-center">
               <div className="h-8 w-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
             </div>
           ) : chartError ? (
             <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl">{chartError}</div>
           ) : chartData.every(v => v === 0) ? (
-            <div className="h-52 flex items-center justify-center text-sm text-slate-400">No submissions yet</div>
+            <div className="h-56 flex items-center justify-center text-sm text-slate-400">No submissions yet</div>
           ) : (
             <div className="relative">
-              <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full h-52">
+              <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ height: 220 }}>
                 <defs>
-                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#818cf8" />
+                  </linearGradient>
+                  <linearGradient id="barGradHover" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#4f46e5" />
+                    <stop offset="100%" stopColor="#6366f1" />
                   </linearGradient>
                 </defs>
 
-                {/* Grid lines */}
+                {/* Horizontal grid lines */}
                 {yLabels.map((val, i) => {
-                  const y = padT + innerH - (val / maxVal) * innerH;
+                  const y = padT + innerH - (val / niceMax) * innerH;
                   return (
-                    <g key={i}>
-                      <line x1={padL} y1={y} x2={chartW - padR} y2={y} stroke="#e2e8f0" strokeWidth="0.5" strokeDasharray="4,4" />
-                      <text x={padL - 6} y={y + 4} textAnchor="end" fill="#94a3b8" fontSize="9" fontFamily="Inter, sans-serif">
+                    <g key={`grid-${i}`}>
+                      <line x1={padL} y1={y} x2={chartW - padR} y2={y} stroke="#f1f5f9" strokeWidth="1" />
+                      <text x={padL - 8} y={y + 3.5} textAnchor="end" fill="#94a3b8" fontSize="10" fontFamily="Inter, sans-serif">
                         {val}
                       </text>
                     </g>
                   );
                 })}
 
-                {/* Area fill */}
-                <path d={areaPath} fill="url(#chartGrad)" />
-
-                {/* Line */}
-                <path d={linePath} fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-
-                {/* Data points & bars */}
-                {dataPoints.map((pt, i) => {
-                  const barWidth = 24;
-                  const barHeight = (chartData[i] / maxVal) * innerH;
-                  const barX = pt.x - barWidth / 2;
-                  const barY = padT + innerH - barHeight;
+                {/* Bars + Labels */}
+                {chartData.map((val, i) => {
+                  const step = (innerW - barW) / 11;
+                  const cx = padL + step * i + barW / 2;
+                  const bx = cx - barW / 2;
+                  const barH = val > 0 ? Math.max(3, (val / niceMax) * innerH) : 0;
+                  const by = padT + innerH - barH;
                   const isHovered = hoveredBar === i;
 
                   return (
                     <g
-                      key={i}
+                      key={`bar-${i}`}
                       onMouseEnter={() => setHoveredBar(i)}
                       onMouseLeave={() => setHoveredBar(null)}
                       className="cursor-pointer"
                     >
+                      {/* Invisible hit area (full height) */}
+                      <rect x={bx - 4} y={padT} width={barW + 8} height={innerH + padB} fill="transparent" />
+
                       {/* Bar */}
-                      <rect
-                        x={barX}
-                        y={barY}
-                        width={barWidth}
-                        height={barHeight}
-                        rx={4}
-                        fill={isHovered ? '#6366f1' : 'rgba(99, 102, 241, 0.12)'}
-                        className="transition-all duration-200"
-                      />
+                      {val > 0 && (
+                        <rect
+                          x={bx}
+                          y={by}
+                          width={barW}
+                          height={barH}
+                          rx={barW > 16 ? 6 : 4}
+                          fill={isHovered ? 'url(#barGradHover)' : 'url(#barGrad)'}
+                          opacity={isHovered ? 1 : 0.85}
+                          className="transition-opacity duration-150"
+                        />
+                      )}
 
-                      {/* Dot on line */}
-                      <circle cx={pt.x} cy={pt.y} r={isHovered ? 5 : 3} fill="#6366f1" stroke="white" strokeWidth="2" className="transition-all duration-200" />
-
-                      {/* Month label */}
-                      <text x={pt.x} y={chartH - 5} textAnchor="middle" fill="#94a3b8" fontSize="9" fontFamily="Inter, sans-serif">
-                        {months[i]}
-                      </text>
-
-                      {/* Tooltip */}
-                      {isHovered && (
+                      {/* Value label above bar when hovered */}
+                      {isHovered && val > 0 && (
                         <g>
-                          <rect x={pt.x - 28} y={pt.y - 32} width={56} height={22} rx={6} fill="#0f172a" />
-                          <text x={pt.x} y={pt.y - 17} textAnchor="middle" fill="white" fontSize="11" fontFamily="Inter, sans-serif" fontWeight="600">
-                            {chartData[i]}
+                          <rect x={cx - 18} y={by - 26} width={36} height={20} rx={6} fill="#0f172a" />
+                          <polygon points={`${cx - 4},${by - 6} ${cx + 4},${by - 6} ${cx},${by - 1}`} fill="#0f172a" />
+                          <text x={cx} y={by - 13} textAnchor="middle" fill="white" fontSize="11" fontWeight="600" fontFamily="Inter, sans-serif">
+                            {val}
                           </text>
                         </g>
                       )}
+
+                      {/* Month label */}
+                      <text x={cx} y={chartH - 6} textAnchor="middle" fill={isHovered ? '#6366f1' : '#94a3b8'} fontSize="10" fontWeight={isHovered ? '600' : '400'} fontFamily="Inter, sans-serif">
+                        {months[i]}
+                      </text>
                     </g>
                   );
                 })}
               </svg>
 
               {/* Legend */}
-              <div className="flex items-center gap-5 mt-3 text-xs text-slate-500">
+              <div className="flex items-center gap-5 mt-2 text-xs text-slate-500">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
-                  Submissions
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded bg-indigo-100 border border-indigo-200" />
-                  Monthly Volume
+                  <span className="h-2.5 w-2.5 rounded bg-indigo-500" />
+                  Monthly Submissions
                 </span>
               </div>
             </div>

@@ -557,6 +557,97 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* ─── Biometric Machine Setup Guide ─── */}
+        <div className="border-t border-slate-100 pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <UserCheck size={18} className="text-indigo-600" />
+            <div>
+              <p className="text-sm font-semibold text-gray-900">Biometric Machine Setup Guide</p>
+              <p className="text-xs text-gray-500">How to connect your Hikvision device to Comet CRM.</p>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl p-5 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Assign Biometric IDs to Users</p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Go to <strong>User Management → Edit User</strong>. In the <strong>Biometric ID</strong> field,
+                  enter the Employee Number that matches the ID registered on the Hikvision device. This links the device scan to the CRM user.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Find Your Device IP Address</p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Open the <strong>Hikvision SADP Tool</strong> on a PC connected to the same network as the device.
+                  It will show your device (DS-K1T342EFWX) and its local IP address (e.g., <code className="bg-white px-1 py-0.5 rounded text-indigo-700 text-[11px]">192.168.1.100</code>).
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Configure the Sync Agent</p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  On the PC connected to the same network as the Hikvision device, download and edit the sync agent script
+                  (<code className="bg-white px-1 py-0.5 rounded text-indigo-700 text-[11px]">scripts/hikvision-sync.js</code> from the Comet repo).
+                  Update these values at the top of the file:
+                </p>
+                <div className="bg-[#0f172a] text-green-400 p-3 rounded-lg mt-2 text-[11px] font-mono leading-relaxed overflow-x-auto">
+                  <div><span className="text-slate-500">// Edit these values:</span></div>
+                  <div>HIKVISION_IP: <span className="text-amber-300">{`'192.168.1.XXX'`}</span>  <span className="text-slate-500">// Your device IP</span></div>
+                  <div>HIKVISION_PASS: <span className="text-amber-300">{`'your-password'`}</span> <span className="text-slate-500">// Device admin password</span></div>
+                  <div>CRM_WEBHOOK_URL: <span className="text-amber-300">{`'https://cometbpo.org/api/attendance/webhook'`}</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Run the Sync Agent</p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Open a terminal on the same PC and run:
+                </p>
+                <div className="bg-[#0f172a] text-green-400 p-3 rounded-lg mt-2 text-[11px] font-mono">
+                  node scripts/hikvision-sync.js
+                </div>
+                <p className="text-xs text-gray-600 mt-1.5">
+                  The agent will poll every 30 seconds and push check-in events to the CRM. You should see ✅ logs for each sync.
+                  <strong> Keep this terminal open</strong> (or run it as a Windows Service for always-on operation).
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">5</div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">View Attendance Reports</p>
+                <p className="text-xs text-gray-600 mt-0.5">
+                  Once running, attendance data will appear in <strong>Reports → Biometric Attendance</strong>.
+                  The system automatically detects if a user is <span className="text-amber-600 font-semibold">Late</span> based on the shift start time and threshold configured above.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white/60 border border-indigo-200 rounded-lg p-3 mt-2">
+              <p className="text-xs text-indigo-800 font-semibold flex items-center gap-1.5">
+                💡 Supported Device: Hikvision DS-K1T342EFWX
+              </p>
+              <p className="text-[11px] text-gray-600 mt-1">
+                The sync agent supports all Hikvision access control devices with ISAPI, including DS-K1T341, DS-K1T342,
+                DS-K1T671, and DS-K1A series. Both XML and JSON responses are handled automatically.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {message && (
           <div
             className={`rounded-md px-3 py-2 text-sm ${
