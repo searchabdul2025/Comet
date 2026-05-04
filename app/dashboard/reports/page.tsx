@@ -64,6 +64,11 @@ export default function ReportsPage() {
   const [userFilter, setUserFilter] = useState('');
   const [campaignFilter, setCampaignFilter] = useState('');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const presets = [
     { label: 'Today', range: () => {
       const d = new Date();
@@ -266,6 +271,8 @@ export default function ReportsPage() {
       </div>
     );
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-4">

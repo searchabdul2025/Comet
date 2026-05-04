@@ -57,6 +57,11 @@ export default function MonthlyTargetsPage() {
     note: '',
   });
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isAllowed = permissions?.canManageUsers;
 
@@ -194,6 +199,8 @@ export default function MonthlyTargetsPage() {
       </div>
     );
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-4">

@@ -16,6 +16,11 @@ export default function AgentReportsPage() {
   const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const load = async () => {
     try {
@@ -53,6 +58,8 @@ export default function AgentReportsPage() {
     const { formatUSDateTime } = require('@/lib/dateFormat');
     return formatUSDateTime(value);
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-5">

@@ -72,6 +72,11 @@ export default function BonusesPage() {
   const [error, setError] = useState<string | null>(null);
   const [showRuleModal, setShowRuleModal] = useState(false);
   const [editingRule, setEditingRule] = useState<BonusRule | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [ruleForm, setRuleForm] = useState({
     userId: '',
     campaignId: '',
@@ -265,6 +270,8 @@ export default function BonusesPage() {
       </div>
     );
   }
+
+  if (!mounted) return null;
 
   return (
     <div className="p-4 md:p-6 bg-gradient-to-br from-slate-50 via-amber-50/30 to-orange-50/20 min-h-screen space-y-6">

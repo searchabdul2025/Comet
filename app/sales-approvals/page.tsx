@@ -55,6 +55,11 @@ export default function SalesApprovalsPage() {
     comments: '',
     amount: '',
   });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const permissions = session?.user?.role
     ? getPermissions(session.user.role as 'Admin' | 'Supervisor' | 'User', session.user.permissions)
@@ -229,6 +234,8 @@ export default function SalesApprovalsPage() {
     paid: approvals.filter(a => a.status === 'paid').length,
     unpaid: approvals.filter(a => a.status === 'unpaid').length,
   };
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-5">
