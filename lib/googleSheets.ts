@@ -217,9 +217,9 @@ async function getSheetId(spreadsheetId: string, sheetName: string): Promise<num
 
 export async function resolveSheetsConfig() {
   // Env takes precedence if present
-  const envSheetId = process.env.GOOGLE_SHEETS_ID;
-  const envSubmissionsTab = process.env.GOOGLE_SHEETS_TAB_SUBMISSIONS;
-  const envDailyTab = process.env.GOOGLE_SHEETS_TAB_DAILY;
+  const envSheetId = process.env.GOOGLE_SHEETS_ID?.trim();
+  const envSubmissionsTab = process.env.GOOGLE_SHEETS_TAB_SUBMISSIONS?.trim();
+  const envDailyTab = process.env.GOOGLE_SHEETS_TAB_DAILY?.trim();
 
   if (envSheetId) {
     return {
@@ -229,9 +229,9 @@ export async function resolveSheetsConfig() {
     };
   }
 
-  const sheetId = await getSetting('GOOGLE_SHEETS_ID');
-  const submissionsTab = (await getSetting('GOOGLE_SHEETS_TAB_SUBMISSIONS')) || 'Submissions';
-  const dailyTab = (await getSetting('GOOGLE_SHEETS_TAB_DAILY')) || 'DailyReports';
+  const sheetId = (await getSetting('GOOGLE_SHEETS_ID'))?.trim();
+  const submissionsTab = ((await getSetting('GOOGLE_SHEETS_TAB_SUBMISSIONS')) || 'Submissions').trim();
+  const dailyTab = ((await getSetting('GOOGLE_SHEETS_TAB_DAILY')) || 'DailyReports').trim();
 
   return { sheetId: sheetId || '', submissionsTab, dailyTab };
 }
