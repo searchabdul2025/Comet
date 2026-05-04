@@ -151,8 +151,9 @@ export async function POST(
     try {
       const dbUser = await User.findById(session.credentialId);
       if (dbUser && dbUser.role === 'Admin') {
-        if (chatroom.allowedUsers && chatroom.allowedUsers.length > 0) {
-          const targetUserId = chatroom.allowedUsers[0];
+        const chatRoomDoc = chatroom as any;
+        if (chatRoomDoc.allowedUsers && chatRoomDoc.allowedUsers.length > 0) {
+          const targetUserId = chatRoomDoc.allowedUsers[0];
           const targetUser = await User.findById(targetUserId);
           if (targetUser && targetUser.whatsappNumber) {
             const tokenSetting = await Setting.findOne({ key: 'WHATSAPP_API_TOKEN' });
