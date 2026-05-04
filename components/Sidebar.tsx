@@ -100,6 +100,10 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     loadAccessibleChatrooms();
   }, [session]);
 
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
+
   const userRole = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
   const userPermOverrides = session?.user?.permissions;
   const permissions = userRole ? getPermissions(userRole, userPermOverrides || undefined) : null;
@@ -189,12 +193,6 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       }),
     }))
     .filter(group => group.items.length > 0);
-
-  const handleLogout = async () => {
-    await signOut({ redirect: false });
-    router.push('/');
-    router.refresh();
-  };
 
   const roleLabel = userRole === 'User' ? 'Agent' : userRole === 'Supervisor' ? 'Supervisor' : 'Admin';
   const initials = session?.user?.name
@@ -386,16 +384,16 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
         <div className={`border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-4'}`}>
           <div
             className={`flex items-center gap-3 ${
-              collapsed ? 'justify-center' : 'rounded-xl bg-white/[0.03] border border-white/[0.06] p-3'
+              collapsed ? 'flex-col items-center' : 'rounded-xl bg-white/[0.03] border border-white/[0.06] p-3'
             }`}
           >
-            {/* Avatar */}
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-lg shadow-indigo-500/20">
-              {initials}
-            </div>
+            {/* Avatar / User Info */}
+            <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-lg shadow-indigo-500/20">
+                {initials}
+              </div>
 
-            {!collapsed && (
-              <>
+              {!collapsed && (
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-semibold text-white truncate">
                     {session.user.name || session.user.email}
@@ -404,15 +402,21 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                     {roleLabel}
                   </p>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
-                  title="Logout"
-                >
-                  <LogOut size={15} />
-                </button>
-              </>
-            )}
+              )}
+            </div>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className={`${
+                collapsed 
+                  ? 'h-9 w-9 mt-2' 
+                  : 'h-8 w-8'
+              } rounded-lg flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20`}
+              title="Logout"
+            >
+              <LogOut size={collapsed ? 18 : 15} />
+            </button>
           </div>
         </div>
       )}

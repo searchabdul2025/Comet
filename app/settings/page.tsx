@@ -563,90 +563,94 @@ export default function SettingsPage() {
             <UserCheck size={18} className="text-indigo-600" />
             <div>
               <p className="text-sm font-semibold text-gray-900">Biometric Machine Setup Guide</p>
-              <p className="text-xs text-gray-500">How to connect your Hikvision device to Comet CRM.</p>
+              <p className="text-xs text-gray-500">Choose the best connection method for your Hikvision DS-K1T342EFWX.</p>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl p-5 space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Assign Biometric IDs to Users</p>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Go to <strong>User Management → Edit User</strong>. In the <strong>Biometric ID</strong> field,
-                  enter the Employee Number that matches the ID registered on the Hikvision device. This links the device scan to the CRM user.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Find Your Device IP Address</p>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Open the <strong>Hikvision SADP Tool</strong> on a PC connected to the same network as the device.
-                  It will show your device (DS-K1T342EFWX) and its local IP address (e.g., <code className="bg-white px-1 py-0.5 rounded text-indigo-700 text-[11px]">192.168.1.100</code>).
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Configure the Sync Agent</p>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  On the PC connected to the same network as the Hikvision device, download and edit the sync agent script
-                  (<code className="bg-white px-1 py-0.5 rounded text-indigo-700 text-[11px]">scripts/hikvision-sync.js</code> from the Comet repo).
-                  Update these values at the top of the file:
-                </p>
-                <div className="bg-[#0f172a] text-green-400 p-3 rounded-lg mt-2 text-[11px] font-mono leading-relaxed overflow-x-auto">
-                  <div><span className="text-slate-500">// Edit these values:</span></div>
-                  <div>HIKVISION_IP: <span className="text-amber-300">{`'192.168.1.XXX'`}</span>  <span className="text-slate-500">// Your device IP</span></div>
-                  <div>HIKVISION_PASS: <span className="text-amber-300">{`'your-password'`}</span> <span className="text-slate-500">// Device admin password</span></div>
-                  <div>CRM_WEBHOOK_URL: <span className="text-amber-300">{`'https://cometbpo.org/api/attendance/webhook'`}</span></div>
+          <div className="space-y-6">
+            {/* Method A: Pro Approach */}
+            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl p-5 relative overflow-hidden">
+              <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Recommended</div>
+              <h4 className="text-sm font-bold text-emerald-900 flex items-center gap-2 mb-3">
+                <Sparkles size={16} />
+                Method A: Direct Webhook (No Terminal Needed)
+              </h4>
+              <p className="text-xs text-emerald-800 mb-4 leading-relaxed">
+                The best approach! Configure your machine to push data directly to our cloud. 
+                No local PC or scripts required once set up.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">1</div>
+                  <p className="text-xs text-gray-700">
+                    Log in to your <strong>Hikvision Device Web Interface</strong> (use its IP in a browser).
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">2</div>
+                  <p className="text-xs text-gray-700">
+                    Go to <strong>Network → Advanced Settings → HTTP Listening</strong> (or <strong>HTTP Host</strong>).
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">3</div>
+                  <div className="flex-1">
+                    <p className="text-xs text-gray-700">Set the destination URL to:</p>
+                    <code className="block bg-white/60 p-2 rounded border border-emerald-200 mt-1.5 text-emerald-700 text-[11px] font-mono break-all">
+                      https://cometbpo.org/api/attendance/webhook
+                    </code>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">4</div>
+                  <p className="text-xs text-gray-700">
+                    Enable <strong>Access Control Events</strong> and <strong>Attendance Events</strong> to be pushed. Save and restart the device.
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">4</div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">Run the Sync Agent</p>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Open a terminal on the same PC and run:
-                </p>
-                <div className="bg-[#0f172a] text-green-400 p-3 rounded-lg mt-2 text-[11px] font-mono">
-                  node scripts/hikvision-sync.js
+            {/* Method B: Bridge Approach */}
+            <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100 rounded-xl p-5">
+              <h4 className="text-sm font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                <Activity size={16} />
+                Method B: Local Sync Agent (Fallback)
+              </h4>
+              <p className="text-xs text-indigo-800 mb-4">
+                Use this if your machine cannot reach the internet directly. 
+                Requires a PC on the same network to run a small sync script.
+              </p>
+              
+              <div className="space-y-3">
+                <div className="p-3 bg-white/40 rounded-lg border border-indigo-100">
+                  <p className="text-[11px] font-semibold text-indigo-900 mb-1">How to run:</p>
+                  <ol className="text-[11px] text-gray-600 list-decimal ml-4 space-y-1">
+                    <li>Download <code className="text-indigo-600 font-mono">scripts/hikvision-sync.js</code> from the repo.</li>
+                    <li>Update the <code className="text-indigo-600 font-mono">HIKVISION_IP</code> and <code className="text-indigo-600 font-mono">HIKVISION_PASS</code> in the file.</li>
+                    <li>Run <code className="bg-indigo-900 text-white px-1.5 py-0.5 rounded">node hikvision-sync.js</code> in your terminal.</li>
+                  </ol>
                 </div>
-                <p className="text-xs text-gray-600 mt-1.5">
-                  The agent will poll every 30 seconds and push check-in events to the CRM. You should see ✅ logs for each sync.
-                  <strong> Keep this terminal open</strong> (or run it as a Windows Service for always-on operation).
-                </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="h-6 w-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">5</div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">View Attendance Reports</p>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Once running, attendance data will appear in <strong>Reports → Biometric Attendance</strong>.
-                  The system automatically detects if a user is <span className="text-amber-600 font-semibold">Late</span> based on the shift start time and threshold configured above.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white/60 border border-indigo-200 rounded-lg p-3 mt-2">
-              <p className="text-xs text-indigo-800 font-semibold flex items-center gap-1.5">
-                💡 Supported Device: Hikvision DS-K1T342EFWX
-              </p>
-              <p className="text-[11px] text-gray-600 mt-1">
-                The sync agent supports all Hikvision access control devices with ISAPI, including DS-K1T341, DS-K1T342,
-                DS-K1T671, and DS-K1A series. Both XML and JSON responses are handled automatically.
-              </p>
+            {/* General Instructions */}
+            <div className="bg-white border border-slate-200 rounded-xl p-4">
+              <h4 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-3">Important Reminders</h4>
+              <ul className="text-xs text-gray-600 space-y-2">
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0" />
+                  <span><strong>Map Users:</strong> Each user in <strong>User Management</strong> must have their <strong>Biometric ID</strong> set to match the ID assigned to them on the Hikvision device.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0" />
+                  <span><strong>Timezones:</strong> Ensure your Hikvision device time is synced with NTP (Network Time Protocol) to prevent late/early check-in errors.</span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
+
 
         {message && (
           <div
