@@ -1,0 +1,261 @@
+'use client';
+
+import { useEffect, useState, useMemo } from 'react';
+import { RefreshCw, Calendar, FileText, Search, Download, Loader2 } from 'lucide-react';
+
+interface SubmissionRow {
+  _id: string;
+  createdAt: string;
+  formId: {
+    _id: string;
+    title?: string;
+    fields?: Array<{ id: string; name: string; type: string }>;
+  } | string;
+  phoneNumber?: string;
+  formData?: Record<string, any>;
+  customerName?: string; // Extracted customer name for easy display
+}
+
+export default function AgentSubmissionsPage() {
+  const [submissions, setSubmissions] = useState<SubmissionRow[]>([]);
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const params = new URLSearchParams();
+      if (from) params.append('from', from);
+      if (to) params.append('to', to);
+      const res = await fetch(`/api/submissions/self?${params.toString()}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Failed to load submissions');
+      setSubmissions(json.data || []);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load submissions');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleExport = async (isFull: boolean = false) => {
+    try {
+      setExporting(true);
+      const params = new URLSearchParams({ format: 'xlsx' });
+      if (!isFull) {
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+      }
+      const res = await fetch(`/api/agent/export?${params.toString()}`);
+      if (!res.ok) throw new Error('Export failed');
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const dateStr = new Date().toISOString().split('T')[0];
+      a.download = `my_submissions_${isFull ? 'full_' : ''}${dateStr}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(err.message || 'Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const formatDate = (value: string) => {
+    const { formatUSDateTime } = require('@/lib/dateFormat');
+    return formatUSDateTime(value);
+  };
+
+  // Filter submissions based on search query
+  const filteredSubmissions = useMemo(() => {
+    if (!searchQuery.trim()) return submissions;
+    
+    const query = searchQuery.toLowerCase();
+    return submissions.filter(submission => {
+      // Search in customer name
+      if (submission.customerName?.toLowerCase().includes(query)) return true;
+      
+      // Search in form data values (only customer name is visible)
+      if (submission.formData) {
+        const formDataStr = JSON.stringify(submission.formData).toLowerCase();
+        if (formDataStr.includes(query)) return true;
+      }
+      
+      // Search in form title/ID
+      const formTitle = typeof submission.formId === 'object' 
+        ? submission.formId?.title || submission.formId?._id || ''
+        : submission.formId || '';
+      if (String(formTitle).toLowerCase().includes(query)) return true;
+      
+      return false;
+    });
+  }, [submissions, searchQuery]);
+
+  // Helper to get field name from field ID
+  const getFieldName = (submission: SubmissionRow, fieldId: string): string => {
+    if (typeof submission.formId === 'object' && submission.formId?.fields) {
+      const field = submission.formId.fields.find(f => f.id === fieldId);
+      return field?.name || fieldId;
+    }
+    return fieldId;
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <FileText size={26} className="text-blue-600" />
+            My Submissions
+          </h1>
+          <p className="text-gray-600">Filter your submissions and see what counts toward your targets.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleExport(false)}
+            disabled={exporting}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition disabled:opacity-60"
+          >
+            {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            Filtered Export
+          </button>
+          <button
+            onClick={() => handleExport(true)}
+            disabled={exporting}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60"
+          >
+            {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+            Full Refresh
+          </button>
+          <button
+            onClick={load}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+        </div>
+      </div>
+
+
+      {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">{error}</div>}
+
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5 space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <Calendar size={14} />
+              From
+            </label>
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-md text-black bg-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+              <Calendar size={14} />
+              To
+            </label>
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-md text-black bg-white"
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={load}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition"
+            >
+              Apply filter
+            </button>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+            <Search size={14} />
+            Search
+          </label>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by customer name or form name..."
+            className="w-full px-3 py-2 border border-slate-200 rounded-md text-black bg-white"
+          />
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Recent submissions</h3>
+            <p className="text-sm text-gray-600">
+              Limited to your user account.
+              {searchQuery && ` Showing ${filteredSubmissions.length} of ${submissions.length} results`}
+            </p>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-100">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Submitted</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Form</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Customer Name</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredSubmissions.map((s) => {
+                // Get customer name from formData or customerName field
+                const customerName = s.customerName || 
+                  (s.formData && Object.values(s.formData)[0] ? String(Object.values(s.formData)[0]) : null) ||
+                  '—';
+                const formTitle = typeof s.formId === 'object' 
+                  ? s.formId?.title || s.formId?._id || '—'
+                  : s.formId || '—';
+                
+                return (
+                  <tr key={s._id} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-3 text-sm text-slate-800">{formatDate(s.createdAt)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800">{formTitle}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800 font-medium">
+                      {customerName !== '—' ? customerName : <span className="text-slate-400">No name available</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+              {!filteredSubmissions.length && (
+                <tr>
+                  <td colSpan={3} className="px-4 py-6 text-center text-sm text-slate-500">
+                    {loading ? 'Loading submissions...' : searchQuery ? 'No submissions match your search.' : 'No submissions found.'}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
