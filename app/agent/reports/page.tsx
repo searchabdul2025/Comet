@@ -115,7 +115,9 @@ export default function AgentReportsPage() {
                 return (
                   <tr key={s._id} className="hover:bg-slate-50/50">
                     <td className="px-4 py-3 text-sm text-slate-800">{formatUSDateTime(s.createdAt)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-800">{s.formId}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800">
+                      {typeof s.formId === 'object' ? (s.formId as any)?.title : s.formId}
+                    </td>
                     <td className="px-4 py-3 text-sm text-slate-800 font-medium">
                       {customerName !== '—' ? customerName : <span className="text-slate-400">No name available</span>}
                     </td>
