@@ -52,21 +52,21 @@ export async function POST(request: NextRequest) {
 
     const submissions = await FormSubmission.find(match).sort({ createdAt: -1 }).lean();
 
+    const { appendDynamicRow } = await import('@/lib/googleSheets');
+
     for (const s of submissions) {
-      const pairs = Object.entries(s.formData || {})
-        .map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v ?? ''}`)
-        .join('\n');
-      await appendRow({
+      await appendDynamicRow({
         sheetId,
-        range: `${submissionsTab}!A1`,
-        values: [
+        tabName: submissionsTab,
+        fixedHeaders: ['Submission ID', 'Date', 'Phone', 'IP', 'User ID'],
+        fixedData: [
+          s._id?.toString() || '',
           s.createdAt?.toISOString?.() || '',
-          s.formId?.toString() || '',
           s.phoneNumber || '',
           s.ipAddress || '',
           s.submittedBy?.toString() || '',
-          pairs,
         ],
+        dynamicData: s.formData || {},
       });
     }
 

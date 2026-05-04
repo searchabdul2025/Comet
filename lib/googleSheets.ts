@@ -63,7 +63,7 @@ export async function appendRow({ sheetId, range, values }: AppendRowParams) {
     if (error.message.includes('not found') || error.code === 400) {
       try {
         await createSheet(sheetId, tabName);
-        // Add headers if it's a new sheet
+        // Default headers for basic append
         const headers = ['ID', 'Timestamp', 'Form Title', 'Form ID', 'Phone Number', 'Submission Data'];
         await sheets.spreadsheets.values.update({
           spreadsheetId: sheetId,
@@ -71,6 +71,9 @@ export async function appendRow({ sheetId, range, values }: AppendRowParams) {
           valueInputOption: 'USER_ENTERED',
           requestBody: { values: [headers] },
         });
+        
+        await formatHeaders(sheetId, tabName);
+
         // Try appending again
         await sheets.spreadsheets.values.append({
           spreadsheetId: sheetId,
@@ -88,6 +91,133 @@ export async function appendRow({ sheetId, range, values }: AppendRowParams) {
       throw error;
     }
   }
+}
+
+/**
+ * Advanced append that maps fields to specific columns dynamically
+ */
+export async function appendDynamicRow(params: {
+  sheetId: string;
+  tabName: string;
+  fixedData: (string | number | null | undefined)[];
+  dynamicData: Record<string, any>;
+  fixedHeaders: string[];
+}) {
+  const { sheetId, tabName, fixedData, dynamicData, fixedHeaders } = params;
+  const sheets = getSheetsClient();
+
+  // 1. Get existing headers or create sheet if missing
+  let headers: string[] = [];
+  try {
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: `${tabName}!1:1`,
+    });
+    headers = response.data.values?.[0] || [];
+  } catch (error: any) {
+    if (error.code === 404 || error.message.includes('not found')) {
+      await createSheet(sheetId, tabName);
+      headers = [];
+    } else {
+      throw error;
+    }
+  }
+
+  // 2. If no headers, initialize with fixed headers
+  if (headers.length === 0) {
+    headers = [...fixedHeaders];
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: `${tabName}!A1`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [headers] },
+    });
+    await formatHeaders(sheetId, tabName);
+  }
+
+  // 3. Check for new dynamic fields and add columns if needed
+  const dynamicKeys = Object.keys(dynamicData);
+  let headersUpdated = false;
+  for (const key of dynamicKeys) {
+    if (!headers.includes(key)) {
+      headers.push(key);
+      headersUpdated = true;
+    }
+  }
+
+  if (headersUpdated) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: `${tabName}!A1`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: { values: [headers] },
+    });
+  }
+
+  // 4. Map data to header positions
+  const row = headers.map((header, index) => {
+    if (index < fixedHeaders.length) {
+      return fixedData[index] ?? '';
+    }
+    return dynamicData[header] ?? '';
+  });
+
+  // 5. Append the row
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: sheetId,
+    range: `${tabName}!A1`,
+    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      values: [row],
+    },
+  });
+}
+
+/**
+ * Format headers (Bold and Freeze)
+ */
+async function formatHeaders(spreadsheetId: string, tabName: string) {
+  const sheets = getSheetsClient();
+  
+  // Get sheet ID from name
+  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId });
+  const sheet = spreadsheet.data.sheets?.find(s => s.properties?.title === tabName);
+  const sheetInternalId = sheet?.properties?.sheetId;
+
+  if (sheetInternalId === undefined) return;
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId,
+    requestBody: {
+      requests: [
+        {
+          repeatCell: {
+            range: {
+              sheetId: sheetInternalId,
+              startRowIndex: 0,
+              endRowIndex: 1,
+            },
+            cell: {
+              userEnteredFormat: {
+                textFormat: { bold: true },
+                backgroundColor: { red: 0.9, green: 0.9, blue: 0.9 },
+              },
+            },
+            fields: 'userEnteredFormat(textFormat,backgroundColor)',
+          },
+        },
+        {
+          updateSheetProperties: {
+            properties: {
+              sheetId: sheetInternalId,
+              gridProperties: { frozenRowCount: 1 },
+            },
+            fields: 'gridProperties.frozenRowCount',
+          },
+        },
+      ],
+    },
+  });
 }
 
 /**
@@ -123,16 +253,12 @@ export async function appendSubmissionRow(params: {
   const { sheetId, tabName = 'Submissions', formTitle, formId, submission, phoneNumber, submissionId } = params;
   const timestamp = new Date().toISOString();
 
-  // Flatten submission object to key:value pairs string
-  const pairs = Object.entries(submission)
-    .map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v ?? ''}`)
-    .join('\n');
-
-  // Include submission ID as first column for deletion tracking
-  await appendRow({
+  await appendDynamicRow({
     sheetId,
-    range: `${tabName}!A1`,
-    values: [submissionId || '', timestamp, formTitle || '', formId || '', phoneNumber || '', pairs],
+    tabName,
+    fixedHeaders: ['Submission ID', 'Timestamp', 'Form Title', 'Form ID', 'Phone Number'],
+    fixedData: [submissionId, timestamp, formTitle, formId, phoneNumber],
+    dynamicData: submission,
   });
 }
 
