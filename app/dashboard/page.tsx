@@ -262,7 +262,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 mb-2">
               <Zap size={18} className="text-amber-400" />
               <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'Loading...'}
               </span>
             </div>
             <h1 className="text-2xl md:text-3xl font-bold">
@@ -442,7 +442,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Target Progress (Agents) */}
-          {isUser && (
+          {isUser && stats && (
             <div className="card-premium p-5 animate-fade-in-up delay-5">
               <h3 className="text-sm font-semibold text-slate-900 mb-4">Target Progress</h3>
               <TargetRing

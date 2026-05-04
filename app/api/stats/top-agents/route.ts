@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import FormSubmission from '@/models/FormSubmission';
+import User from '@/models/User'; // Ensure User model is registered
 import { getCurrentUser } from '@/lib/auth';
 
 export async function GET() {
