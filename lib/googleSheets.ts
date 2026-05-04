@@ -15,9 +15,16 @@ function getSheetsClient() {
     throw new Error('Google Sheets credentials are missing. Set GOOGLE_SA_EMAIL and GOOGLE_SA_PRIVATE_KEY.');
   }
 
+  let formattedKey = privateKey.replace(/\\n/g, '\n');
+  
+  // If the key is wrapped in quotes (sometimes happens with env vars), strip them
+  if (formattedKey.startsWith('"') && formattedKey.endsWith('"')) {
+    formattedKey = formattedKey.substring(1, formattedKey.length - 1);
+  }
+
   const auth = new google.auth.JWT({
     email: clientEmail,
-    key: privateKey.replace(/\\n/g, '\n'),
+    key: formattedKey,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
