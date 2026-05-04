@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { RefreshCw, Calendar, FileText, Search, Download, Loader2 } from 'lucide-react';
+import { formatUSDateTime } from '@/lib/dateFormat';
 
 interface SubmissionRow {
   _id: string;
@@ -77,7 +78,6 @@ export default function AgentSubmissionsPage() {
   };
 
   const formatDate = (value: string) => {
-    const { formatUSDateTime } = require('@/lib/dateFormat');
     return formatUSDateTime(value);
   };
 
@@ -236,7 +236,7 @@ export default function AgentSubmissionsPage() {
                 
                 return (
                   <tr key={s._id} className="hover:bg-slate-50/50">
-                    <td className="px-4 py-3 text-sm text-slate-800">{formatDate(s.createdAt)}</td>
+                    <td className="px-4 py-3 text-sm text-slate-800" suppressHydrationWarning>{formatDate(s.createdAt)}</td>
                     <td className="px-4 py-3 text-sm text-slate-800">{formTitle}</td>
                     <td className="px-4 py-3 text-sm text-slate-800 font-medium">
                       {customerName !== '—' ? customerName : <span className="text-slate-400">No name available</span>}

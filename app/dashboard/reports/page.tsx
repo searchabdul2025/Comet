@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Download, FileSpreadsheet, FileText, FileDown, Sheet, Loader2, Trash2, RefreshCw, ChevronDown, ChevronRight, Fingerprint } from 'lucide-react';
 import { getPermissions } from '@/lib/permissions';
 import { useSession } from 'next-auth/react';
+import { formatUSDateTime } from '@/lib/dateFormat';
 
 interface Submission {
   _id: string;
@@ -477,11 +478,8 @@ export default function ReportsPage() {
                     return (
                       <React.Fragment key={s._id}>
                         <tr className="border-t hover:bg-slate-50 transition-colors">
-                          <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
-                            {(() => {
-                              const { formatUSDateTime } = require('@/lib/dateFormat');
-                              return formatUSDateTime(s.createdAt);
-                            })()}
+                          <td className="px-4 py-2 text-slate-700 whitespace-nowrap" suppressHydrationWarning>
+                            {formatUSDateTime(s.createdAt)}
                           </td>
                           <td className="px-4 py-2 text-slate-700">{s.phoneNumber || '-'}</td>
                           <td className="px-4 py-2 text-slate-700 font-mono text-xs">{s.formId || '-'}</td>
@@ -589,11 +587,8 @@ export default function ReportsPage() {
                       </td>
                       <td className="px-4 py-2 text-slate-700">{record.userId?.role || '-'}</td>
                       <td className="px-4 py-2 text-slate-700 font-mono text-xs">{record.biometricId}</td>
-                      <td className="px-4 py-2 text-slate-700 whitespace-nowrap">
-                        {(() => {
-                          const { formatUSDateTime } = require('@/lib/dateFormat');
-                          return formatUSDateTime(record.checkInTime);
-                        })()}
+                      <td className="px-4 py-2 text-slate-700 whitespace-nowrap" suppressHydrationWarning>
+                        {formatUSDateTime(record.checkInTime)}
                       </td>
                       <td className="px-4 py-2">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
