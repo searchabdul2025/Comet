@@ -15,34 +15,14 @@ function getSheetsClient() {
     throw new Error('Google Sheets credentials are missing. Set GOOGLE_SA_EMAIL and GOOGLE_SA_PRIVATE_KEY.');
   }
 
-  // Bulletproof private key reconstruction:
-  // 1. Remove all quotes, literal \n, real newlines, carriage returns
-  // 2. Extract just the base64 content
-  // 3. Rebuild a valid PEM key from scratch
-  let raw = privateKey;
-  
-  // Strip surrounding quotes
-  if (raw.startsWith('"')) raw = raw.substring(1);
-  if (raw.endsWith('"')) raw = raw.substring(0, raw.length - 1);
-  
-  // Replace all forms of line breaks with nothing, then strip the PEM headers
-  raw = raw
-    .replace(/\\n/g, '')       // literal backslash-n
-    .replace(/\r?\n/g, '')     // real newlines (Unix and Windows)
-    .replace(/\r/g, '')        // stray carriage returns
-    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
-    .replace(/-----END PRIVATE KEY-----/g, '')
-    .replace(/\s+/g, '')       // any remaining whitespace
+  // The most reliable way to handle Vercel's private key formatting:
+  // 1. Replace literal \n text with actual newlines
+  // 2. Strip any accidental surrounding quotes
+  // 3. Trim whitespace
+  const formattedKey = privateKey
+    .replace(/\\n/gm, '\n')
+    .replace(/^"|"$/g, '')
     .trim();
-  
-  // Reconstruct a proper PEM key with 64-char lines
-  const lines = raw.match(/.{1,64}/g) || [];
-  const formattedKey = [
-    '-----BEGIN PRIVATE KEY-----',
-    ...lines,
-    '-----END PRIVATE KEY-----',
-    '',
-  ].join('\n');
 
   const auth = new google.auth.JWT({
     email: clientEmail,
