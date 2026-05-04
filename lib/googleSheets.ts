@@ -15,35 +15,39 @@ function getSheetsClient() {
     throw new Error('Google Sheets credentials are missing. Set GOOGLE_SA_EMAIL and GOOGLE_SA_PRIVATE_KEY.');
   }
 
-  // The "Nuclear Fix" for OpenSSL 3.0 DECODER error:
-  // 1. Clean out all possible corruption characters
-  let cleanKey = privateKey
-    .replace(/\\n/g, '\n')     // literal \n
-    .replace(/\"/g, '')       // stray quotes
-    .replace(/\r/g, '')       // carriage returns
+  // Absolute Total Reset Cleaning:
+  // 1. Remove all non-ASCII characters (handles weird Windows/Notepad artifacts)
+  // 2. Remove all types of quotes and literal backslash-n
+  // 3. Rebuild the PEM format from the raw base64 content
+  let base64Part = privateKey
+    .replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII characters
+    .replace(/\\n/g, '')         // literal \n
+    .replace(/\"/g, '')         // quotes
+    .replace(/\r/g, '')         // carriage returns
+    .replace(/\n/g, '')         // newlines
+    .replace('-----BEGIN PRIVATE KEY-----', '')
+    .replace('-----END PRIVATE KEY-----', '')
+    .replace(/\s+/g, '')        // all remaining spaces
     .trim();
 
-  // 2. If it contains headers, extract just the middle part and normalize
-  if (cleanKey.includes('BEGIN PRIVATE KEY')) {
-    const middle = cleanKey
-      .replace('-----BEGIN PRIVATE KEY-----', '')
-      .replace('-----END PRIVATE KEY-----', '')
-      .replace(/\s+/g, '') // Strip ALL whitespace/newlines from middle
-      .trim();
-    
-    // 3. Reconstruct with perfect 64-char line breaks
-    const lines = middle.match(/.{1,64}/g) || [];
-    cleanKey = [
-      '-----BEGIN PRIVATE KEY-----',
-      ...lines,
-      '-----END PRIVATE KEY-----',
-      '',
-    ].join('\n');
+  // Re-verify we have content
+  if (!base64Part) {
+    throw new Error('Google Private Key is empty after cleaning.');
   }
 
-  const auth = new google.auth.JWT({
-    email: clientEmail,
-    key: cleanKey,
+  const finalKey = [
+    '-----BEGIN PRIVATE KEY-----',
+    ...(base64Part.match(/.{1,64}/g) || []),
+    '-----END PRIVATE KEY-----',
+    '',
+  ].join('\n');
+
+  // Use the more modern GoogleAuth class which is often more resilient
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
+      client_email: clientEmail,
+      private_key: finalKey,
+    },
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
