@@ -15,16 +15,34 @@ function getSheetsClient() {
     throw new Error('Google Sheets credentials are missing. Set GOOGLE_SA_EMAIL and GOOGLE_SA_PRIVATE_KEY.');
   }
 
-  // Clean the private key: replace literal \n with newlines and strip extra quotes
-  let formattedKey = privateKey.replace(/\\n/g, '\n').replace(/\\n/g, '\n'); // Double pass just in case
+  // Bulletproof private key reconstruction:
+  // 1. Remove all quotes, literal \n, real newlines, carriage returns
+  // 2. Extract just the base64 content
+  // 3. Rebuild a valid PEM key from scratch
+  let raw = privateKey;
   
-  // If the key is wrapped in quotes (sometimes happens with env vars), strip them
-  if (formattedKey.startsWith('"') && formattedKey.endsWith('"')) {
-    formattedKey = formattedKey.substring(1, formattedKey.length - 1);
-  }
+  // Strip surrounding quotes
+  if (raw.startsWith('"')) raw = raw.substring(1);
+  if (raw.endsWith('"')) raw = raw.substring(0, raw.length - 1);
   
-  // Ensure the key is trimmed and has correct line breaks
-  formattedKey = formattedKey.trim();
+  // Replace all forms of line breaks with nothing, then strip the PEM headers
+  raw = raw
+    .replace(/\\n/g, '')       // literal backslash-n
+    .replace(/\r?\n/g, '')     // real newlines (Unix and Windows)
+    .replace(/\r/g, '')        // stray carriage returns
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
+    .replace(/\s+/g, '')       // any remaining whitespace
+    .trim();
+  
+  // Reconstruct a proper PEM key with 64-char lines
+  const lines = raw.match(/.{1,64}/g) || [];
+  const formattedKey = [
+    '-----BEGIN PRIVATE KEY-----',
+    ...lines,
+    '-----END PRIVATE KEY-----',
+    '',
+  ].join('\n');
 
   const auth = new google.auth.JWT({
     email: clientEmail,
