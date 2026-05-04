@@ -37,7 +37,7 @@ export async function GET() {
       return {
         _id: s._id?.toString(),
         agentName: s.submittedBy?.name || s.submittedBy?.email || 'Unknown',
-        formTitle: s.formId?.title || 'Unknown Form',
+        formTitle: (s.formId as any)?.title || 'Unknown Form',
         timeAgo,
       };
     });
