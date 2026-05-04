@@ -15,18 +15,35 @@ function getSheetsClient() {
     throw new Error('Google Sheets credentials are missing. Set GOOGLE_SA_EMAIL and GOOGLE_SA_PRIVATE_KEY.');
   }
 
-  // The most reliable way to handle Vercel's private key formatting:
-  // 1. Replace literal \n text with actual newlines
-  // 2. Strip any accidental surrounding quotes
-  // 3. Trim whitespace
-  const formattedKey = privateKey
-    .replace(/\\n/gm, '\n')
-    .replace(/^"|"$/g, '')
+  // The "Nuclear Fix" for OpenSSL 3.0 DECODER error:
+  // 1. Clean out all possible corruption characters
+  let cleanKey = privateKey
+    .replace(/\\n/g, '\n')     // literal \n
+    .replace(/\"/g, '')       // stray quotes
+    .replace(/\r/g, '')       // carriage returns
     .trim();
+
+  // 2. If it contains headers, extract just the middle part and normalize
+  if (cleanKey.includes('BEGIN PRIVATE KEY')) {
+    const middle = cleanKey
+      .replace('-----BEGIN PRIVATE KEY-----', '')
+      .replace('-----END PRIVATE KEY-----', '')
+      .replace(/\s+/g, '') // Strip ALL whitespace/newlines from middle
+      .trim();
+    
+    // 3. Reconstruct with perfect 64-char line breaks
+    const lines = middle.match(/.{1,64}/g) || [];
+    cleanKey = [
+      '-----BEGIN PRIVATE KEY-----',
+      ...lines,
+      '-----END PRIVATE KEY-----',
+      '',
+    ].join('\n');
+  }
 
   const auth = new google.auth.JWT({
     email: clientEmail,
-    key: formattedKey,
+    key: cleanKey,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
