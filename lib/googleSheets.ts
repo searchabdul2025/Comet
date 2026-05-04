@@ -15,39 +15,17 @@ function getSheetsClient() {
     throw new Error('Google Sheets credentials are missing. Set GOOGLE_SA_EMAIL and GOOGLE_SA_PRIVATE_KEY.');
   }
 
-  // Absolute Total Reset Cleaning:
-  // 1. Remove all non-ASCII characters (handles weird Windows/Notepad artifacts)
-  // 2. Remove all types of quotes and literal backslash-n
-  // 3. Rebuild the PEM format from the raw base64 content
-  let base64Part = privateKey
-    .replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII characters
-    .replace(/\\n/g, '')         // literal \n
-    .replace(/\"/g, '')         // quotes
-    .replace(/\r/g, '')         // carriage returns
-    .replace(/\n/g, '')         // newlines
-    .replace('-----BEGIN PRIVATE KEY-----', '')
-    .replace('-----END PRIVATE KEY-----', '')
-    .replace(/\s+/g, '')        // all remaining spaces
+  // The "Holy Grail" fix for Google Keys on Vercel:
+  // This handles the double-escaping that Vercel sometimes does to backslashes.
+  const cleanKey = privateKey
+    .split(String.raw`\n`)
+    .join('\n')
+    .replace(/^"|"$/g, '')
     .trim();
 
-  // Re-verify we have content
-  if (!base64Part) {
-    throw new Error('Google Private Key is empty after cleaning.');
-  }
-
-  const finalKey = [
-    '-----BEGIN PRIVATE KEY-----',
-    ...(base64Part.match(/.{1,64}/g) || []),
-    '-----END PRIVATE KEY-----',
-    '',
-  ].join('\n');
-
-  // Use the more modern GoogleAuth class which is often more resilient
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: clientEmail,
-      private_key: finalKey,
-    },
+  const auth = new google.auth.JWT({
+    email: clientEmail,
+    key: cleanKey,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
 
