@@ -24,22 +24,38 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ...diagnostics, google_api_test: 'Error: No Sheet ID found in config' });
     }
 
+    // Analyze ID for hidden characters
+    const idAnalysis = config.sheetId.split('').map(char => ({
+      char,
+      code: char.charCodeAt(0),
+      hex: char.charCodeAt(0).toString(16).padStart(4, '0')
+    }));
+    diagnostics.id_analysis = {
+      length: config.sheetId.length,
+      chars: idAnalysis
+    };
+
     // Attempt to connect and just get the spreadsheet metadata
     let auth;
+    let usingEmail = '';
+    
     if (process.env.GOOGLE_SA_JSON_KEY) {
       const credentials = JSON.parse(process.env.GOOGLE_SA_JSON_KEY);
+      usingEmail = credentials.client_email;
       auth = new google.auth.GoogleAuth({
         credentials,
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
       });
     } else {
+      usingEmail = process.env.GOOGLE_SA_EMAIL || '';
       auth = new google.auth.JWT({
-        email: process.env.GOOGLE_SA_EMAIL,
+        email: usingEmail,
         key: process.env.GOOGLE_SA_PRIVATE_KEY?.replace(/\\n/g, '\n'),
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
       });
     }
 
+    diagnostics.using_identity = usingEmail;
     const sheets = google.sheets({ version: 'v4', auth });
     
     try {
