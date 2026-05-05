@@ -15,6 +15,8 @@ interface PremiumTableProps<T> {
   loading?: boolean;
   emptyMessage?: string;
   onRowClick?: (item: T) => void;
+  rowExpansion?: (item: T) => React.ReactNode;
+  isExpanded?: (item: T) => boolean;
 }
 
 const PremiumTable = <T extends { _id?: string; id?: string }>({
@@ -23,6 +25,8 @@ const PremiumTable = <T extends { _id?: string; id?: string }>({
   loading,
   emptyMessage = 'No data found',
   onRowClick,
+  rowExpansion,
+  isExpanded,
 }: PremiumTableProps<T>) => {
   return (
     <div className="card-premium overflow-hidden">
@@ -60,26 +64,37 @@ const PremiumTable = <T extends { _id?: string; id?: string }>({
                 </td>
               </tr>
             ) : (
-              data.map((item, i) => (
-                <tr
-                  key={item._id || item.id || i}
-                  onClick={() => onRowClick?.(item)}
-                  className={`group transition-all hover:bg-[var(--gold-50)]/30 ${onRowClick ? 'cursor-pointer' : ''}`}
-                >
-                  {columns.map((col, j) => (
-                    <td
-                      key={j}
-                      className={`px-6 py-4 text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors ${
-                        col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''
-                      } ${col.className || ''}`}
+              data.map((item, i) => {
+                const expanded = isExpanded?.(item);
+                return (
+                  <React.Fragment key={item._id || item.id || i}>
+                    <tr
+                      onClick={() => onRowClick?.(item)}
+                      className={`group transition-all hover:bg-[var(--gold-50)]/30 ${onRowClick ? 'cursor-pointer' : ''} ${expanded ? 'bg-[var(--gold-50)]/20' : ''}`}
                     >
-                      {typeof col.accessor === 'function'
-                        ? col.accessor(item)
-                        : (item[col.accessor] as React.ReactNode)}
-                    </td>
-                  ))}
-                </tr>
-              ))
+                      {columns.map((col, j) => (
+                        <td
+                          key={j}
+                          className={`px-6 py-4 text-sm text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors ${
+                            col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''
+                          } ${col.className || ''}`}
+                        >
+                          {typeof col.accessor === 'function'
+                            ? col.accessor(item)
+                            : (item[col.accessor] as React.ReactNode)}
+                        </td>
+                      ))}
+                    </tr>
+                    {expanded && rowExpansion && (
+                      <tr>
+                        <td colSpan={columns.length} className="p-0 border-t-0 animate-in fade-in slide-in-from-top-1 duration-300">
+                          {rowExpansion(item)}
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })
             )}
           </tbody>
         </table>
