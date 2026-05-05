@@ -297,11 +297,11 @@ export default function DashboardPage() {
           </div>
 
           {/* Podium Visualization (3D Sculpture) */}
-          <div className="relative h-[280px] w-full lg:w-[450px] flex items-center justify-center">
+          <div className="relative h-[320px] w-full lg:w-[500px] flex items-center justify-center">
              <img 
                src="/3d-icons/podium.png" 
                alt="Top Performance" 
-               className="relative z-10 h-full w-full object-contain mix-blend-multiply drop-shadow-[0_20px_50px_rgba(212,168,67,0.15)] animate-float"
+               className="relative z-10 h-full w-full object-contain mix-blend-multiply drop-shadow-[0_30px_60px_rgba(212,168,67,0.2)] animate-float scale-110"
              />
              
              {/* Right Status Card */}
