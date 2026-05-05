@@ -23,83 +23,11 @@ import {
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import AdminBanner from '@/components/AdminBanner';
+import StatCardWithSparkline from '@/components/StatCardWithSparkline';
 
-/* ─── Animated Counter Hook ─── */
-function useCounter(end: number, duration = 1200) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<number | undefined>(undefined);
 
-  useEffect(() => {
-    if (end === 0) { setCount(0); return; }
-    const start = 0;
-    const startTime = performance.now();
 
-    const tick = (now: number) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.round(start + (end - start) * eased));
-      if (progress < 1) {
-        ref.current = requestAnimationFrame(tick);
-      }
-    };
-
-    ref.current = requestAnimationFrame(tick);
-    return () => { if (ref.current) cancelAnimationFrame(ref.current); };
-  }, [end, duration]);
-
-  return count;
-}
-
-/* ─── Stat Card ─── */
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  iconBg,
-  trend,
-  loading,
-  delay,
-}: {
-  label: string;
-  value: number;
-  icon: any;
-  iconBg: string;
-  trend?: { value: number; up: boolean; label?: string };
-  loading: boolean;
-  delay: string;
-}) {
-  const animatedValue = useCounter(loading ? 0 : value);
-
-  return (
-    <div className={`card-premium p-5 animate-fade-in-up ${delay} group`}>
-      <div className="flex flex-col gap-3">
-        <div
-          className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${iconBg}`}
-        >
-          <Icon size={22} strokeWidth={1.8} />
-        </div>
-        <div>
-          <p className="text-[13px] font-medium text-[var(--text-secondary)]">{label}</p>
-          <p className="text-3xl font-bold text-[var(--text-primary)] mt-1 tabular-nums animate-count-up">
-            {loading ? (
-              <span className="inline-block h-8 w-16 bg-[var(--card-border)] rounded-lg animate-pulse" />
-            ) : (
-              animatedValue.toLocaleString()
-            )}
-          </p>
-          {trend && (
-            <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.up ? 'text-emerald-600' : 'text-red-500'}`}>
-              {trend.up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-              <span>{trend.label || `${trend.value}% this month`}</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ─── Main Dashboard ─── */
 export default function DashboardPage() {
@@ -262,111 +190,42 @@ export default function DashboardPage() {
   const medalColors = ['#facc15', '#cbd5e1', '#d97706'];
 
   return (
-    <div className="space-y-8 min-h-screen -mx-6 px-6 pb-20">
-      {/* ─── Top Greeting ─── */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-[var(--text-primary)]">
-            Good Morning, {session?.user?.name || 'Admin User'} 👋
-          </h2>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Here&apos;s what&apos;s happening across your platform today.</p>
-        </div>
-      </div>
-
-      {/* ─── Welcome Banner ─── */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-[#FDFCFB] via-[#FBF7ED] to-[#F7F5F0] border border-black/[0.03] p-10 shadow-2xl animate-fade-in-up">
-        {/* Background glow behind podium */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-[#D4A843]/10 to-transparent rounded-full opacity-60 blur-3xl" />
-        
-        {/* Glowing Rings (like in reference) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-[#D4A843]/10 rounded-full animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-[#D4A843]/5 rounded-full" />
-
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 h-full min-h-[320px]">
-          {/* Left Text Content */}
-          <div className="max-w-md lg:w-1/3">
-            <div className="flex items-center gap-3 mb-8 w-fit">
-              <div className="p-2 rounded-lg bg-[#D4A843]/10">
-                <Calendar className="text-[#B8923A]" size={16} />
-              </div>
-              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#B8923A]">
-                {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'Loading...'}
-              </span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black text-[#1A1A1A] leading-[1.1] mb-6">
-              Welcome back, <br />
-              <span className="text-[#D4A843]">{session?.user?.name || 'Admin User'}</span>
-            </h1>
-          </div>
-
-          {/* Centered Podium Visualization */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[380px] w-full lg:w-[600px] flex items-center justify-center pointer-events-none z-0">
-             <img 
-               src="/3d-icons/podium.png" 
-               alt="Top Performance" 
-               className="h-full w-full object-contain mix-blend-multiply drop-shadow-[0_40px_80px_rgba(212,168,67,0.15)] animate-float scale-125"
-             />
-          </div>
-
-          {/* Right Status Card */}
-          <div className="lg:w-1/3 flex justify-end items-center relative z-10">
-             <div className="flex items-center gap-5 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 shadow-xl shadow-black/5 transition-all hover:scale-105 cursor-default">
-               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center shadow-lg shadow-[#D4A843]/30 overflow-hidden border-4 border-white">
-                  <img src="/3d-icons/shield.png" className="h-10 w-10 object-contain brightness-110" />
-               </div>
-               <div>
-                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.15em]">System Status</p>
-                 <p className="text-lg font-black text-[#1A1A1A]">All Systems</p>
-                 <div className="flex items-center gap-2 mt-1.5">
-                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Operational</span>
-                 </div>
-               </div>
-             </div>
-          </div>
-        </div>
-      </div>
+    <div className="space-y-8 min-h-screen -mx-6 px-6 pb-20 font-sans">
+      {/* ─── Top Greeting & Banner ─── */}
+      <AdminBanner adminName={session?.user?.name || 'Admin User'} />
 
       {/* ─── Stat Cards ─── */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 ${isUser ? '' : 'xl:grid-cols-4'} gap-6`}>
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${isUser ? '' : 'xl:grid-cols-4'} gap-[14px]`}>
         {metrics.map((m, i) => (
-          <div key={m.label} className={`card-premium p-6 animate-fade-in-up delay-${i+1} group overflow-hidden relative`}>
-            {/* Wave Graphic at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
-              <svg viewBox="0 0 400 100" preserveAspectRatio="none" className="w-full h-full">
-                <path 
-                  d="M0,50 C50,20 100,80 150,50 C200,20 250,80 300,50 C350,20 400,80 400,50 L400,100 L0,100 Z" 
-                  fill="#D4A843" 
-                />
-              </svg>
-            </div>
-
-            <div className="relative z-10 flex flex-col gap-4">
-              <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110 overflow-hidden`}>
-                {m.iconSrc ? (
-                  <img src={m.iconSrc} alt={m.label} className="h-14 w-14 object-contain drop-shadow-lg" />
-                ) : (
-                  <m.icon size={22} strokeWidth={1.8} className={m.iconBg.split(' ')[1]} />
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-[var(--text-secondary)]">{m.label}</p>
-                <div className="flex items-end justify-between mt-1">
-                  <p className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">
-                    {loading ? <span className="inline-block h-8 w-16 bg-[var(--card-border)] rounded-lg animate-pulse" /> : m.value.toLocaleString()}
-                  </p>
-                </div>
-                {m.trend && (
-                  <div className={`flex items-center gap-1 mt-3 text-xs font-bold ${m.trend.up ? 'text-emerald-600' : 'text-slate-400'}`}>
-                    {m.trend.up && <TrendingUp size={13} />}
-                    <span>{m.trend.label || `${m.trend.value}% this month`}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <StatCardWithSparkline
+            key={m.label}
+            label={m.label}
+            value={m.value}
+            icon={
+              m.label === 'Total Forms' ? '📄' :
+              m.label === 'Total Users' ? '👥' :
+              m.label === 'Submissions' || m.label === 'My Submissions' ? '📨' :
+              '🛡️'
+            }
+            trend={{
+              value: m.trend?.value || 0,
+              up: m.trend?.up || false,
+              label: m.trend?.label
+            }}
+            sparkData={
+              m.label === 'Total Forms' ? [1,1,1,1,1,2,2,2,2,2,2,2] :
+              m.label === 'Total Users' ? [1,1,1,2,2,2,2,3,3,3,3,3] :
+              m.label === 'Submissions' || m.label === 'My Submissions' ? [0,0,0,0,1,1,1,1,1,1,1,1] :
+              [0,0,0,0,0,0,0,0,0,0,0,0]
+            }
+            sparkColor={
+              m.label === 'Authorized IPs' ? '#c8bc99' : '#d4af37'
+            }
+            index={i}
+          />
         ))}
       </div>
+
 
       {/* ─── Chart + System Health ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
