@@ -13,9 +13,15 @@ import {
   Clock,
   Zap,
   BarChart3,
+  Check,
+  Activity,
+  ChevronDown,
+  Megaphone,
+  Sparkles,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 /* ─── Animated Counter Hook ─── */
 function useCounter(end: number, duration = 1200) {
