@@ -273,50 +273,51 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── Welcome Banner ─── */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-white border border-[var(--card-border)] p-10 shadow-xl animate-fade-in-up">
-        {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4A843]/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#F5F3EE] rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4" />
-        
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-[#FDFCFB] via-[#FBF7ED] to-[#F7F5F0] border border-black/[0.03] p-10 shadow-2xl animate-fade-in-up">
         {/* Background glow behind podium */}
-        <div className="absolute top-1/2 left-[65%] -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-radial from-[#D4A843]/10 to-transparent rounded-full opacity-50 blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-[#D4A843]/10 to-transparent rounded-full opacity-60 blur-3xl" />
+        
+        {/* Glowing Rings (like in reference) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] border border-[#D4A843]/10 rounded-full animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-[#D4A843]/5 rounded-full" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 h-full min-h-[300px]">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 h-full min-h-[320px]">
           {/* Left Text Content */}
           <div className="max-w-md lg:w-1/3">
-            <div className="flex items-center gap-2 mb-6 w-fit px-4 py-2 rounded-xl border border-[#D4A843]/10 bg-[#D4A843]/5">
-              <Clock className="text-[#D4A843]" size={14} />
-              <span className="text-[11px] font-black uppercase tracking-widest text-[#D4A843]">
+            <div className="flex items-center gap-3 mb-8 w-fit">
+              <div className="p-2 rounded-lg bg-[#D4A843]/10">
+                <Calendar className="text-[#B8923A]" size={16} />
+              </div>
+              <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#B8923A]">
                 {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'Loading...'}
               </span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-[#1A1A1A] leading-tight mb-4">
+            <h1 className="text-4xl md:text-5xl font-black text-[#1A1A1A] leading-[1.1] mb-6">
               Welcome back, <br />
               <span className="text-[#D4A843]">{session?.user?.name || 'Admin User'}</span>
             </h1>
-            <p className="text-slate-500 font-medium">Your enterprise command center is ready.</p>
           </div>
 
           {/* Centered Podium Visualization */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[350px] w-full lg:w-[600px] flex items-center justify-center pointer-events-none z-0">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[380px] w-full lg:w-[600px] flex items-center justify-center pointer-events-none z-0">
              <img 
                src="/3d-icons/podium.png" 
                alt="Top Performance" 
-               className="h-full w-full object-contain mix-blend-multiply drop-shadow-[0_40px_80px_rgba(212,168,67,0.25)] animate-float scale-125"
+               className="h-full w-full object-contain mix-blend-multiply drop-shadow-[0_40px_80px_rgba(212,168,67,0.15)] animate-float scale-125"
              />
           </div>
 
           {/* Right Status Card */}
           <div className="lg:w-1/3 flex justify-end items-center relative z-10">
-             <div className="flex items-center gap-4 rounded-3xl bg-white/60 backdrop-blur-3xl border border-black/[0.03] p-5 shadow-2xl transition-all hover:scale-105 cursor-default">
-               <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center shadow-lg shadow-[#D4A843]/20 overflow-hidden">
+             <div className="flex items-center gap-5 rounded-3xl bg-white/80 backdrop-blur-xl border border-white p-6 shadow-xl shadow-black/5 transition-all hover:scale-105 cursor-default">
+               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center shadow-lg shadow-[#D4A843]/30 overflow-hidden border-4 border-white">
                   <img src="/3d-icons/shield.png" className="h-10 w-10 object-contain brightness-110" />
                </div>
                <div>
-                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">System Status</p>
-                 <p className="text-md font-black text-[#1A1A1A]">All Systems</p>
-                 <div className="flex items-center gap-1.5 mt-1">
-                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.15em]">System Status</p>
+                 <p className="text-lg font-black text-[#1A1A1A]">All Systems</p>
+                 <div className="flex items-center gap-2 mt-1.5">
+                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Operational</span>
                  </div>
                </div>
