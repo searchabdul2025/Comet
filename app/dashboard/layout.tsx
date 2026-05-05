@@ -17,7 +17,7 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
         <Header />
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-          <div className="max-w-[1600px] mx-auto animate-fade-in">
+          <div className="max-w-[1600px] animate-fade-in">
             {children}
           </div>
         </main>
