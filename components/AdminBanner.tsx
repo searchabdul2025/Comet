@@ -61,70 +61,13 @@ const AdminBanner: React.FC<AdminBannerProps> = ({ adminName }) => {
           </div>
         </div>
 
-        {/* Center Side - Trophy SVG */}
-        <div className="relative z-[1] flex justify-center items-end h-full">
-          <svg viewBox="0 0 210 230" width="190" height="210"
-            className="overflow-visible drop-shadow-[0_10_28px_rgba(180,140,60,0.38)]"
-          >
-            <defs>
-              <radialGradient id="glowBg" cx="50%" cy="60%" r="50%">
-                <stop offset="0%" stopColor="#fff9e0" stopOpacity="0.95"/>
-                <stop offset="100%" stopColor="#fff9e0" stopOpacity="0"/>
-              </radialGradient>
-              <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#f9e070"/>
-                <stop offset="50%" stopColor="#d4a820"/>
-                <stop offset="100%" stopColor="#b8880e"/>
-              </linearGradient>
-              <linearGradient id="g2" x1="1" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f0d060"/>
-                <stop offset="100%" stopColor="#c49018"/>
-              </linearGradient>
-              <linearGradient id="podV" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ffffff"/>
-                <stop offset="100%" stopColor="#e8e0cc"/>
-              </linearGradient>
-              <linearGradient id="ring" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f0cc50"/>
-                <stop offset="100%" stopColor="#c49020"/>
-              </linearGradient>
-              <filter id="sg">
-                <feGaussianBlur stdDeviation="2.5" result="b"/>
-                <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-              </filter>
-            </defs>
-            {/* glow */}
-            <ellipse cx="105" cy="120" rx="92" ry="82" fill="url(#glowBg)"/>
-            {/* shadow */}
-            <ellipse cx="105" cy="212" rx="52" ry="7" fill="rgba(212,175,55,0.18)"/>
-            {/* podium tiers */}
-            <rect x="32" y="190" width="146" height="20" rx="5" fill="url(#podV)" stroke="#ddd4b8" strokeWidth="0.5"/>
-            <rect x="32" y="188" width="146" height="5" rx="2.5" fill="url(#ring)" opacity="0.7"/>
-            <rect x="48" y="173" width="114" height="19" rx="5" fill="url(#podV)" stroke="#ddd4b8" strokeWidth="0.5"/>
-            <rect x="48" y="171" width="114" height="4" rx="2" fill="url(#ring)" opacity="0.6"/>
-            <rect x="66" y="158" width="78" height="17" rx="5" fill="url(#podV)" stroke="#ddd4b8" strokeWidth="0.5"/>
-            <rect x="66" y="156" width="78" height="4" rx="2" fill="url(#ring)" opacity="0.5"/>
-            {/* left figure */}
-            <circle cx="71" cy="115" r="9" fill="url(#g1)"/>
-            <ellipse cx="74" cy="136" rx="10" ry="16" fill="url(#g1)" transform="rotate(-10,74,136)"/>
-            <path d="M66 127 Q51 107 45 95" stroke="#e8c030" strokeWidth="7" fill="none" strokeLinecap="round"/>
-            <path d="M81 130 Q91 122 95 136" stroke="#d4a820" strokeWidth="6" fill="none" strokeLinecap="round"/>
-            <path d="M70 150 Q63 163 61 157" stroke="#c49020" strokeWidth="6" fill="none" strokeLinecap="round"/>
-            <path d="M77 151 Q82 164 80 158" stroke="#c49020" strokeWidth="6" fill="none" strokeLinecap="round"/>
-            {/* right figure */}
-            <circle cx="139" cy="115" r="9" fill="url(#g2)"/>
-            <ellipse cx="136" cy="136" rx="10" ry="16" fill="url(#g2)" transform="rotate(10,136,136)"/>
-            <path d="M144 127 Q159 107 165 95" stroke="#e8c030" strokeWidth="7" fill="none" strokeLinecap="round"/>
-            <path d="M129 130 Q119 122 115 136" stroke="#d4a820" strokeWidth="6" fill="none" strokeLinecap="round"/>
-            <path d="M140 150 Q147 163 149 157" stroke="#c49020" strokeWidth="6" fill="none" strokeLinecap="round"/>
-            <path d="M133 151 Q128 164 130 158" stroke="#c49020" strokeWidth="6" fill="none" strokeLinecap="round"/>
-            {/* stars */}
-            <polygon points="105,11 108,20 118,20 110,26 113,35 105,29 97,35 100,26 92,20 102,20" fill="#f5c020" filter="url(#sg)"/>
-            <polygon points="75,28 77.5,35 85,35 79,39.5 81.5,47 75,42.5 68.5,47 71,39.5 65,35 72.5,35" fill="#f5c020" opacity="0.9"/>
-            <polygon points="135,28 137.5,35 145,35 139,39.5 141.5,47 135,42.5 128.5,47 131,39.5 125,35 132.5,35" fill="#f5c020" opacity="0.9"/>
-            <polygon points="54,54 56,60 62,60 57,64 59,70 54,66 49,70 51,64 46,60 52,60" fill="#f5c020" opacity="0.75"/>
-            <polygon points="156,54 158,60 164,60 159,64 161,70 156,66 151,70 153,64 148,60 154,60" fill="#f5c020" opacity="0.75"/>
-          </svg>
+        {/* Center Side - Logo */}
+        <div className="relative z-[1] flex justify-center items-center h-full">
+           <img 
+             src="/logo.svg" 
+             alt="Logo" 
+             style={{ width: '160px', height: 'auto', filter: 'drop-shadow(0 4px 12px rgba(180,140,60,0.2))' }}
+           />
         </div>
 
         {/* Right Side Status */}
