@@ -8,7 +8,7 @@ import { Search, Bell, Moon, Sun, ChevronDown } from 'lucide-react';
 export default function Header() {
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
-  const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Portal' });
+  const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Comet', logo: '/logo.svg' });
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,10 @@ export default function Header() {
         const res = await fetch('/api/settings/public');
         const result = await res.json();
         if (result.success) {
-          setBrand({ name: result.data.APP_NAME || 'Portal', logo: result.data.APP_LOGO_URL || '' });
+          setBrand({ 
+            name: result.data.APP_NAME || 'Comet', 
+            logo: result.data.APP_LOGO_URL || '/logo.svg' 
+          });
         }
       } catch {
         // ignore

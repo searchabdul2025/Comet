@@ -250,37 +250,79 @@ export default function DashboardPage() {
   const medalColors = ['#facc15', '#cbd5e1', '#d97706'];
 
   return (
-    <div className="space-y-6 min-h-screen -mx-6 px-6 pb-10">
+    <div className="space-y-8 min-h-screen -mx-6 px-6 pb-20">
+      {/* ─── Top Greeting ─── */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+            Good Morning, {session?.user?.name || 'Admin User'} 👋
+          </h2>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">Here&apos;s what&apos;s happening across your platform today.</p>
+        </div>
+      </div>
+
       {/* ─── Welcome Banner ─── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#101013] via-[#1A1A1F] to-[#101013] text-white p-7 shadow-2xl animate-fade-in-up">
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#101013] via-[#1A1A1F] to-[#101013] text-white p-10 shadow-2xl animate-fade-in-up">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-[#D4A843]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#3A3A42]/15 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4A843]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#3A3A42]/15 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4" />
         
-        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Zap size={18} className="text-[#D4A843]" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#D4A843]/70">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div className="max-w-xl">
+            <div className="flex items-center gap-2 mb-4 bg-white/5 w-fit px-3 py-1.5 rounded-xl border border-white/10">
+              <span className="h-2 w-2 rounded-full bg-[#D4A843]" />
+              <span className="text-[11px] font-bold uppercase tracking-widest text-[#D4A843]/80">
                 {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'Loading...'}
               </span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold">
-              Welcome back, <span className="text-gradient">{session?.user?.name || 'User'}</span>
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+              Welcome back, <br />
+              <span className="text-[#D4A843]">{session?.user?.name || 'Admin User'}</span>
             </h1>
-            <p className="mt-1.5 text-sm text-slate-400 max-w-xl">
-              Here&apos;s what&apos;s happening across your {isUser ? 'workspace' : 'platform'} today.
-            </p>
           </div>
-          <div className="flex items-center gap-2.5 rounded-2xl bg-white/[0.05] backdrop-blur border border-white/[0.08] px-4 py-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#3A3A42] to-[#2A2A30] flex items-center justify-center shadow-lg shadow-[#3A3A42]/25">
-              <ShieldCheck size={20} />
+
+          {/* Podium Visualization (CSS Mockup of the 3D Trophy) */}
+          <div className="relative h-[240px] w-full lg:w-[400px] flex items-end justify-center perspective-1000">
+            <div className="absolute bottom-4 h-16 w-48 bg-white/10 rounded-full blur-2xl" />
+            
+            {/* The Podium */}
+            <div className="relative flex items-end gap-1">
+              {/* 2nd Place */}
+              <div className="w-16 h-20 bg-gradient-to-b from-[#C0C0C0] to-[#808080] rounded-t-xl flex items-center justify-center border-t border-white/20 shadow-lg">
+                <span className="text-2xl font-bold text-[#101013]">2</span>
+              </div>
+              {/* 1st Place */}
+              <div className="w-20 h-32 bg-gradient-to-b from-[#D4A843] to-[#B8923A] rounded-t-xl flex flex-col items-center justify-center border-t border-white/30 shadow-2xl z-10 relative">
+                <div className="absolute -top-12 animate-bounce">
+                   <div className="relative">
+                      <div className="h-10 w-10 bg-gradient-to-tr from-[#D4A843] to-[#FBF7ED] rounded-full flex items-center justify-center shadow-lg">
+                        <Users size={20} className="text-[#101013]" />
+                      </div>
+                      <div className="absolute -top-1 -right-1 h-4 w-4 bg-[#D4A843] rounded-full flex items-center justify-center border-2 border-[#101013]">
+                        <Check size={8} className="text-white font-bold" />
+                      </div>
+                   </div>
+                </div>
+                <span className="text-3xl font-bold text-[#101013]">1</span>
+              </div>
+              {/* 3rd Place */}
+              <div className="w-16 h-16 bg-gradient-to-b from-[#CD7F32] to-[#8B4513] rounded-t-xl flex items-center justify-center border-t border-white/20 shadow-lg">
+                <span className="text-2xl font-bold text-[#101013]">3</span>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] text-slate-400 font-medium">System Status</p>
-              <div className="flex items-center gap-1.5">
-                <span className="status-dot status-dot-online" />
-                <p className="text-sm font-semibold text-emerald-400">Operational</p>
+
+            {/* Right Status Card */}
+            <div className="absolute top-10 right-0 hidden md:flex items-center gap-3 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-4 shadow-2xl">
+              <div className="h-12 w-12 rounded-xl bg-[#D4A843]/10 flex items-center justify-center border border-[#D4A843]/20">
+                 <ShieldCheck size={24} className="text-[#D4A843]" />
+              </div>
+              <div>
+                <p className="text-[11px] text-white/50 font-bold uppercase tracking-wider">System Status</p>
+                <p className="text-sm font-bold text-white">All Systems</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter">Operational</span>
+                </div>
               </div>
             </div>
           </div>
@@ -288,268 +330,287 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── Stat Cards ─── */}
-      <div className={`grid grid-cols-1 md:grid-cols-2 ${isUser ? '' : 'xl:grid-cols-4'} gap-4`}>
+      <div className={`grid grid-cols-1 md:grid-cols-2 ${isUser ? '' : 'xl:grid-cols-4'} gap-6`}>
         {metrics.map((m, i) => (
-          <StatCard
-            key={m.label}
-            label={m.label}
-            value={m.value}
-            icon={m.icon}
-            iconBg={m.iconBg}
-            trend={m.trend}
-            loading={loading}
-            delay={`delay-${i + 1}`}
-          />
+          <div key={m.label} className={`card-premium p-6 animate-fade-in-up delay-${i+1} group overflow-hidden relative`}>
+            {/* Wave Graphic at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
+              <svg viewBox="0 0 400 100" preserveAspectRatio="none" className="w-full h-full">
+                <path 
+                  d="M0,50 C50,20 100,80 150,50 C200,20 250,80 300,50 C350,20 400,80 400,50 L400,100 L0,100 Z" 
+                  fill="#D4A843" 
+                />
+              </svg>
+            </div>
+
+            <div className="relative z-10 flex flex-col gap-4">
+              <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${m.iconBg}`}>
+                <m.icon size={22} strokeWidth={1.8} />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-[var(--text-secondary)]">{m.label}</p>
+                <div className="flex items-end justify-between mt-1">
+                  <p className="text-3xl font-bold text-[var(--text-primary)] tabular-nums">
+                    {loading ? <span className="inline-block h-8 w-16 bg-[var(--card-border)] rounded-lg animate-pulse" /> : m.value.toLocaleString()}
+                  </p>
+                </div>
+                {m.trend && (
+                  <div className={`flex items-center gap-1 mt-3 text-xs font-bold ${m.trend.up ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    {m.trend.up && <TrendingUp size={13} />}
+                    <span>{m.trend.label || `${m.trend.value}% this month`}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* ─── Chart + Side Panels ─── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {/* Main Chart */}
-        <div className="xl:col-span-2 card-premium p-6 animate-fade-in-up delay-3">
-          <div className="flex items-center justify-between mb-5">
+      {/* ─── Chart + System Health ─── */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 card-premium p-8 animate-fade-in-up delay-4">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Submissions Overview</h3>
-              <p className="text-[12px] text-[var(--text-tertiary)] mt-0.5">Monthly trend for {new Date().getFullYear()}</p>
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">Submissions Overview</h3>
+              <p className="text-sm text-[var(--text-secondary)] mt-1">Monthly trend for {new Date().getFullYear()}</p>
             </div>
-            <div className="flex items-center gap-1.5 border border-[#D4A843]/30 text-[#D4A843] rounded-lg px-2.5 py-1.5 text-xs font-semibold cursor-pointer hover:bg-[#D4A843]/5 transition-colors">
+            <div className="flex items-center gap-2 border border-[var(--card-border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text-secondary)] cursor-pointer hover:bg-[var(--background)] transition-all">
               <span>This Year</span>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <ChevronDown size={16} />
             </div>
           </div>
 
-          {chartLoading ? (
-            <div className="h-56 flex items-center justify-center">
-              <div className="h-8 w-8 border-3 border-[#D4A843]/20 border-t-[#D4A843] rounded-full animate-spin" />
-            </div>
-          ) : chartError ? (
-            <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl">{chartError}</div>
-          ) : chartData.every(v => v === 0) ? (
-            <div className="h-56 flex items-center justify-center text-sm text-slate-400">No submissions yet</div>
-          ) : (
-            <div className="relative">
-              <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ height: 220 }}>
-                <defs>
-                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#D4A843" stopOpacity="0.3" />
-                    <stop offset="100%" stopColor="#D4A843" stopOpacity="0.02" />
-                  </linearGradient>
-                </defs>
-
-                {/* Horizontal grid lines */}
-                {yLabels.map((val, i) => {
-                  const y = padT + innerH - (val / niceMax) * innerH;
-                  return (
-                    <g key={`grid-${i}`}>
-                      <line x1={padL} y1={y} x2={chartW - padR} y2={y} stroke="#f1f5f9" strokeWidth="1" />
-                      <text x={padL - 8} y={y + 3.5} textAnchor="end" fill="#94a3b8" fontSize="10" fontFamily="Inter, sans-serif">
-                        {val}
-                      </text>
-                    </g>
-                  );
-                })}
-
-                {/* Area fill */}
-                <path
-                  d={(() => {
-                    const points = chartData.map((val, i) => {
-                      const step = innerW / 11;
-                      const x = padL + step * i;
-                      const y = padT + innerH - (val / niceMax) * innerH;
-                      return { x, y };
-                    });
-                    // Smooth curve
-                    let d = `M${points[0].x},${points[0].y}`;
-                    for (let i = 1; i < points.length; i++) {
-                      const cp1x = points[i-1].x + (points[i].x - points[i-1].x) * 0.4;
-                      const cp2x = points[i].x - (points[i].x - points[i-1].x) * 0.4;
-                      d += ` C${cp1x},${points[i-1].y} ${cp2x},${points[i].y} ${points[i].x},${points[i].y}`;
-                    }
-                    // Close for fill
-                    d += ` L${points[points.length-1].x},${padT + innerH} L${points[0].x},${padT + innerH} Z`;
-                    return d;
-                  })()}
-                  fill="url(#areaFill)"
-                />
-
-                {/* Area line */}
-                <path
-                  d={(() => {
-                    const points = chartData.map((val, i) => {
-                      const step = innerW / 11;
-                      const x = padL + step * i;
-                      const y = padT + innerH - (val / niceMax) * innerH;
-                      return { x, y };
-                    });
-                    let d = `M${points[0].x},${points[0].y}`;
-                    for (let i = 1; i < points.length; i++) {
-                      const cp1x = points[i-1].x + (points[i].x - points[i-1].x) * 0.4;
-                      const cp2x = points[i].x - (points[i].x - points[i-1].x) * 0.4;
-                      d += ` C${cp1x},${points[i-1].y} ${cp2x},${points[i].y} ${points[i].x},${points[i].y}`;
-                    }
-                    return d;
-                  })()}
-                  fill="none"
-                  stroke="#D4A843"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                />
-
-                {/* Data points + hover tooltips */}
-                {chartData.map((val, i) => {
-                  const step = innerW / 11;
-                  const cx = padL + step * i;
-                  const cy = padT + innerH - (val / niceMax) * innerH;
-                  const isHovered = hoveredBar === i;
-
-                  return (
-                    <g
-                      key={`pt-${i}`}
-                      onMouseEnter={() => setHoveredBar(i)}
-                      onMouseLeave={() => setHoveredBar(null)}
-                      className="cursor-pointer"
-                    >
-                      <rect x={cx - 15} y={padT} width={30} height={innerH + padB} fill="transparent" />
-                      {isHovered && (
-                        <>
-                          <line x1={cx} y1={padT} x2={cx} y2={padT + innerH} stroke="#D4A843" strokeWidth="1" strokeDasharray="4 3" opacity="0.3" />
-                          <circle cx={cx} cy={cy} r={6} fill="white" stroke="#D4A843" strokeWidth="2.5" />
-                          <rect x={cx - 24} y={cy - 30} width={48} height={22} rx={6} fill="#101013" />
-                          <polygon points={`${cx - 4},${cy - 8} ${cx + 4},${cy - 8} ${cx},${cy - 3}`} fill="#101013" />
-                          <text x={cx} y={cy - 16} textAnchor="middle" fill="white" fontSize="11" fontWeight="600" fontFamily="Inter, sans-serif">
-                            {val}
-                          </text>
-                        </>
-                      )}
-                      {!isHovered && val > 0 && (
-                        <circle cx={cx} cy={cy} r={3.5} fill="#D4A843" />
-                      )}
-                      <text x={cx} y={chartH - 6} textAnchor="middle" fill={isHovered ? '#D4A843' : '#94a3b8'} fontSize="10" fontWeight={isHovered ? '600' : '400'} fontFamily="Inter, sans-serif">
-                        {months[i]}
-                      </text>
-                    </g>
-                  );
-                })}
-              </svg>
-
-              {/* Legend */}
-              <div className="flex items-center gap-5 mt-2 text-xs text-[var(--text-secondary)]">
-                <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#D4A843]" />
-                  Monthly Submissions
-                </span>
-              </div>
-            </div>
-          )}
+          <div className="relative h-[250px]">
+             {chartLoading ? (
+               <div className="h-full flex items-center justify-center"><Activity className="animate-spin text-[#D4A843]" /></div>
+             ) : (
+               <div className="h-full">
+                  <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full h-full">
+                    <defs>
+                      <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#D4A843" stopOpacity="0.4" />
+                        <stop offset="100%" stopColor="#D4A843" stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d={(() => {
+                        const points = chartData.map((val, i) => ({
+                          x: padL + (innerW / 11) * i,
+                          y: padT + innerH - (val / niceMax) * innerH
+                        }));
+                        let d = `M${points[0].x},${points[0].y}`;
+                        for (let i = 1; i < points.length; i++) {
+                          const cp1x = points[i-1].x + (points[i].x - points[i-1].x) * 0.4;
+                          const cp2x = points[i].x - (points[i].x - points[i-1].x) * 0.4;
+                          d += ` C${cp1x},${points[i-1].y} ${cp2x},${points[i].y} ${points[i].x},${points[i].y}`;
+                        }
+                        return d + ` L${points[points.length-1].x},${padT + innerH} L${points[0].x},${padT + innerH} Z`;
+                      })()}
+                      fill="url(#areaFill)"
+                    />
+                    <path
+                      d={(() => {
+                        const points = chartData.map((val, i) => ({
+                          x: padL + (innerW / 11) * i,
+                          y: padT + innerH - (val / niceMax) * innerH
+                        }));
+                        let d = `M${points[0].x},${points[0].y}`;
+                        for (let i = 1; i < points.length; i++) {
+                          const cp1x = points[i-1].x + (points[i].x - points[i-1].x) * 0.4;
+                          const cp2x = points[i].x - (points[i].x - points[i-1].x) * 0.4;
+                          d += ` C${cp1x},${points[i-1].y} ${cp2x},${points[i].y} ${points[i].x},${points[i].y}`;
+                        }
+                        return d;
+                      })()}
+                      fill="none"
+                      stroke="#D4A843"
+                      strokeWidth="3"
+                    />
+                    {chartData.map((val, i) => (
+                      <circle 
+                        key={i} 
+                        cx={padL + (innerW / 11) * i} 
+                        cy={padT + innerH - (val / niceMax) * innerH} 
+                        r={hoveredBar === i ? 6 : 0} 
+                        fill="#D4A843" 
+                        stroke="white" 
+                        strokeWidth="2" 
+                      />
+                    ))}
+                    {months.map((m, i) => (
+                      <text key={m} x={padL + (innerW / 11) * i} y={chartH - 5} textAnchor="middle" fontSize="10" fill="#94a3b8">{m}</text>
+                    ))}
+                  </svg>
+               </div>
+             )}
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+             <span className="h-2.5 w-2.5 rounded-full bg-[#D4A843]" />
+             <span className="text-xs font-bold text-[var(--text-secondary)]">Monthly Submissions</span>
+          </div>
         </div>
 
-        {/* Right Column */}
-        <div className="space-y-4">
-          {/* System Health */}
-          <div className="card-premium p-5 animate-fade-in-up delay-4">
-            <h3 className="text-base font-semibold text-[var(--text-primary)] mb-5">System Health</h3>
-            <div className="space-y-3">
+        {/* System Health */}
+        <div className="card-premium p-8 flex flex-col animate-fade-in-up delay-5">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-8">System Health</h3>
+            
+            <div className="relative h-40 w-full flex items-center justify-center mb-10">
+               <div className="absolute h-32 w-32 rounded-full border border-[#D4A843]/20 animate-ping" />
+               <div className="absolute h-24 w-24 rounded-full bg-white border border-[#D4A843]/10 shadow-2xl flex items-center justify-center">
+                  <div className="h-16 w-16 bg-[#101013] rounded-full flex items-center justify-center shadow-inner">
+                     <Activity size={32} className="text-[#D4A843] animate-pulse" />
+                  </div>
+               </div>
+               <div className="absolute h-32 w-32 rounded-full border border-dashed border-[#D4A843]/30 animate-spin-slow" />
+            </div>
+
+            <div className="space-y-4">
               {[
                 { label: 'Authentication', status: 'Operational', icon: '🔐' },
                 { label: 'Database', status: 'Connected', icon: '🗄️' },
                 { label: 'Google Sheets', status: 'Synced', icon: '📊' },
+                { label: 'WhatsApp API', status: 'Operational', icon: '💬' },
                 { label: 'Email Service', status: 'Operational', icon: '✉️' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-[var(--card-border)] last:border-0">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-base">{item.icon}</span>
-                    <span className="text-[13px] text-[var(--text-secondary)]">{item.label}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg grayscale">{item.icon}</span>
+                    <span className="text-sm font-medium text-[var(--text-secondary)]">{item.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="status-dot status-dot-online" />
-                    <span className="text-[11px] font-semibold text-emerald-600 italic">
-                      {item.status}
-                    </span>
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="text-[11px] font-bold text-emerald-600 uppercase">{item.status}</span>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-3 border-t border-[var(--card-border)]">
-              <a href="/settings" className="flex items-center justify-between text-sm text-[var(--text-secondary)] hover:text-[#D4A843] transition-colors">
-                <span>View all services</span>
-                <ArrowUpRight size={14} />
-              </a>
-            </div>
           </div>
-
-          {/* Target Progress (Agents) */}
-          {isUser && stats && (
-            <div className="card-premium p-5 animate-fade-in-up delay-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-4">Target Progress</h3>
-              <TargetRing
-                achieved={stats.mySubmissions || 0}
-                target={stats.totalSubmissions && isUser ? stats.totalSubmissions : 0}
-              />
-            </div>
-          )}
-
-          {/* Top Agents (Admin) */}
-          {isAdmin && topAgents.length > 0 && (
-            <div className="card-premium p-5 animate-fade-in-up delay-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Trophy size={16} className="text-[#D4A843]" />
-                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Top Agents</h3>
-              </div>
-              <div className="space-y-2.5">
-                {topAgents.slice(0, 5).map((agent: any, i: number) => (
-                  <div key={agent._id || i} className="flex items-center gap-3 py-1.5">
-                    <div className="h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{
-                      background: i < 3 ? `linear-gradient(135deg, ${medalColors[i]}, ${medalColors[i]}88)` : '#f1f5f9',
-                      color: i < 3 ? '#000' : '#64748b',
-                    }}>
-                      {i < 3 ? <Medal size={13} /> : i + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium text-[var(--text-primary)] truncate">{agent.name || agent.email || 'Agent'}</p>
-                    </div>
-                    <span className="text-[12px] font-bold text-[#D4A843] tabular-nums">{agent.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <button className="mt-8 w-full py-4 bg-[var(--background)] border border-[var(--card-border)] rounded-2xl text-sm font-bold text-[var(--text-secondary)] hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all flex items-center justify-center gap-2">
+            View all services <ArrowUpRight size={16} />
+          </button>
         </div>
       </div>
 
-      {/* ─── Recent Submissions (Admin/Supervisor) ─── */}
-      {!isUser && recentSubmissions.length > 0 && (
-        <div className="card-premium p-6 animate-fade-in-up delay-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Clock size={16} className="text-slate-400" />
-              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Recent Submissions</h3>
-            </div>
-            <a href="/dashboard/reports" className="text-xs font-medium text-[#D4A843] hover:text-[#B8923A] flex items-center gap-1">
-              View all <ArrowUpRight size={12} />
-            </a>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
-                  <th className="pb-2.5 font-medium">Agent</th>
-                  <th className="pb-2.5 font-medium">Form</th>
-                  <th className="pb-2.5 font-medium">Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentSubmissions.slice(0, 5).map((sub: any, i: number) => (
-                  <tr key={sub._id || i} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3 font-medium text-slate-800">{sub.agentName || 'Unknown'}</td>
-                    <td className="py-3 text-slate-500">{sub.formTitle || '—'}</td>
-                    <td className="py-3 text-slate-400 text-xs">{sub.timeAgo || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* ─── Bottom Sections ─── */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* Top Agents */}
+        <div className="card-premium p-8 animate-fade-in-up delay-6">
+           <h3 className="text-xl font-bold text-[var(--text-primary)] mb-8">Top Agents</h3>
+           <div className="relative h-48 flex items-end justify-center gap-2 mb-8">
+              <div className="w-16 h-20 bg-slate-200 rounded-t-xl flex flex-col items-center justify-center text-[#101013] font-bold shadow-lg">
+                <span className="text-sm">2</span>
+              </div>
+              <div className="w-20 h-32 bg-gradient-to-b from-[#D4A843] to-[#B8923A] rounded-t-xl flex flex-col items-center justify-center text-[#101013] font-bold shadow-2xl relative z-10">
+                <div className="absolute -top-10 h-8 w-8 rounded-full bg-white border-2 border-[#D4A843] flex items-center justify-center">
+                   <Trophy size={14} className="text-[#D4A843]" />
+                </div>
+                <span className="text-lg">1</span>
+              </div>
+              <div className="w-16 h-14 bg-[#CD7F32]/50 rounded-t-xl flex flex-col items-center justify-center text-[#101013] font-bold shadow-lg">
+                <span className="text-sm">3</span>
+              </div>
+           </div>
+           
+           <div className="space-y-4">
+              {topAgents.slice(0, 1).map((agent: any) => (
+                <div key={agent._id} className="flex items-center justify-between p-4 bg-[var(--background)] rounded-2xl border border-[var(--card-border)]">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-[#101013] flex items-center justify-center text-[#D4A843] font-bold text-xs">
+                      {agent.name?.[0] || 'A'}
+                    </div>
+                    <span className="text-sm font-bold text-[var(--text-primary)]">{agent.name || 'ahmad'}</span>
+                  </div>
+                  <div className="bg-[#D4A843]/10 text-[#D4A843] px-3 py-1 rounded-full text-[10px] font-bold">
+                    {agent.count} Submission
+                  </div>
+                </div>
+              ))}
+           </div>
         </div>
-      )}
+
+        {/* Recent Submissions */}
+        <div className="card-premium p-8 animate-fade-in-up delay-7">
+           <div className="flex items-center justify-between mb-8">
+             <h3 className="text-xl font-bold text-[var(--text-primary)]">Recent Submissions</h3>
+             <Link href="/dashboard/reports" className="text-sm font-bold text-[#D4A843] flex items-center gap-1">
+                View all <ArrowUpRight size={16} />
+             </Link>
+           </div>
+           
+           <div className="overflow-x-auto">
+             <table className="w-full">
+               <thead>
+                 <tr className="text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest border-b border-[var(--card-border)]">
+                   <th className="pb-4">Agent</th>
+                   <th className="pb-4">Form</th>
+                   <th className="pb-4 text-right">Time</th>
+                 </tr>
+               </thead>
+               <tbody className="divide-y divide-[var(--card-border)]">
+                 {recentSubmissions.slice(0, 4).map((sub: any) => (
+                   <tr key={sub._id} className="group">
+                     <td className="py-4">
+                        <div className="flex items-center gap-3">
+                           <div className="h-8 w-8 rounded-full bg-[#D4A843]/10 flex items-center justify-center text-[#D4A843] font-bold text-[10px]">
+                             {sub.agentName?.[0] || 'A'}
+                           </div>
+                           <span className="text-sm font-medium text-[var(--text-primary)]">{sub.agentName || 'ahmad'}</span>
+                        </div>
+                     </td>
+                     <td className="py-4 text-sm text-[var(--text-secondary)] truncate max-w-[120px]">{sub.formTitle || 'testing form'}</td>
+                     <td className="py-4 text-sm text-[var(--text-tertiary)] text-right">{sub.timeAgo || '7h ago'}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+           </div>
+        </div>
+
+        {/* Activity Feed + Quick Actions */}
+        <div className="space-y-8">
+           <div className="card-premium p-8 animate-fade-in-up delay-8">
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Activity Feed</h3>
+              <div className="space-y-6">
+                {[
+                  { label: 'New form submission received', time: '7 hours ago', icon: '📝' },
+                  { label: 'New user registered', time: '1 day ago', icon: '👤' },
+                  { label: 'System backup completed', time: '2 days ago', icon: '💾' },
+                  { label: 'Monthly report generated', time: '3 days ago', icon: '📅' },
+                ].map((act, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="h-10 w-10 rounded-xl bg-[var(--background)] flex items-center justify-center text-lg shadow-sm border border-[var(--card-border)] flex-shrink-0">
+                      {act.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-[var(--text-primary)]">{act.label}</p>
+                      <p className="text-xs text-[var(--text-tertiary)] mt-1">{act.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+           </div>
+
+           <div className="card-premium p-8 animate-fade-in-up delay-9">
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Create Campaign', icon: Megaphone, color: '#D4A843' },
+                  { label: 'Add User', icon: Users, color: '#B8923A' },
+                  { label: 'View Reports', icon: BarChart3, color: '#6B7280' },
+                  { label: 'System Settings', icon: Sparkles, color: '#101013' },
+                ].map((action, i) => (
+                  <button key={i} className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[var(--background)] border border-[var(--card-border)] hover:border-[#D4A843]/30 hover:shadow-xl transition-all gap-3 group">
+                    <div className="h-10 w-10 rounded-xl flex items-center justify-center text-[var(--text-secondary)] group-hover:text-[#D4A843] transition-colors">
+                      <action.icon size={24} strokeWidth={1.5} />
+                    </div>
+                    <span className="text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">{action.label}</span>
+                  </button>
+                ))}
+              </div>
+           </div>
+        </div>
+      </div>
     </div>
   );
 }

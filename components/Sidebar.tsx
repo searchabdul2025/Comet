@@ -53,7 +53,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   const [mounted, setMounted] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const { data: session } = useSession();
-  const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Portal' });
+  const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Comet', logo: '/logo.svg' });
   const [showSalaryBonus, setShowSalaryBonus] = useState(true);
   const [accessibleChatrooms, setAccessibleChatrooms] = useState<Array<{ _id: string; name: string; description?: string }>>([]);
 
@@ -67,7 +67,10 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
         const res = await fetch('/api/settings/public');
         const result = await res.json();
         if (result.success) {
-          setBrand({ name: result.data.APP_NAME || 'Portal', logo: result.data.APP_LOGO_URL || '' });
+          setBrand({ 
+            name: result.data.APP_NAME || 'Comet', 
+            logo: result.data.APP_LOGO_URL || '/logo.svg' 
+          });
           if (typeof result.data.SHOW_SALARY_BONUS !== 'undefined') {
             setShowSalaryBonus(String(result.data.SHOW_SALARY_BONUS) !== '0');
           }

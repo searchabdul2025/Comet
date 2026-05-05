@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Comet' });
+  const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Comet', logo: '/logo.svg' });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -22,7 +22,10 @@ export default function LoginPage() {
         const res = await fetch('/api/settings/public');
         const result = await res.json();
         if (result.success) {
-          setBrand({ name: result.data.APP_NAME || 'Comet', logo: result.data.APP_LOGO_URL || '' });
+          setBrand({ 
+            name: result.data.APP_NAME || 'Comet', 
+            logo: result.data.APP_LOGO_URL || '/logo.svg' 
+          });
         }
       } catch {
         // ignore
@@ -72,46 +75,26 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
       {/* ─── Animated Background ─── */}
-      <div className="absolute inset-0 bg-[#0a0e1a]" />
+      <div className="absolute inset-0 bg-[#101013]" />
       
       {/* Mesh gradient blobs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-600/20 blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-violet-600/20 blur-[120px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
-      <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] rounded-full bg-cyan-500/10 blur-[100px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '4s' }} />
+      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-[#D4A843]/10 blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#B8923A]/10 blur-[120px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
 
       {/* Grid pattern */}
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px',
+          backgroundImage: `linear-gradient(rgba(212,168,67,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(212,168,67,0.1) 1px, transparent 1px)`,
+          backgroundSize: '80px 80px',
         }}
       />
 
-      {/* Floating particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {mounted && Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-white/[0.04]"
-            style={{
-              width: `${Math.random() * 4 + 2}px`,
-              height: `${Math.random() * 4 + 2}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float-particle ${8 + Math.random() * 12}s linear infinite`,
-              animationDelay: `${Math.random() * 5}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* ─── Login Card ─── */}
       <div className={`relative z-10 w-full max-w-[420px] ${mounted ? 'animate-scale-in' : 'opacity-0'}`}>
         {/* Glow ring behind card */}
-        <div className="absolute -inset-[1px] bg-gradient-to-br from-indigo-500/30 via-violet-500/20 to-cyan-500/30 rounded-3xl blur-sm" />
+        <div className="absolute -inset-[1px] bg-gradient-to-br from-[#D4A843]/30 via-[#B8923A]/20 to-[#D4A843]/30 rounded-3xl blur-sm" />
 
-        <div className="relative bg-[#111827]/90 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-indigo-500/10 p-8">
+        <div className="relative bg-[#1A1A1F]/90 backdrop-blur-2xl rounded-3xl border border-white/[0.08] shadow-2xl shadow-[#D4A843]/10 p-8">
           {/* Brand */}
           <div className="text-center mb-7">
             <div className="inline-flex items-center justify-center mb-4">
@@ -119,7 +102,7 @@ export default function LoginPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={brand.logo} alt={brand.name} className="h-14 w-14 rounded-2xl object-contain bg-white/5" />
               ) : (
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-500/30">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] text-xl font-bold shadow-lg shadow-[#D4A843]/30">
                   {brand.name.slice(0, 2).toUpperCase()}
                 </div>
               )}
@@ -137,8 +120,8 @@ export default function LoginPage() {
                 onClick={() => handleRoleSelect(role.key)}
                 className={`flex-1 py-2.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                   selectedRole === role.key
-                    ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/25'
-                    : 'text-slate-400 hover:text-slate-300 hover:bg-white/[0.04]'
+                    ? 'bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#101013] shadow-lg shadow-[#D4A843]/25'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                 }`}
               >
                 {role.label}
@@ -146,105 +129,69 @@ export default function LoginPage() {
             ))}
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div>
-              <label htmlFor="identifier" className="block text-[12px] font-medium text-slate-400 mb-1.5 uppercase tracking-wider">
-                Email or Username
-              </label>
-              <div className="relative">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Secure Identifier</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-[#D4A843] transition-colors">
                   <Mail size={16} />
                 </div>
                 <input
                   type="text"
-                  id="identifier"
+                  required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                  placeholder="you@company.com"
-                  style={{ color: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)' }}
-                  required
+                  className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/5 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#D4A843]/20 focus:border-[#D4A843] transition-all"
+                  placeholder={selectedRole === 'admin' ? 'admin@comet.com' : 'employee-id'}
                 />
               </div>
             </div>
 
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-[12px] font-medium text-slate-400 mb-1.5 uppercase tracking-wider">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest ml-1">Access Token</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-[#D4A843] transition-colors">
                   <Lock size={16} />
                 </div>
                 <input
                   type="password"
-                  id="password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                  className="block w-full pl-10 pr-4 py-3 bg-white/5 border border-white/5 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-[#D4A843]/20 focus:border-[#D4A843] transition-all"
                   placeholder="••••••••"
-                  style={{ color: '#ffffff', backgroundColor: 'rgba(255,255,255,0.04)' }}
-                  required
                 />
               </div>
             </div>
 
-            {/* Error */}
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-red-400 flex-shrink-0" />
+              <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-2.5 animate-shake">
+                <div className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
                 {error}
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="relative w-full group overflow-hidden rounded-xl py-3.5 font-semibold text-sm text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-4 mt-2 bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#101013] rounded-xl font-bold uppercase tracking-widest shadow-xl shadow-[#D4A843]/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
             >
-              {/* Button gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 bg-[length:200%_100%] group-hover:animate-[shimmer_2s_linear_infinite] transition-all" />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
-              
-              <span className="relative flex items-center justify-center gap-2">
-                {loading ? (
-                  <>
-                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  <>
-                    Sign in
-                    <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-                  </>
-                )}
-              </span>
+              {loading ? (
+                <div className="h-4 w-4 border-2 border-[#101013]/30 border-t-[#101013] rounded-full animate-spin" />
+              ) : (
+                <>
+                  Authenticate
+                  <ArrowRight size={18} />
+                </>
+              )}
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-6 pt-5 border-t border-white/[0.06] text-center">
-            <p className="text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
-              <Sparkles size={11} />
-              Powered by {brand.name} • Secure Login
-            </p>
-          </div>
+          <p className="mt-8 text-center text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+            Comet Management System v4.0
+          </p>
         </div>
       </div>
-
-      {/* ─── CSS for floating particles ─── */}
-      <style jsx>{`
-        @keyframes float-particle {
-          0% { transform: translateY(0) translateX(0); opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
-        }
-      `}</style>
     </div>
   );
 }

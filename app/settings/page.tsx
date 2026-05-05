@@ -10,6 +10,7 @@ import {
   X, 
   MessageCircle, 
   ShieldX, 
+  ShieldCheck,
   Ban, 
   UserCheck, 
   Sparkles, 
@@ -292,16 +293,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-8 pb-20 -mx-6 px-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Admin Control Panel</h1>
-          <p className="text-slate-500">Configure global settings and manage platform components.</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight">Admin Control Panel</h1>
+          <p className="text-[var(--text-secondary)] mt-1">Configure global settings and manage platform components.</p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-8 py-3 rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-50"
+          className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#101013] px-10 py-4 rounded-2xl font-bold shadow-xl shadow-[#D4A843]/20 hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50"
         >
           {saving ? <Activity className="animate-spin" size={20} /> : <Save size={20} />}
           {saving ? 'Saving...' : 'Save All Changes'}
@@ -310,121 +311,108 @@ export default function SettingsPage() {
 
       {message && (
         <div className={`p-4 rounded-2xl border text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${
-          message.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
+          message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-red-500/10 border-red-500/20 text-red-600'
         }`}>
           {message.type === 'success' ? <Check size={20} /> : <ShieldX size={20} />}
-          {message.text}
+          <span className="font-medium">{message.text}</span>
         </div>
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        {/* Branding Section */}
-        <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
+        {/* Branding & App Identity */}
+        <div className="card-premium p-8 space-y-8">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-[#D4A843]/10 flex items-center justify-center text-[#D4A843]">
               <Sparkles size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Dynamic Branding</h3>
-              <p className="text-xs text-slate-500">Update your logo, favicon, and app name.</p>
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">Branding & App Identity</h3>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">Customize the platform name and visual assets.</p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Application Name</label>
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Application Name</label>
               <input
                 type="text"
                 value={settings.APP_NAME || ''}
                 onChange={(e) => setSettings({ ...settings, APP_NAME: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                placeholder="Comet CRM"
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843] transition-all outline-none"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Logo</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={settings.APP_LOGO_URL || ''}
-                    onChange={(e) => setSettings({ ...settings, APP_LOGO_URL: e.target.value })}
-                    className="flex-1 px-4 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl"
-                    placeholder="/logo.svg"
-                  />
-                  <button 
-                    onClick={() => logoInputRef.current?.click()}
-                    className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all"
-                  >
-                    <Upload size={18} />
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">App Logo</label>
+                <div className="flex items-center gap-4 p-4 bg-[var(--background)] rounded-2xl border border-[var(--card-border)]">
+                  <div className="h-14 w-14 rounded-xl bg-[#101013] flex items-center justify-center overflow-hidden border border-[var(--card-border)]">
+                    {settings.APP_LOGO_URL ? <img src={settings.APP_LOGO_URL} className="h-full w-full object-contain" /> : <Sparkles className="text-[#D4A843]/50" />}
+                  </div>
+                  <button onClick={() => logoInputRef.current?.click()} className="flex items-center gap-2 text-[#D4A843] font-bold text-xs hover:opacity-80 transition-opacity">
+                    <Upload size={16} />
+                    Upload
                   </button>
-                  <input type="file" ref={logoInputRef} className="hidden" onChange={(e) => handleFileUpload(e, 'logo')} accept="image/*" />
+                  <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'APP_LOGO_URL')} />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Favicon</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={settings.APP_FAVICON_URL || ''}
-                    onChange={(e) => setSettings({ ...settings, APP_FAVICON_URL: e.target.value })}
-                    className="flex-1 px-4 py-2 text-sm bg-slate-50 border border-slate-100 rounded-xl"
-                    placeholder="/favicon.ico"
-                  />
-                  <button 
-                    onClick={() => faviconInputRef.current?.click()}
-                    className="h-10 w-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all"
-                  >
-                    <Upload size={18} />
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">App Favicon</label>
+                <div className="flex items-center gap-4 p-4 bg-[var(--background)] rounded-2xl border border-[var(--card-border)]">
+                  <div className="h-14 w-14 rounded-xl bg-[#101013] flex items-center justify-center overflow-hidden border border-[var(--card-border)]">
+                    {settings.APP_FAVICON_URL ? <img src={settings.APP_FAVICON_URL} className="h-full w-full object-contain" /> : <Fingerprint className="text-[#D4A843]/50" />}
+                  </div>
+                  <button onClick={() => faviconInputRef.current?.click()} className="flex items-center gap-2 text-[#D4A843] font-bold text-xs hover:opacity-80 transition-opacity">
+                    <Upload size={16} />
+                    Upload
                   </button>
-                  <input type="file" ref={faviconInputRef} className="hidden" onChange={(e) => handleFileUpload(e, 'favicon')} accept="image/*" />
+                  <input type="file" ref={faviconInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'APP_FAVICON_URL')} />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Google Sheets Section */}
-        <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
+        {/* Google Sheets Integration */}
+        <div className="card-premium p-8 space-y-8">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
               <TableIcon size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Google Sheets Integration</h3>
-              <p className="text-xs text-slate-500">Sync all submissions to your spreadsheet.</p>
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">Google Sheets</h3>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">Connect your platform to Google Sheets for data syncing.</p>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Google Sheets ID</label>
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Spreadsheet ID</label>
               <input
                 type="text"
                 value={settings.GOOGLE_SHEETS_ID || ''}
                 onChange={(e) => setSettings({ ...settings, GOOGLE_SHEETS_ID: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
-                placeholder="Sheet ID from URL"
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843] transition-all outline-none font-mono text-sm"
+                placeholder="1aBcD...eFgHi"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Submissions Tab</label>
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Submissions Tab</label>
                 <input
                   type="text"
                   value={settings.GOOGLE_SHEETS_TAB_SUBMISSIONS || ''}
                   onChange={(e) => setSettings({ ...settings, GOOGLE_SHEETS_TAB_SUBMISSIONS: e.target.value })}
-                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                  className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843] transition-all outline-none text-sm"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Daily Reports Tab</label>
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Daily Reports Tab</label>
                 <input
                   type="text"
                   value={settings.GOOGLE_SHEETS_TAB_DAILY || ''}
                   onChange={(e) => setSettings({ ...settings, GOOGLE_SHEETS_TAB_DAILY: e.target.value })}
-                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                  className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843] transition-all outline-none text-sm"
                 />
               </div>
             </div>
@@ -432,45 +420,48 @@ export default function SettingsPage() {
         </div>
 
         {/* Bonus & Salary Rules */}
-        <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
+        <div className="card-premium p-8 space-y-8">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-[#D4A843]/10 flex items-center justify-center text-[#D4A843]">
               <Activity size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Performance Bonuses</h3>
-              <p className="text-xs text-slate-500">Define financial rewards for your team.</p>
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">Performance Bonuses</h3>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">Define financial rewards for your team.</p>
             </div>
           </div>
 
           <div className="space-y-6">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={String(settings.SHOW_SALARY_BONUS || '1') !== '0'}
-                onChange={(e) => setSettings({ ...settings, SHOW_SALARY_BONUS: e.target.checked ? '1' : '0' })}
-                className="h-5 w-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
-              />
-              <span className="text-sm font-medium text-slate-700">Show Salary & Bonus section in Agent Portal</span>
+            <label className="flex items-center gap-4 cursor-pointer group">
+              <div className="relative">
+                <input 
+                  type="checkbox" 
+                  checked={String(settings.SHOW_SALARY_BONUS || '1') !== '0'}
+                  onChange={(e) => setSettings({ ...settings, SHOW_SALARY_BONUS: e.target.checked ? '1' : '0' })}
+                  className="peer h-6 w-6 rounded-lg border-[var(--card-border)] bg-[var(--background)] text-[#D4A843] focus:ring-[#D4A843] transition-all appearance-none checked:bg-[#D4A843] border"
+                />
+                <Check className="absolute top-1 left-1 h-4 w-4 text-[#101013] hidden peer-checked:block pointer-events-none" />
+              </div>
+              <span className="text-sm font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">Show Salary & Bonus section in Agent Portal</span>
             </label>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Bonus per submission</label>
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Bonus per submission</label>
                 <input
                   type="number"
                   value={settings.BONUS_PER_SUBMISSION || ''}
                   onChange={(e) => setSettings({ ...settings, BONUS_PER_SUBMISSION: e.target.value })}
-                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                  className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Target Met Bonus</label>
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Target Bonus</label>
                 <input
                   type="number"
                   value={settings.BONUS_TARGET_BONUS || ''}
                   onChange={(e) => setSettings({ ...settings, BONUS_TARGET_BONUS: e.target.value })}
-                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                  className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
                 />
               </div>
             </div>
@@ -478,124 +469,161 @@ export default function SettingsPage() {
         </div>
 
         {/* WhatsApp & Chat Configuration */}
-        <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <Smartphone size={24} />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Communication Suite</h3>
-              <p className="text-xs text-slate-500">Configure WhatsApp API and Chatroom rules.</p>
+        <div className="card-premium p-8 space-y-8 lg:col-span-2 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                <MessageCircle size={24} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-[var(--text-primary)]">WhatsApp API & Chat</h3>
+                <p className="text-xs text-[var(--text-tertiary)] mt-1">Configure automated notifications and chat restrictions.</p>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">WhatsApp API Token</label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+            <div className="space-y-6">
+              <h4 className="text-sm font-bold text-[#D4A843] border-b border-[var(--card-border)] pb-2 mb-4">WhatsApp Cloud API</h4>
+              <div>
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">System API Token</label>
                 <input
-                  type="text"
+                  type="password"
                   value={settings.WHATSAPP_API_TOKEN || ''}
                   onChange={(e) => setSettings({ ...settings, WHATSAPP_API_TOKEN: e.target.value })}
-                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                  className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none font-mono text-xs"
                   placeholder="EAA..."
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Phone ID</label>
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Phone Number ID</label>
                 <input
                   type="text"
                   value={settings.WHATSAPP_PHONE_NUMBER_ID || ''}
                   onChange={(e) => setSettings({ ...settings, WHATSAPP_PHONE_NUMBER_ID: e.target.value })}
-                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                  className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
+                  placeholder="101..."
                 />
               </div>
-              <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Disappearing Messages</label>
-                <select
-                  value={settings.CHAT_AUTO_DELETE_HOURS || '0'}
-                  onChange={(e) => setSettings({ ...settings, CHAT_AUTO_DELETE_HOURS: e.target.value })}
-                  className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm"
-                >
-                  <option value="0">Never</option>
-                  <option value="1">1 Hour</option>
-                  <option value="12">12 Hours</option>
-                  <option value="24">1 Day</option>
-                </select>
+            </div>
+
+            <div className="space-y-6">
+              <h4 className="text-sm font-bold text-[#D4A843] border-b border-[var(--card-border)] pb-2 mb-4">Chat Constraints</h4>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Rate Limit (min)</label>
+                  <input
+                    type="number"
+                    value={settings.CHAT_RATE_LIMIT_PER_MINUTE || ''}
+                    onChange={(e) => setSettings({ ...settings, CHAT_RATE_LIMIT_PER_MINUTE: e.target.value })}
+                    className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Max Length</label>
+                  <input
+                    type="number"
+                    value={settings.CHAT_MESSAGE_MAX_LENGTH || ''}
+                    onChange={(e) => setSettings({ ...settings, CHAT_MESSAGE_MAX_LENGTH: e.target.value })}
+                    className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">History Limit</label>
+                  <input
+                    type="number"
+                    value={settings.CHAT_HISTORY_LIMIT || ''}
+                    onChange={(e) => setSettings({ ...settings, CHAT_HISTORY_LIMIT: e.target.value })}
+                    className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Auto Delete (hrs)</label>
+                  <input
+                    type="number"
+                    value={settings.CHAT_AUTO_DELETE_HOURS || ''}
+                    onChange={(e) => setSettings({ ...settings, CHAT_AUTO_DELETE_HOURS: e.target.value })}
+                    className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Attendance Rules */}
-        <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
+        <div className="card-premium p-8 space-y-8">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-orange-500/10 flex items-center justify-center text-orange-600">
               <Fingerprint size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Attendance & Fines</h3>
-              <p className="text-xs text-slate-500">Shift timings and biometric penalty rules.</p>
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">Attendance & Fines</h3>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">Shift timings and biometric penalty rules.</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6">
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Shift Starts</label>
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Shift Starts</label>
               <input
                 type="time"
                 value={settings.ATTENDANCE_SHIFT_START_TIME || ''}
                 onChange={(e) => setSettings({ ...settings, ATTENDANCE_SHIFT_START_TIME: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Late Threshold (Mins)</label>
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Late Threshold (Mins)</label>
               <input
                 type="number"
                 value={settings.ATTENDANCE_LATE_THRESHOLD_MINUTES || ''}
                 onChange={(e) => setSettings({ ...settings, ATTENDANCE_LATE_THRESHOLD_MINUTES: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Late Fine (Rs.)</label>
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Late Fine (Rs.)</label>
               <input
                 type="number"
                 value={settings.ATTENDANCE_LATE_FINE_AMOUNT || ''}
                 onChange={(e) => setSettings({ ...settings, ATTENDANCE_LATE_FINE_AMOUNT: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Absent Fine (Rs.)</label>
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Absent Fine (Rs.)</label>
               <input
                 type="number"
                 value={settings.ATTENDANCE_ABSENT_FINE_AMOUNT || ''}
                 onChange={(e) => setSettings({ ...settings, ATTENDANCE_ABSENT_FINE_AMOUNT: e.target.value })}
-                className="w-full px-5 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none"
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
               />
             </div>
           </div>
         </div>
 
         {/* Chat Ban Management */}
-        <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6">
+        <div className="card-premium p-8 space-y-8">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-600">
               <Ban size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Chat Ban Control</h3>
-              <p className="text-xs text-slate-500">Ban users from participating in team chat.</p>
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">Chat Ban Control</h3>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">Ban users from participating in team chat.</p>
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-4">
             <select
               value={banForm.userId}
               onChange={(e) => setBanForm({ ...banForm, userId: e.target.value })}
-              className="flex-1 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm"
+              className="flex-1 bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm appearance-none"
             >
               <option value="">Select User</option>
               {userOptions.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
@@ -605,70 +633,83 @@ export default function SettingsPage() {
               placeholder="Reason"
               value={banForm.reason}
               onChange={(e) => setBanForm({ ...banForm, reason: e.target.value })}
-              className="flex-1 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-sm"
+              className="flex-1 bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
             />
             <button
               onClick={handleBanUser}
               disabled={banSaving || !banForm.userId}
-              className="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-bold disabled:opacity-50"
+              className="bg-red-600 text-white px-6 py-4 rounded-2xl text-sm font-bold disabled:opacity-50 hover:bg-red-700 transition-all active:scale-95"
             >
               Ban
             </button>
           </div>
 
-          <div className="max-h-[200px] overflow-y-auto space-y-2">
+          <div className="max-h-[240px] overflow-y-auto space-y-3 pr-2 scrollbar-premium">
             {bans.map(ban => (
-              <div key={ban._id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <div key={ban._id} className="flex items-center justify-between p-4 bg-[var(--background)] rounded-2xl border border-[var(--card-border)] hover:border-red-500/20 transition-all">
                 <div>
-                  <p className="text-sm font-bold text-slate-800">{ban.userName}</p>
-                  <p className="text-[10px] text-slate-500">{ban.reason || 'No reason'}</p>
+                  <p className="text-sm font-bold text-[var(--text-primary)]">{ban.userName}</p>
+                  <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{ban.reason || 'No reason specified'}</p>
                 </div>
-                <button onClick={() => handleUnbanUser(ban.userId)} className="text-xs font-bold text-emerald-600 hover:underline">Unban</button>
+                <button 
+                  onClick={() => handleUnbanUser(ban.userId)} 
+                  className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-all"
+                >
+                  Unban
+                </button>
               </div>
             ))}
+            {bans.length === 0 && (
+              <div className="text-center py-8 text-xs text-[var(--text-tertiary)] italic">No active bans found.</div>
+            )}
           </div>
         </div>
 
         {/* Campaign Management */}
-        <div className="bg-white rounded-[2rem] border border-slate-200 p-8 shadow-sm space-y-6 xl:col-span-2">
+        <div className="card-premium p-8 space-y-8 xl:col-span-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+              <div className="h-12 w-12 rounded-2xl bg-[#D4A843]/10 flex items-center justify-center text-[#D4A843]">
                 <Smartphone size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Campaign Management</h3>
-                <p className="text-xs text-slate-500">Manage your active forms and campaigns.</p>
+                <h3 className="text-xl font-bold text-[var(--text-primary)]">Campaign Management</h3>
+                <p className="text-xs text-[var(--text-tertiary)] mt-1">Manage your active forms and campaigns.</p>
               </div>
             </div>
-            <button onClick={loadCampaigns} className="text-xs font-bold text-blue-600">Refresh List</button>
+            <button onClick={loadCampaigns} className="bg-[var(--background)] border border-[var(--card-border)] px-4 py-2 rounded-xl text-xs font-bold text-[#D4A843] hover:text-[#B8923A] transition-all">
+               Refresh List
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {campaigns.map(c => (
-              <div key={c._id} className="group p-5 bg-white border border-slate-100 rounded-3xl hover:shadow-xl hover:shadow-slate-100 transition-all">
+              <div key={c._id} className="group p-6 bg-[var(--background)] border border-[var(--card-border)] rounded-[2rem] hover:border-[#D4A843]/30 hover:shadow-2xl transition-all relative">
                 {editId === c._id ? (
-                  <div className="space-y-3">
-                    <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full px-3 py-2 border rounded-xl text-sm" />
-                    <input value={editDesc} onChange={e => setEditDesc(e.target.value)} className="w-full px-3 py-2 border rounded-xl text-sm" />
+                  <div className="space-y-4">
+                    <input value={editName} onChange={e => setEditName(e.target.value)} className="w-full bg-white border border-[var(--card-border)] p-3 rounded-xl text-sm outline-none focus:border-[#D4A843]" />
+                    <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} className="w-full bg-white border border-[var(--card-border)] p-3 rounded-xl text-xs outline-none focus:border-[#D4A843]" rows={3} />
                     <div className="flex gap-2">
-                      <button onClick={saveCampaign} className="flex-1 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold">Save</button>
-                      <button onClick={() => setEditId(null)} className="flex-1 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                      <button onClick={saveCampaign} className="flex-1 py-3 bg-[#D4A843] text-[#101013] rounded-xl text-xs font-bold">Save</button>
+                      <button onClick={() => setEditId(null)} className="flex-1 py-3 bg-white border border-[var(--card-border)] text-[var(--text-secondary)] rounded-xl text-xs font-bold">Cancel</button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h4 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{c.name}</h4>
-                        <p className="text-[10px] text-slate-400">Created: {formatUSDate(c.createdAt)}</p>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-[var(--text-primary)] group-hover:text-[#D4A843] transition-colors truncate text-lg">{c.name}</h4>
+                        <div className="flex items-center gap-2 mt-1">
+                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                           <p className="text-[10px] text-[var(--text-tertiary)] font-medium">Created: {formatUSDate(c.createdAt)}</p>
+                        </div>
                       </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onClick={() => startEditCampaign(c)} className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg"><Pencil size={14} /></button>
-                        <button onClick={() => deleteCampaign(c._id)} className="p-2 hover:bg-red-50 text-red-600 rounded-lg"><Trash2 size={14} /></button>
+                      <div className="flex gap-1 ml-4">
+                        <button onClick={() => startEditCampaign(c)} className="p-2.5 hover:bg-[#D4A843]/10 text-[var(--text-tertiary)] hover:text-[#D4A843] rounded-xl transition-all"><Pencil size={14} /></button>
+                        <button onClick={() => deleteCampaign(c._id)} className="p-2.5 hover:bg-red-500/10 text-[var(--text-tertiary)] hover:text-red-500 rounded-xl transition-all"><Trash2 size={14} /></button>
                       </div>
                     </div>
-                    <p className="text-xs text-slate-600 line-clamp-2">{c.description || 'No description'}</p>
+                    <p className="text-xs text-[var(--text-secondary)] line-clamp-3 leading-relaxed">{c.description || 'No description provided for this campaign.'}</p>
                   </>
                 )}
               </div>
@@ -677,57 +718,63 @@ export default function SettingsPage() {
         </div>
       </div>
       
-      {/* Biometric Integration Guide (Restored) */}
-      <section className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[3rem] p-10 text-white shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-[100px]"></div>
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12">
+      {/* Biometric Integration Guide */}
+      <section className="bg-gradient-to-br from-[#101013] to-[#1A1A1F] rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden border border-white/5">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4A843]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[120px]"></div>
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16">
           <div>
-            <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center mb-8 backdrop-blur-xl">
-              <Fingerprint size={28} className="text-indigo-400" />
+            <div className="h-16 w-16 rounded-[1.5rem] bg-white/5 flex items-center justify-center mb-10 border border-white/10 backdrop-blur-xl">
+              <Fingerprint size={32} className="text-[#D4A843]" />
             </div>
-            <h2 className="text-3xl font-bold mb-4">Biometric Integration Guide</h2>
-            <p className="text-slate-400 leading-relaxed mb-8">
-              Configure your Hikvision DS-K1T342EFWX device to push real-time attendance data to our secure cloud endpoint.
+            <h2 className="text-4xl font-bold mb-6">Biometric Integration</h2>
+            <p className="text-slate-400 leading-relaxed mb-10 text-lg">
+              Synchronize your Hikvision DS-K1T342EFWX terminals with the cloud platform for real-time attendance tracking and automated payroll.
             </p>
-            <div className="bg-black/20 rounded-[2rem] border border-white/5 p-8 space-y-6">
-              <div className="flex gap-4">
-                <div className="h-8 w-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">1</div>
+            <div className="bg-black/30 rounded-[2.5rem] border border-white/5 p-10 space-y-8">
+              <div className="flex gap-6">
+                <div className="h-10 w-10 rounded-full bg-[#D4A843]/20 text-[#D4A843] flex items-center justify-center font-bold text-sm flex-shrink-0 border border-[#D4A843]/30 shadow-lg shadow-[#D4A843]/10">1</div>
                 <div>
-                  <p className="font-bold text-slate-200 mb-1">Set HTTP Host</p>
-                  <p className="text-sm text-slate-400">In advanced network settings, set the device to "HTTP Host" mode.</p>
+                  <p className="font-bold text-white mb-2 text-lg">Set HTTP Host</p>
+                  <p className="text-sm text-slate-400 leading-relaxed">Navigate to Network &gt; Advanced &gt; HTTP Host on your device and enable the listener mode.</p>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="h-8 w-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">2</div>
+              <div className="flex gap-6">
+                <div className="h-10 w-10 rounded-full bg-[#D4A843]/20 text-[#D4A843] flex items-center justify-center font-bold text-sm flex-shrink-0 border border-[#D4A843]/30 shadow-lg shadow-[#D4A843]/10">2</div>
                 <div>
-                  <p className="font-bold text-slate-200 mb-1">Endpoint URL</p>
-                  <code className="block bg-black/40 p-3 rounded-xl border border-white/5 text-indigo-400 text-xs break-all mt-2">
+                  <p className="font-bold text-white mb-2 text-lg">Target Endpoint</p>
+                  <code className="block bg-white/5 p-5 rounded-[1.5rem] border border-white/10 text-[#D4A843] text-xs break-all mt-4 font-mono shadow-inner">
                     https://cometbpo.org/api/attendance/webhook
                   </code>
                 </div>
               </div>
             </div>
           </div>
-          <div className="space-y-6 justify-center flex flex-col">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
-              <h4 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <Smartphone size={18} className="text-blue-400" />
-                Device Configuration
-              </h4>
-              <ul className="space-y-4 text-sm text-slate-300">
-                <li className="flex items-center gap-3">
-                  <Check size={16} className="text-emerald-400" />
-                  Enable Access Control & Attendance Events
-                </li>
-                <li className="flex items-center gap-3">
-                  <Check size={16} className="text-emerald-400" />
-                  Sync Biometric ID with User Profile
-                </li>
-                <li className="flex items-center gap-3">
-                  <Check size={16} className="text-emerald-400" />
-                  Configure NTP for accurate timestamps
-                </li>
+          <div className="flex flex-col justify-center">
+            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 backdrop-blur-md shadow-2xl">
+              <div className="flex items-center gap-4 mb-8">
+                 <div className="h-10 w-10 rounded-xl bg-[#D4A843]/10 flex items-center justify-center">
+                    <ShieldCheck size={20} className="text-[#D4A843]" />
+                 </div>
+                 <h4 className="text-2xl font-bold">Device Compliance</h4>
+              </div>
+              <ul className="space-y-6">
+                {[
+                  'Enable Access Control & Attendance Events',
+                  'Sync Biometric ID with CRM User Profile',
+                  'Configure NTP for millisecond accuracy',
+                  'Enable real-time push for instant logs'
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-4 group">
+                    <div className="h-6 w-6 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                      <Check size={14} className="text-emerald-400" />
+                    </div>
+                    <span className="text-slate-300 font-medium group-hover:text-white transition-colors">{item}</span>
+                  </li>
+                ))}
               </ul>
+              <button className="mt-12 w-full py-5 bg-white/10 border border-white/10 rounded-2xl text-sm font-bold text-white hover:bg-white/20 transition-all active:scale-95">
+                 Download Device Manual (PDF)
+              </button>
             </div>
           </div>
         </div>
