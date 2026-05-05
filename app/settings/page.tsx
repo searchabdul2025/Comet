@@ -353,7 +353,7 @@ export default function SettingsPage() {
                     <Upload size={16} />
                     Upload
                   </button>
-                  <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'APP_LOGO_URL')} />
+                  <input type="file" ref={logoInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'logo')} />
                 </div>
               </div>
               <div>
@@ -366,7 +366,7 @@ export default function SettingsPage() {
                     <Upload size={16} />
                     Upload
                   </button>
-                  <input type="file" ref={faviconInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'APP_FAVICON_URL')} />
+                  <input type="file" ref={faviconInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'favicon')} />
                 </div>
               </div>
             </div>
