@@ -66,7 +66,8 @@ const AdminBanner: React.FC<AdminBannerProps> = ({ adminName }) => {
            <img 
              src="/banner.svg" 
              alt="Banner" 
-             style={{ width: '240px', height: 'auto', filter: 'drop-shadow(0 4px 14px rgba(180,140,60,0.15))' }}
+             className="scale-150 translate-y-2 drop-shadow-[0_20px_50px_rgba(180,140,60,0.3)]"
+             style={{ width: '380px', height: 'auto' }}
            />
         </div>
 
