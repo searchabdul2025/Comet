@@ -18,6 +18,7 @@ import {
   ChevronDown,
   Megaphone,
   Sparkles,
+  Calendar,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
