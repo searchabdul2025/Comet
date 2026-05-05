@@ -16,12 +16,21 @@ export async function GET() {
       'GOOGLE_SHEETS_TAB_DAILY',
       'APP_NAME',
       'APP_LOGO_URL',
+      'APP_FAVICON_URL',
       'CHAT_RATE_LIMIT_PER_MINUTE',
       'CHAT_MESSAGE_MAX_LENGTH',
       'CHAT_HISTORY_LIMIT',
+      'CHAT_AUTO_DELETE_HOURS',
       'BONUS_PER_SUBMISSION',
       'BONUS_TARGET_BONUS',
       'SHOW_SALARY_BONUS',
+      'WHATSAPP_API_TOKEN',
+      'WHATSAPP_PHONE_NUMBER_ID',
+      'ATTENDANCE_SHIFT_START_TIME',
+      'ATTENDANCE_SHIFT_END_TIME',
+      'ATTENDANCE_LATE_THRESHOLD_MINUTES',
+      'ATTENDANCE_LATE_FINE_AMOUNT',
+      'ATTENDANCE_ABSENT_FINE_AMOUNT',
     ];
     const entries = await Promise.all(keys.map(async (key) => [key, await getSetting(key)] as const));
     const data: Record<string, string | null> = {};
