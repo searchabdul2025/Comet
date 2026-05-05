@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2, FileText, Pencil, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { getPermissions } from '@/lib/permissions';
+import PageHeader from '@/components/ui/PageHeader';
+import StatGrid from '@/components/ui/StatGrid';
 
 interface Form {
   _id: string;
@@ -112,103 +114,140 @@ export default function FormsPage() {
 
 
   return (
-    <div>
-      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">All Forms ({forms.length})</h1>
-          <p className="text-gray-600">Manage, preview, or edit your forms.</p>
-        </div>
-        {permissions?.canCreateForms && (
-          <Link
-            href={campaignsAvailable ? '/form-builder' : '/campaigns'}
-            className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white shadow-sm transition ${
-              campaignsAvailable
-                ? 'bg-blue-600 hover:bg-blue-700'
-                : 'bg-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {campaignsAvailable ? '+ New Form' : 'Create a Campaign First'}
-          </Link>
-        )}
-      </div>
+    <div className="space-y-6">
+      <PageHeader 
+        title="Form Architecture" 
+        description="Design and manage data collection structures for your campaigns."
+        action={permissions?.canCreateForms ? {
+          label: campaignsAvailable ? "New Form" : "Create Campaign First",
+          href: campaignsAvailable ? "/form-builder" : "/campaigns",
+          icon: Plus
+        } : undefined}
+      />
+
+      {/* Forms Summary */}
+      <StatGrid 
+        loading={loading}
+        stats={[
+          { 
+            label: 'Total Forms', 
+            value: forms.length,
+            icon: '📋',
+            sparkColor: '#D4A843',
+            sparkData: [5, 6, 8, 7, 9, 10, 12]
+          },
+          { 
+            label: 'Active Fields', 
+            value: forms.reduce((acc, f) => acc + (f.fields?.length || 0), 0),
+            icon: '🔢',
+            sparkColor: '#16a34a',
+            sparkData: [40, 50, 65, 60, 80, 95, 110]
+          },
+          { 
+            label: 'Linked Campaigns', 
+            value: Array.from(new Set(forms.map(f => typeof f.campaign === 'object' ? f.campaign._id : f.campaign))).filter(Boolean).length,
+            icon: '🔗',
+            sparkColor: '#101013',
+            sparkData: [2, 3, 3, 4, 4, 5, 5]
+          }
+        ]}
+      />
 
       {!campaignsAvailable && (
-        <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          Create a campaign before adding a new form. Go to the Campaigns tab to create one.
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-center gap-3">
+          <div className="p-2 bg-amber-100 rounded-lg">⚠️</div>
+          <p>Please create at least one <strong>Campaign</strong> before architecting new forms.</p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {error && (
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
         {forms.length === 0 ? (
-          <div className="col-span-full text-center py-8 text-gray-500">
-            No forms found. Create your first form using the Form Builder!
+          <div className="col-span-full py-20 text-center card-premium">
+             <div className="text-4xl mb-4 opacity-20">📭</div>
+             <h3 className="text-lg font-bold text-[var(--text-secondary)]">No Forms Found</h3>
+             <p className="text-sm text-[var(--text-tertiary)]">Start by creating your first data collection structure.</p>
           </div>
         ) : (
           forms.map((form) => (
-            <div key={form._id} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
-              <div className="mb-4">
-                <h3 className="text-xl font-bold text-gray-800 mb-1">{form.title}</h3>
-                <p className="text-sm text-gray-600 mb-2">ID: {form.formId}</p>
-                {form.campaign && (
-                  <p className="text-sm text-gray-700 mb-2">
-                    Campaign:{' '}
-                    {typeof form.campaign === 'string' ? form.campaign : form.campaign.name}
-                  </p>
-                )}
-                {form.description && (
-                  <p className="text-sm text-gray-600 mb-3">{form.description}</p>
-                )}
-              </div>
-
-              <div className="mb-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">{form.fields?.length || 0} fields</p>
-                {form.fields && form.fields.length > 0 && (
-                  <div className="space-y-1">
-                    {form.fields.slice(0, 3).map((field, idx) => (
-                      <p key={idx} className="text-xs text-gray-600">
-                        {field.name} ({field.type}){field.required && ' *'}
-                        {field.validation && ` (${field.validation})`}
-                      </p>
-                    ))}
-                    {form.fields.length > 3 && (
-                      <p className="text-xs text-gray-500">+{form.fields.length - 3} more fields</p>
+            <div key={form._id} className="card-premium group hover:border-[#D4A843]/30 transition-all duration-500 overflow-hidden">
+               {/* Card Header Graphic */}
+               <div className="h-2 bg-gradient-to-r from-[#101013] via-[#D4A843] to-[#101013] opacity-20 group-hover:opacity-100 transition-all duration-700" />
+               
+               <div className="p-6">
+                 <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 rounded-2xl bg-slate-50 text-slate-400 group-hover:bg-[#101013] group-hover:text-[#D4A843] transition-all duration-500">
+                      <FileText size={20} />
+                    </div>
+                    <span className="text-[10px] font-bold text-[var(--text-tertiary)] bg-slate-100 px-2 py-1 rounded-full uppercase tracking-widest">
+                      {form.formId}
+                    </span>
+                 </div>
+                 
+                 <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1 group-hover:text-[#D4A843] transition-colors">{form.title}</h3>
+                 <p className="text-[11px] text-[var(--text-tertiary)] mb-4 flex items-center gap-1">
+                   <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                   {typeof form.campaign === 'object' ? form.campaign.name : 'Unlinked Campaign'}
+                 </p>
+                 
+                 {form.description && (
+                   <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mb-6 min-h-[32px]">
+                     {form.description}
+                   </p>
+                 )}
+                 
+                 <div className="space-y-3 mb-6">
+                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-[var(--text-tertiary)]">
+                       <span>Fields Configuration</span>
+                       <span>{form.fields?.length || 0} Total</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                       {form.fields?.slice(0, 4).map((field, idx) => (
+                         <span key={idx} className="px-2 py-1 bg-slate-50 text-[10px] text-slate-500 rounded-lg border border-slate-100 group-hover:border-[#D4A843]/10 transition-all">
+                           {field.name}
+                         </span>
+                       ))}
+                       {form.fields && form.fields.length > 4 && (
+                         <span className="px-2 py-1 bg-[#101013]/5 text-[10px] text-[var(--text-tertiary)] rounded-lg">
+                           +{form.fields.length - 4} more
+                         </span>
+                       )}
+                    </div>
+                 </div>
+                 
+                 <div className="flex gap-2 pt-4 border-t border-slate-50">
+                    <Link 
+                      href={`/forms/${form._id}/preview`}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-[#101013] hover:text-[#D4A843] transition-all"
+                    >
+                      <Eye size={14}/> Preview
+                    </Link>
+                    {permissions?.canEditForms && (
+                      <Link 
+                        href={`/form-builder?id=${form._id}`}
+                        className="p-2.5 bg-slate-100 text-slate-400 rounded-xl hover:bg-slate-200 hover:text-slate-700 transition-all"
+                      >
+                        <Pencil size={14}/>
+                      </Link>
                     )}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2 pt-4 border-t border-gray-200">
-                <Link
-                  href={`/forms/${form._id}/preview`}
-                  className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-center text-sm font-medium"
-                >
-                  <Eye size={16} className="inline mr-1" />
-                  Preview
-                </Link>
-                {permissions?.canEditForms && (
-                  <Link
-                    href={`/form-builder?id=${form._id}`}
-                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors text-sm font-medium"
-                  >
-                    Edit
-                  </Link>
-                )}
-                {permissions?.canDeleteForms && (
-                  <button
-                    onClick={() => handleDelete(form._id)}
-                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
+                    {permissions?.canDeleteForms && (
+                      <button 
+                        onClick={() => handleDelete(form._id)}
+                        className="p-2.5 bg-slate-100 text-slate-400 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all"
+                      >
+                        <Trash2 size={14}/>
+                      </button>
+                    )}
+                 </div>
+               </div>
             </div>
           ))
         )}
-      </div>
-
-      <div className="mt-8 text-center text-gray-500 text-sm">
-        2025 portal Developed by Aqstoria
       </div>
     </div>
   );

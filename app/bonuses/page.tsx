@@ -5,6 +5,10 @@ import { useSession } from 'next-auth/react';
 import { getPermissions } from '@/lib/permissions';
 import { Gift, RefreshCw, Settings, Target, Plus, Edit, Trash2, X, Save, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import PageHeader from '@/components/ui/PageHeader';
+import StatGrid from '@/components/ui/StatGrid';
+import FilterBar from '@/components/ui/FilterBar';
+import PremiumTable from '@/components/ui/PremiumTable';
 
 interface TargetRow {
   _id: string;
@@ -274,351 +278,224 @@ export default function BonusesPage() {
   if (!mounted) return null;
 
   return (
-    <div className="p-4 md:p-6 bg-gradient-to-br from-slate-50 via-amber-50/30 to-orange-50/20 min-h-screen space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 mb-2">
-            <Gift size={26} className="text-amber-500" />
-            Bonuses
-          </h1>
-          <p className="text-gray-600">
-            Bonuses are calculated using granular rules (per user, campaign, and product grade) or global settings.
-          </p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          {!showRuleModal && (
-            <button
-              onClick={handleAddRule}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl font-semibold"
-            >
-              <Plus size={20} />
-              New Bonus Rule
-            </button>
-          )}
-          <Link
-            href="/monthly-targets"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
-          >
-            <Target size={16} />
-            Manage targets
-          </Link>
-          <button
-            onClick={() => { load(); loadBonusRules(); }}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
-          >
-            <RefreshCw size={16} />
-            Refresh
-          </button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader 
+        title="Bonuses & Payouts" 
+        description="Manage per-user, per-campaign, and per-product bonus rules."
+        action={isAllowed ? {
+          label: "New Bonus Rule",
+          href: "#",
+          icon: Sparkles
+        } : undefined}
+      />
 
-      {error && (
-        <div className="rounded-xl border border-red-200 bg-gradient-to-r from-red-50 to-pink-50 px-4 py-3 text-red-800 shadow-sm">
-          {error}
-        </div>
-      )}
-
-      {showRuleModal && (
-        <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/60 overflow-hidden">
-          <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 px-6 py-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
-                  {editingRule ? <Edit className="text-white" size={24} /> : <Sparkles className="text-white" size={24} />}
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-white">
-                    {editingRule ? 'Edit Bonus Rule' : 'New Bonus Rule'}
-                  </h3>
-                  <p className="text-amber-50 text-sm mt-0.5">
-                    {editingRule ? 'Update bonus rule configuration' : 'Create a new bonus rule for user, campaign, and product grade'}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleCancelRule}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors text-white"
-                aria-label="Close"
-              >
-                <X size={24} />
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6 md:p-8 overflow-y-auto max-h-[calc(100vh-300px)]">
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    User <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={ruleForm.userId}
-                    onChange={(e) => setRuleForm({ ...ruleForm, userId: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
-                  >
-                    <option value="">Select a user</option>
-                    {users.map((u) => (
-                      <option key={u._id} value={u._id}>
-                        {u.name} ({u.email || u.username}) - {u.role}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Campaign <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={ruleForm.campaignId}
-                    onChange={(e) => setRuleForm({ ...ruleForm, campaignId: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
-                  >
-                    <option value="">Select a campaign</option>
-                    {campaigns.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Product Grade <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={ruleForm.productGrade}
-                  onChange={(e) => setRuleForm({ ...ruleForm, productGrade: e.target.value })}
-                  placeholder="e.g., Basic, Standard, Premium"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  <span className="font-medium">Note:</span> Product grade name. This should match the productGrade in form submissions. Each product can have different bonus amounts.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Bonus Amount (PKR) <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">PKR</span>
-                    <input
-                      type="number"
-                      value={ruleForm.bonusAmount === 0 ? '' : ruleForm.bonusAmount}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setRuleForm({ ...ruleForm, bonusAmount: value === '' ? 0 : parseFloat(value) || 0 });
-                      }}
-                      onFocus={(e) => {
-                        if (ruleForm.bonusAmount === 0) {
-                          e.target.select();
-                        }
-                      }}
-                      placeholder="0"
-                      min="0"
-                      step="0.01"
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Target (optional)</label>
-                  <input
-                    type="number"
-                    value={ruleForm.target}
-                    onChange={(e) => setRuleForm({ ...ruleForm, target: e.target.value })}
-                    min="0"
-                    placeholder="Base target for this grade"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Note (optional)</label>
-                <textarea
-                  value={ruleForm.note}
-                  onChange={(e) => setRuleForm({ ...ruleForm, note: e.target.value })}
-                  rows={3}
-                  placeholder="Add any additional notes or context for this bonus rule..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-gray-900 bg-gray-50 transition-all shadow-sm hover:shadow-md resize-none"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200">
-                <input
-                  type="checkbox"
-                  checked={ruleForm.isActive}
-                  onChange={(e) => setRuleForm({ ...ruleForm, isActive: e.target.checked })}
-                  className="w-5 h-5 text-amber-600 border-gray-300 rounded focus:ring-amber-500 focus:ring-2"
-                />
-                <div>
-                  <label className="text-sm font-semibold text-gray-700 cursor-pointer">Active</label>
-                  <p className="text-xs text-gray-500">Enable this rule to apply bonuses for this product grade</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 pt-6 border-t border-gray-200">
-                <button
-                  onClick={handleSaveRule}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl font-semibold"
-                >
-                  <Save size={20} />
-                  {editingRule ? 'Update Rule' : 'Create Rule'}
-                </button>
-                <button
-                  onClick={handleCancelRule}
-                  className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-2xl border border-slate-200/60 bg-white shadow-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <h3 className="text-lg font-semibold text-gray-900">Bonuses by user</h3>
-          <p className="text-sm text-gray-600">Live values based on submissions and targets.</p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-100">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">User</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Period</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Target</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Achieved</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Bonus</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {rows.map((r) => (
-                <tr key={r._id} className="hover:bg-slate-50/50">
-                  <td className="px-4 py-3 text-sm text-slate-800">
-                    <div className="font-medium">{r.user?.name || r.user?.username || r.user?.email || 'Unknown'}</div>
-                    <div className="text-xs text-slate-500">{r.user?.role}</div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-slate-800">{r.period}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">{r.target}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">{r.achieved ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-slate-800">Rs {(r.bonus ?? 0).toLocaleString()}</td>
-                </tr>
-              ))}
-              {!rows.length && (
-                <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-sm text-slate-500">
-                    {loading ? 'Loading bonuses...' : 'No data yet. Create targets to see bonuses.'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Overview Stats */}
+      <StatGrid 
+        loading={loading || rulesLoading}
+        stats={[
+          { 
+            label: 'Total Payouts', 
+            value: rows.reduce((sum, r) => sum + (r.bonus || 0), 0),
+            icon: '💰',
+            sparkColor: '#D4A843',
+            sparkData: [40, 45, 55, 60, 58, 65, 70]
+          },
+          { 
+            label: 'Bonus Rules', 
+            value: bonusRules.length,
+            icon: '📜',
+            sparkColor: '#16a34a',
+            sparkData: [5, 8, 12, 10, 15, 18, 20]
+          },
+          { 
+            label: 'Achieved Targets', 
+            value: rows.filter(r => (r.achieved || 0) >= (r.target || 0)).length,
+            icon: '🎯',
+            sparkColor: '#101013',
+            sparkData: [2, 4, 6, 8, 10, 12, 14]
+          },
+          { 
+            label: 'Pending Approval', 
+            value: 0,
+            icon: '⏳',
+            sparkColor: '#9CA3AF',
+            sparkData: [0, 0, 0, 0, 0, 0, 0]
+          }
+        ]}
+      />
 
       {/* Bonus Rules Section */}
-      <div className="rounded-2xl border border-slate-200/60 bg-white shadow-xl overflow-hidden">
-        <div className="px-6 py-5 bg-gradient-to-r from-slate-50 to-gray-50 border-b border-slate-200">
-          <h3 className="text-xl font-bold text-gray-900">Bonus Rules</h3>
-          <p className="text-sm text-gray-600 mt-1">Manage per-user, per-campaign, per-product-grade bonus rules. Each product can have different bonus amounts.</p>
+      <div className="card-premium overflow-hidden">
+        <div className="p-6 border-b border-[var(--card-border)] flex items-center justify-between bg-slate-50/50">
+          <div>
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">Bonus Configuration Rules</h3>
+            <p className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest mt-1">Granular rules per campaign and product grade</p>
+          </div>
+          <button 
+            onClick={handleAddRule}
+            className="p-2 rounded-lg bg-[#101013] text-[#D4A843] hover:shadow-lg transition-all"
+          >
+            <Plus size={18} />
+          </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-gradient-to-r from-slate-100 to-gray-100 text-slate-700">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">User</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Campaign</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Product Grade</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Bonus Amount</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Target</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {bonusRules.map((rule) => (
-                <tr key={rule._id} className="hover:bg-gradient-to-r hover:from-amber-50/50 hover:to-orange-50/30 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-gray-900">
-                      {rule.user?.name || rule.user?.username || rule.user?.email || 'Unknown'}
-                    </div>
-                    <div className="text-xs text-gray-500">{rule.user?.role}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rule.campaign?.name || '—'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
-                      {rule.productGrade}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">PKR {rule.bonusAmount.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{rule.target || '—'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
-                        rule.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {rule.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEditRule(rule)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all"
-                        title="Edit"
-                      >
-                        <Edit size={14} />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteRule(rule._id)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 hover:border-red-300 transition-all"
-                        title="Delete"
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {!bonusRules.length && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center">
-                    <div className="text-sm text-gray-500">
-                      {rulesLoading ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-amber-500"></div>
-                          <span>Loading bonus rules...</span>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="text-lg font-medium text-gray-700 mb-1">No bonus rules yet</p>
-                          <p className="text-sm">Click "New Bonus Rule" to create one for different products and bonuses</p>
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <PremiumTable 
+          loading={rulesLoading}
+          data={bonusRules}
+          columns={[
+            {
+              header: 'User',
+              accessor: (rule) => (
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">
+                    {rule.user?.name?.[0] || '?'}
+                  </div>
+                  <div>
+                    <div className="font-bold text-[var(--text-primary)]">{rule.user?.name || 'Unknown'}</div>
+                    <div className="text-[10px] text-[var(--text-tertiary)]">{rule.user?.role}</div>
+                  </div>
+                </div>
+              )
+            },
+            { header: 'Campaign', accessor: (rule) => rule.campaign?.name || '—' },
+            { 
+              header: 'Grade', 
+              accessor: (rule) => (
+                <span className="px-3 py-1 inline-flex text-[10px] font-bold rounded-full uppercase tracking-wider bg-amber-100 text-amber-800">
+                  {rule.productGrade}
+                </span>
+              )
+            },
+            { 
+              header: 'Amount', 
+              accessor: (rule) => (
+                <div className="font-bold text-[#D4A843]">PKR {rule.bonusAmount.toLocaleString()}</div>
+              )
+            },
+            {
+              header: 'Status',
+              accessor: (rule) => (
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${rule.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' : 'bg-slate-300'}`} />
+                  <span className={`text-[10px] font-bold uppercase ${rule.isActive ? 'text-emerald-600' : 'text-slate-400'}`}>
+                    {rule.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              )
+            },
+            {
+              header: 'Actions',
+              align: 'right',
+              accessor: (rule) => (
+                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                  <button onClick={() => handleEditRule(rule)} className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#D4A843] transition-all"><Edit size={14} /></button>
+                  <button onClick={() => handleDeleteRule(rule._id)} className="p-2 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-red-500 transition-all"><Trash2 size={14} /></button>
+                </div>
+              )
+            }
+          ]}
+        />
       </div>
 
+      {/* User Bonuses Section */}
+      <div className="card-premium overflow-hidden mt-8">
+        <div className="p-6 border-b border-[var(--card-border)] bg-slate-50/50">
+          <h3 className="text-lg font-bold text-[var(--text-primary)]">Live Bonus Calculations</h3>
+          <p className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest mt-1">Calculated based on targets and approved submissions</p>
+        </div>
+        <PremiumTable 
+          loading={loading}
+          data={rows}
+          columns={[
+            {
+              header: 'User',
+              accessor: (r) => (
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#101013] to-[#202025] flex items-center justify-center text-[#D4A843] text-[10px] font-bold shadow-md">
+                    {r.user?.name?.[0] || '?'}
+                  </div>
+                  <div className="font-bold text-[var(--text-primary)]">{r.user?.name || 'Unknown'}</div>
+                </div>
+              )
+            },
+            { header: 'Period', accessor: 'period' },
+            { 
+              header: 'Target', 
+              accessor: (r) => (
+                <div className="font-mono text-[12px]">{r.target}</div>
+              )
+            },
+            { 
+              header: 'Achieved', 
+              accessor: (r) => (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-1.5 w-16 bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-[#D4A843] transition-all" 
+                      style={{ width: `${Math.min(100, ((r.achieved || 0) / r.target) * 100)}%` }} 
+                    />
+                  </div>
+                  <span className="font-bold text-[11px]">{r.achieved || 0}</span>
+                </div>
+              )
+            },
+            { 
+              header: 'Bonus Earned', 
+              align: 'right',
+              accessor: (r) => (
+                <div className="font-black text-emerald-600">PKR {(r.bonus || 0).toLocaleString()}</div>
+              )
+            }
+          ]}
+        />
+      </div>
+
+      {/* Rule Modal (Premium Styled) */}
+      {showRuleModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#101013]/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[28px] shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden animate-scale-in">
+            <div className="bg-gradient-to-r from-[#D4A843] to-[#B8923A] px-8 py-6 flex items-center justify-between">
+               <h3 className="text-xl font-bold text-[#101013]">{editingRule ? 'Edit Rule' : 'Create New Bonus Rule'}</h3>
+               <button onClick={handleCancelRule} className="p-2 hover:bg-black/5 rounded-full"><X size={20}/></button>
+            </div>
+            <div className="p-8 max-h-[80vh] overflow-y-auto space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Target User</label>
+                  <select value={ruleForm.userId} onChange={(e) => setRuleForm({ ...ruleForm, userId: e.target.value })} className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none">
+                    <option value="">Select User</option>
+                    {users.map(u => <option key={u._id} value={u._id}>{u.name}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Campaign</label>
+                  <select value={ruleForm.campaignId} onChange={(e) => setRuleForm({ ...ruleForm, campaignId: e.target.value })} className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none">
+                    <option value="">Select Campaign</option>
+                    {campaigns.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Product Grade</label>
+                  <input type="text" value={ruleForm.productGrade} onChange={(e) => setRuleForm({ ...ruleForm, productGrade: e.target.value })} placeholder="e.g. Premium Gold" className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Bonus per Unit (PKR)</label>
+                  <input type="number" value={ruleForm.bonusAmount || ''} onChange={(e) => setRuleForm({ ...ruleForm, bonusAmount: parseFloat(e.target.value) || 0 })} placeholder="500" className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Target Units</label>
+                  <input type="number" value={ruleForm.target} onChange={(e) => setRuleForm({ ...ruleForm, target: e.target.value })} placeholder="100" className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none" />
+                </div>
+              </div>
+              <div className="flex gap-4 pt-6 border-t">
+                <button onClick={handleSaveRule} className="flex-1 py-4 bg-[#101013] text-[#D4A843] rounded-2xl font-bold shadow-xl hover:shadow-[#D4A843]/10 transition-all">
+                  {editingRule ? 'Update Rule' : 'Launch Rule'}
+                </button>
+                <button onClick={handleCancelRule} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold transition-all">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

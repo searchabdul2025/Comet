@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { Send, ShieldAlert, WifiOff, MessageSquare, Loader2 } from 'lucide-react';
 import ChatSelection from '@/components/ChatSelection';
 import { useRouter } from 'next/navigation';
+import PageHeader from '@/components/ui/PageHeader';
 
 type ChatMessage = {
   _id: string;
@@ -237,86 +238,73 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <MessageSquare size={22} className="text-blue-600" />
-            Team Chat
-          </h1>
-          <p className="text-sm text-gray-600">Real-time room for everyone in the portal.</p>
+    <div className="space-y-6">
+      <PageHeader 
+        title="Command Center" 
+        description="Real-time communication and intelligence sharing for the operations team."
+      />
+
+      {/* Connection & Ban Alerts */}
+      <div className="flex flex-wrap gap-3">
+        <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 ${
+          status === 'live' ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 
+          status === 'connecting' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : 
+          'bg-red-500/10 text-red-600 border border-red-500/20'
+        }`}>
+          <div className={`h-1.5 w-1.5 rounded-full ${status === 'live' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+          {status === 'live' ? 'Operations Live' : status === 'connecting' ? 'Establishing Secure Link...' : 'Link Terminated'}
         </div>
-        <div
-          className={`text-sm px-3 py-1 rounded-full ${
-            status === 'live'
-              ? 'bg-green-100 text-green-700'
-              : status === 'connecting'
-              ? 'bg-amber-100 text-amber-700'
-              : 'bg-red-100 text-red-700'
-          }`}
-        >
-          {status === 'live' ? 'Live' : status === 'connecting' ? 'Connecting...' : 'Offline'}
-        </div>
+        {banned && (
+          <div className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-600 text-white border border-red-700 animate-pulse">
+            Access Revoked: {banned.reason || 'Security Violation'}
+          </div>
+        )}
       </div>
 
-      {banned && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          <ShieldAlert size={16} />
-          <span>You are banned from chat{banned.reason ? `: ${banned.reason}` : ''}</span>
+      <div className="card-premium flex flex-col h-[75vh] overflow-hidden relative">
+        {/* Chat Background Graphic */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none select-none overflow-hidden">
+           <div className="absolute top-1/4 left-1/4 text-[20rem] font-black transform -rotate-12">CHAT</div>
         </div>
-      )}
 
-      {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          <WifiOff size={16} />
-          <span>{error}</span>
-        </div>
-      )}
-
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm flex flex-col h-[70vh]">
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {sortedMessages.length === 0 ? (
-            <p className="text-sm text-gray-500">No messages yet. Say hello!</p>
+        {/* Messages Display */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-premium relative z-10">
+          {sortedMessages.length === 0 && status === 'live' ? (
+            <div className="h-full flex flex-col items-center justify-center opacity-30">
+               <MessageSquare size={48} />
+               <p className="mt-4 font-bold uppercase tracking-widest text-xs">Awaiting Communications</p>
+            </div>
           ) : (
             sortedMessages.map((msg) => {
               const isOwn = msg.userId === userId;
               const isSystem = msg.isSystem;
               return (
-                <div
-                  key={msg._id}
-                  className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-xl rounded-2xl px-3 py-2 shadow-sm border text-sm ${
-                      isSystem
-                        ? 'bg-slate-100 text-slate-700 border-slate-200'
-                        : isOwn
-                        ? 'bg-blue-600 text-white border-blue-500'
-                        : 'bg-white text-slate-900 border-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 text-[11px] mb-1">
-                      <span className="font-semibold">
-                        {isSystem ? 'System' : msg.userName}
-                        {!isSystem && (
-                          <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] ${
-                            msg.userRole === 'Admin'
-                              ? 'bg-red-100 text-red-700'
-                              : msg.userRole === 'Supervisor'
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            {msg.userRole}
-                          </span>
-                        )}
-                      </span>
-                      <span className={isOwn ? 'text-white/70' : 'text-slate-500'}>
-                        {formatTime(msg.createdAt)}
-                      </span>
+                <div key={msg._id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2`}>
+                  <div className={`max-w-[80%] group ${isOwn ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex items-center gap-2 mb-1 px-1 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+                       <span className="text-[10px] font-black uppercase tracking-widest text-[var(--text-tertiary)]">
+                         {isSystem ? 'Security Protocol' : msg.userName}
+                       </span>
+                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-tighter ${
+                         msg.userRole === 'Admin' ? 'bg-red-500/10 text-red-600' : 
+                         msg.userRole === 'Supervisor' ? 'bg-[#D4A843]/10 text-[#D4A843]' : 
+                         'bg-slate-100 text-slate-500'
+                       }`}>
+                         {msg.userRole}
+                       </span>
+                       <span className="text-[9px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                         {formatTime(msg.createdAt)}
+                       </span>
                     </div>
-                    <p className="whitespace-pre-wrap break-words">
-                      {renderContent(msg.content)}
-                    </p>
+                    <div className={`relative px-4 py-3 rounded-2xl text-sm shadow-sm transition-all duration-300 ${
+                      isSystem ? 'bg-slate-50 border border-slate-100 text-slate-500 italic text-xs' : 
+                      isOwn ? 'bg-[#101013] text-[#D4A843] border border-[#202025] rounded-tr-none' : 
+                      'bg-white border border-slate-100 text-slate-800 rounded-tl-none hover:border-[#D4A843]/30'
+                    }`}>
+                      <p className="whitespace-pre-wrap break-words leading-relaxed font-medium">
+                        {renderContent(msg.content)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               );
@@ -325,59 +313,62 @@ export default function ChatPage() {
           <div ref={bottomRef} />
         </div>
 
-        <div className="border-t border-slate-200 p-3">
-          <div className="flex items-center gap-3 relative">
-            <textarea
-              value={input}
-              onChange={(e) => handleInputChange(e.target.value, e.currentTarget.selectionStart)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }}
-              disabled={sending || status !== 'live' || !!banned}
-              placeholder={
-                banned
-                  ? 'You cannot send messages while banned.'
-                  : 'Write a message...'
-              }
-              className="flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2 bg-white text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
-              rows={2}
-              maxLength={limits.maxMessageLength}
-            />
-            {mentionQuery && mentionSuggestions.length > 0 && (
-              <div className="absolute bottom-16 left-0 right-24 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-20 max-h-48 overflow-y-auto">
-                {mentionSuggestions.map((name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => insertMention(name)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 focus:bg-slate-100"
-                  >
-                    @{name}
-                  </button>
-                ))}
+        {/* Input Area */}
+        <div className="p-6 bg-slate-50/50 border-t border-slate-100 relative z-10">
+           <div className="relative">
+              <textarea
+                value={input}
+                onChange={(e) => handleInputChange(e.target.value, e.currentTarget.selectionStart)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                disabled={sending || status !== 'live' || !!banned}
+                placeholder={banned ? 'Security link severed.' : 'Enter message...'}
+                className="w-full bg-white border border-slate-200 rounded-[1.5rem] px-6 py-4 pr-32 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#D4A843] focus:border-transparent transition-all shadow-inner resize-none min-h-[64px]"
+                rows={1}
+                maxLength={limits.maxMessageLength}
+              />
+              
+              {mentionQuery && mentionSuggestions.length > 0 && (
+                <div className="absolute bottom-full left-0 mb-4 w-64 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden z-20 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="p-3 bg-slate-50 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team Members</div>
+                  <div className="max-h-48 overflow-y-auto p-1">
+                    {mentionSuggestions.map((name) => (
+                      <button
+                        key={name}
+                        onClick={() => insertMention(name)}
+                        className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-[#101013] hover:text-[#D4A843] rounded-lg transition-all"
+                      >
+                        @{name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="absolute right-3 top-2 bottom-2 flex items-center gap-2">
+                 <div className="hidden sm:block text-[10px] font-bold text-slate-400 uppercase tracking-tighter mr-2">
+                   {input.length}/{limits.maxMessageLength}
+                 </div>
+                 <button
+                    onClick={sendMessage}
+                    disabled={sending || status !== 'live' || !!banned || !input.trim()}
+                    className="h-10 w-10 flex items-center justify-center rounded-xl bg-[#101013] text-[#D4A843] hover:scale-105 transition-all active:scale-95 disabled:opacity-30 disabled:hover:scale-100 shadow-lg"
+                 >
+                    {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                 </button>
               </div>
-            )}
-            <button
-              onClick={sendMessage}
-              disabled={sending || status !== 'live' || !!banned || !input.trim()}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <Send size={16} />
-              Send
-            </button>
-          </div>
-          <div className="mt-1 text-xs text-slate-500 flex justify-between">
-            <span>Max {limits.maxMessageLength} chars • {limits.rateLimitPerMinute} msgs/min</span>
-            {input.length > limits.maxMessageLength - 50 && (
-              <span>{limits.maxMessageLength - input.length} remaining</span>
-            )}
-          </div>
+           </div>
+           <div className="mt-3 flex justify-center">
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest opacity-50">Secure Communication Protocol Active</p>
+           </div>
         </div>
       </div>
     </div>
+  );
   );
 }
 

@@ -34,7 +34,7 @@ const AdminBanner: React.FC<AdminBannerProps> = ({ adminName }) => {
 
       {/* Banner */}
       <div 
-        className="relative overflow-hidden rounded-[22px] border-[1.5px] border-[rgba(212,175,55,0.18)] shadow-[0_4px_32px_rgba(180,140,60,0.12)] p-[30px_36px] mb-[20px] grid grid-cols-[1fr_auto_1fr] items-center gap-[16px] min-h-[180px]"
+        className="relative rounded-[22px] border-[1.5px] border-[rgba(212,175,55,0.18)] shadow-[0_4px_32px_rgba(180,140,60,0.12)] p-[30px_36px] mb-[20px] grid grid-cols-[1fr_auto_1fr] items-center gap-[16px] min-h-[180px]"
         style={{
           background: 'linear-gradient(115deg, #fdfbf2 0%, #fef9ec 50%, #fdf5df 100%)',
           fontFamily: "'DM Sans', sans-serif"

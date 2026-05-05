@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getPermissions } from '@/lib/permissions';
-import { Plus, Pencil, Trash2, Save, X, Copy } from 'lucide-react';
+import { Plus, Pencil, Trash2, Save, X, Copy, Megaphone } from 'lucide-react';
+import PageHeader from '@/components/ui/PageHeader';
+import FilterBar from '@/components/ui/FilterBar';
+import PremiumTable from '@/components/ui/PremiumTable';
 
 interface Campaign {
   _id: string;
@@ -147,162 +150,177 @@ export default function CampaignsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-1">Campaigns</h1>
-          <p className="text-gray-600">Create a campaign before building forms and assign forms to it.</p>
-        </div>
-      </div>
+      <PageHeader 
+        title="Campaigns" 
+        description="Create a campaign before building forms and assign forms to it."
+        action={permissions?.canCreateForms ? {
+          label: "Create Campaign",
+          href: "#", // Usually opens the creation section/modal
+          icon: Megaphone
+        } : undefined}
+      />
 
-      {permissions?.canCreateForms && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">Create Campaign</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name *</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter campaign name"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Brief description"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
-              />
-            </div>
-          </div>
-          <div className="mt-4 flex justify-end">
-            <button
-              onClick={handleCreate}
-              disabled={submitting}
-              className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              <Plus size={18} />
-              {submitting ? 'Creating...' : 'Create Campaign'}
-            </button>
-          </div>
-          {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
-        </div>
-      )}
-
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">Campaign List ({campaigns.length})</h2>
-          <button
-            onClick={fetchCampaigns}
-            className="text-sm text-blue-600 hover:text-blue-700"
-          >
-            Refresh
-          </button>
-        </div>
-
-        {loading ? (
-          <p className="text-gray-600">Loading campaigns...</p>
-        ) : campaigns.length === 0 ? (
-          <p className="text-gray-500">No campaigns yet. Create one to start building forms.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {campaigns.map((campaign) => (
-              <div key={campaign._id} className="border border-gray-200 rounded-lg p-4 bg-white space-y-2">
-                {editingId === campaign._id ? (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={editingName}
-                      onChange={(e) => setEditingName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
-                    />
-                    <input
-                      type="text"
-                      value={editingDesc}
-                      onChange={(e) => setEditingDesc(e.target.value)}
-                      placeholder="Description"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleUpdate(campaign._id)}
-                        disabled={editSaving}
-                        className="flex-1 inline-flex items-center justify-center gap-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm"
-                      >
-                        <Save size={16} />
-                        {editSaving ? 'Saving...' : 'Save'}
-                      </button>
-                      <button
-                        onClick={cancelEdit}
-                        className="flex-1 inline-flex items-center justify-center gap-1 bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm"
-                      >
-                        <X size={16} />
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <h3 className="text-lg font-bold text-gray-800 mb-1">{campaign.name}</h3>
-                    {campaign.campaignId && (
-                      <div className="flex items-center gap-1 text-xs text-slate-600 mb-1">
-                        <span className="font-semibold">ID:</span>
-                        <span>{campaign.campaignId}</span>
-                      </div>
-                    )}
-                    {campaign.description && (
-                      <p className="text-sm text-gray-600 mb-2">{campaign.description}</p>
-                    )}
-                    <p className="text-xs text-gray-500">
-                      Created {(() => {
-                        const { formatUSDate } = require('@/lib/dateFormat');
-                        return formatUSDate(campaign.createdAt);
-                      })()}
-                    </p>
-                  </>
-                )}
-                {permissions?.canManageForms && editingId !== campaign._id && (
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      onClick={() => startEdit(campaign)}
-                      className="flex-1 inline-flex items-center justify-center gap-1 bg-gray-100 text-gray-800 px-3 py-2 rounded-md text-sm hover:bg-gray-200"
-                    >
-                      <Pencil size={16} /> Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(campaign._id)}
-                      className="flex-1 inline-flex items-center justify-center gap-1 bg-red-100 text-red-700 px-3 py-2 rounded-md text-sm hover:bg-red-200"
-                    >
-                      <Trash2 size={16} /> Delete
-                    </button>
-                  </div>
-                )}
+      {/* Top Section - Graphic & Creation */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+        {/* Creation Card (Simplified for parity) */}
+        <div className="xl:col-span-2 card-premium p-8 relative overflow-hidden group">
+          <div className="relative z-10">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-6 flex items-center gap-2">
+              <Megaphone className="text-[#D4A843]" size={20} />
+              Quick Create
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Campaign Name *</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter campaign name"
+                  className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843]"
+                />
               </div>
-            ))}
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Description (optional)</label>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description"
+                  className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843]"
+                />
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={handleCreate}
+                disabled={submitting}
+                className="inline-flex items-center gap-2 bg-[#101013] text-[#D4A843] px-8 py-3 rounded-xl hover:shadow-xl hover:shadow-[#D4A843]/10 transition-all font-bold"
+              >
+                {submitting ? 'Creating...' : 'Launch Campaign'}
+              </button>
+            </div>
           </div>
-        )}
+
+          {/* Decorative Megaphone Graphic */}
+          <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 opacity-10 group-hover:opacity-20 transition-all pointer-events-none">
+             <Megaphone size={180} strokeWidth={1} className="text-[#D4A843]" />
+          </div>
+        </div>
+
+        {/* Stats Column */}
+        <div className="space-y-4">
+          <div className="card-premium p-6 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-[#D4A843]/10 flex items-center justify-center text-[#D4A843] text-xl">🚀</div>
+            <div>
+              <div className="text-2xl font-black text-[var(--text-primary)]">{campaigns.length}</div>
+              <div className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Total Campaigns</div>
+            </div>
+          </div>
+          <div className="card-premium p-6 flex items-center gap-4">
+            <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 text-xl">✅</div>
+            <div>
+              <div className="text-2xl font-black text-[var(--text-primary)]">{campaigns.length}</div>
+              <div className="text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Active Now</div>
+            </div>
+          </div>
+        </div>
       </div>
 
+      <FilterBar 
+        searchPlaceholder="Search campaigns..."
+        filters={[
+          {
+            label: 'Status',
+            options: [
+              { label: 'Active', value: 'active' },
+              { label: 'Paused', value: 'paused' },
+              { label: 'Completed', value: 'completed' }
+            ],
+            onChange: () => {}
+          }
+        ]}
+      />
+
+      {/* Campaign List Table */}
+      <PremiumTable 
+        loading={loading}
+        data={campaigns}
+        columns={[
+          {
+            header: 'Campaign',
+            accessor: (campaign) => (
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] shadow-lg shadow-[#D4A843]/10">
+                  <Megaphone size={18} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <div className="font-bold text-[var(--text-primary)]">{campaign.name}</div>
+                  <div className="text-[11px] text-[var(--text-tertiary)]">{campaign.campaignId || 'Internal'}</div>
+                </div>
+              </div>
+            )
+          },
+          {
+            header: 'Description',
+            accessor: (campaign) => (
+              <span className="text-[13px] text-[var(--text-secondary)] line-clamp-1 max-w-[240px]">
+                {campaign.description || '—'}
+              </span>
+            )
+          },
+          {
+            header: 'Created',
+            accessor: (campaign) => {
+              const { formatUSDate } = require('@/lib/dateFormat');
+              return (
+                <div className="text-[13px] text-[var(--text-tertiary)]">
+                  {formatUSDate(campaign.createdAt)}
+                </div>
+              );
+            }
+          },
+          {
+            header: 'Status',
+            accessor: () => (
+              <span className="px-3 py-1 inline-flex text-[10px] font-bold rounded-full uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                Active
+              </span>
+            )
+          },
+          {
+            header: 'Actions',
+            align: 'right',
+            accessor: (campaign) => (
+              <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                <button 
+                  onClick={() => startEdit(campaign)}
+                  className="p-2 rounded-lg bg-[var(--background)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button 
+                  onClick={() => handleDelete(campaign._id)}
+                  className="p-2 rounded-lg bg-[var(--background)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-red-500 hover:border-red-500/30 transition-all"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )
+          }
+        ]}
+      />
+
+      {/* Build Form Modal (Kept original logic) */}
       {pendingRedirectCampaign && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 border border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">Build the form now?</h3>
-            <p className="text-sm text-slate-600 mb-4">
-              Campaign "{pendingRedirectCampaign.name}" was created successfully. Would you like to open the form builder?
+        <div className="fixed inset-0 bg-[#101013]/60 backdrop-blur-sm flex items-center justify-center z-[100] animate-fade-in">
+          <div className="bg-white rounded-[28px] shadow-2xl max-w-sm w-full p-8 border border-slate-200 animate-scale-in text-center">
+            <div className="h-16 w-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">✨</div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Launch Form Builder?</h3>
+            <p className="text-sm text-slate-600 mb-8">
+              Campaign "{pendingRedirectCampaign.name}" is ready. Would you like to create the data collection form for it now?
             </p>
-            <div className="flex gap-2 justify-end">
-              <button
-                onClick={() => setPendingRedirectCampaign(null)}
-                className="px-4 py-2 rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
-              >
-                No
-              </button>
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => {
                   const created = pendingRedirectCampaign;
@@ -314,10 +332,45 @@ export default function CampaignsPage() {
                     router.push(`/form-builder?${params.toString()}`);
                   }
                 }}
-                className="px-4 py-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 transition"
+                className="w-full py-4 bg-[#101013] text-[#D4A843] rounded-2xl font-bold shadow-xl hover:shadow-[#D4A843]/10 transition-all"
               >
-                Yes, build form
+                Yes, Build Now
               </button>
+              <button
+                onClick={() => setPendingRedirectCampaign(null)}
+                className="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold transition-all"
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal (Added for completeness) */}
+      {editingId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#101013]/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-[28px] shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden animate-scale-in">
+            <div className="bg-gradient-to-r from-[#D4A843] to-[#B8923A] px-8 py-6 flex items-center justify-between">
+               <h3 className="text-xl font-bold text-[#101013]">Edit Campaign</h3>
+               <button onClick={cancelEdit} className="p-2 hover:bg-black/5 rounded-full"><X size={20}/></button>
+            </div>
+            <div className="p-8 space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Name</label>
+                  <input type="text" value={editingName} onChange={(e) => setEditingName(e.target.value)} className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843]" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Description</label>
+                  <input type="text" value={editingDesc} onChange={(e) => setEditingDesc(e.target.value)} className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843]" />
+                </div>
+              </div>
+              <div className="flex gap-4 pt-4">
+                <button onClick={() => handleUpdate(editingId)} disabled={editSaving} className="flex-1 py-4 bg-[#101013] text-[#D4A843] rounded-2xl font-bold shadow-xl">
+                  {editSaving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

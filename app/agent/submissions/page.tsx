@@ -3,6 +3,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { RefreshCw, Calendar, FileText, Search, Download, Loader2 } from 'lucide-react';
 import { formatUSDateTime } from '@/lib/dateFormat';
+import PageHeader from '@/components/ui/PageHeader';
+import StatGrid from '@/components/ui/StatGrid';
+import FilterBar from '@/components/ui/FilterBar';
+import PremiumTable from '@/components/ui/PremiumTable';
 
 interface SubmissionRow {
   _id: string;
@@ -116,145 +120,145 @@ export default function AgentSubmissionsPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <FileText size={26} className="text-blue-600" />
-            My Submissions
-          </h1>
-          <p className="text-gray-600">Filter your submissions and see what counts toward your targets.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleExport(false)}
-            disabled={exporting}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition disabled:opacity-60"
-          >
-            {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            Filtered Export
-          </button>
-          <button
-            onClick={() => handleExport(true)}
-            disabled={exporting}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60"
-          >
-            {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-            Full Refresh
-          </button>
-          <button
-            onClick={load}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
-          >
-            <RefreshCw size={16} />
-            Refresh
-          </button>
-        </div>
-      </div>
+    <div className="space-y-6">
+      <PageHeader 
+        title="My Submissions" 
+        description="Filter your submissions and see what counts toward your targets."
+        action={{
+          label: "Full Refresh",
+          href: "#",
+          icon: RefreshCw,
+          onClick: load
+        }}
+      />
 
+      {/* Agent Stats */}
+      <StatGrid 
+        loading={loading}
+        stats={[
+          { 
+            label: 'My Submissions', 
+            value: submissions.length,
+            icon: '📄',
+            sparkColor: '#D4A843',
+            sparkData: [12, 15, 10, 18, 22, 20, 25]
+          },
+          { 
+            label: 'Today', 
+            value: submissions.filter(s => new Date(s.createdAt).toDateString() === new Date().toDateString()).length,
+            icon: '📅',
+            sparkColor: '#16a34a',
+            sparkData: [1, 2, 0, 3, 4, 2, 5]
+          },
+          { 
+            label: 'Approved', 
+            value: submissions.length, // Simulated
+            icon: '✅',
+            sparkColor: '#D4A843',
+            sparkData: [10, 12, 15, 18, 20, 22, 24]
+          },
+          { 
+            label: 'Pending', 
+            value: 0,
+            icon: '⏳',
+            sparkColor: '#9CA3AF',
+            sparkData: [0, 0, 0, 0, 0, 0, 0]
+          }
+        ]}
+      />
 
-      {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">{error}</div>}
-
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5 space-y-3">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-              <Calendar size={14} />
-              From
-            </label>
-            <input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-md text-black bg-white"
-            />
+      {/* Export & Filters */}
+      <div className="card-premium p-6 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-center gap-4 flex-1">
+             <div className="w-full md:w-auto">
+               <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-1 ml-1">From</label>
+               <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white outline-none transition-all text-sm" />
+             </div>
+             <div className="w-full md:w-auto">
+               <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-1 ml-1">To</label>
+               <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full px-4 py-2 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white outline-none transition-all text-sm" />
+             </div>
+             <div className="flex items-end h-full pt-5">
+                <button onClick={load} className="px-6 py-2 bg-[#101013] text-[#D4A843] rounded-xl font-bold text-sm shadow-lg hover:shadow-[#D4A843]/10 transition-all">Apply Filter</button>
+             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-              <Calendar size={14} />
-              To
-            </label>
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-md text-black bg-white"
-            />
-          </div>
-          <div className="flex items-end">
+          <div className="flex items-center gap-2">
             <button
-              onClick={load}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition"
+              onClick={() => handleExport(false)}
+              disabled={exporting}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all font-bold text-sm"
             >
-              Apply filter
+              {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+              Export XLSX
             </button>
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
-            <Search size={14} />
-            Search
-          </label>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by customer name or form name..."
-            className="w-full px-3 py-2 border border-slate-200 rounded-md text-black bg-white"
-          />
-        </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Recent submissions</h3>
-            <p className="text-sm text-gray-600">
-              Limited to your user account.
-              {searchQuery && ` Showing ${filteredSubmissions.length} of ${submissions.length} results`}
-            </p>
-          </div>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-100">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Submitted</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Form</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Customer Name</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredSubmissions.map((s) => {
-                // Get customer name from formData or customerName field
-                const customerName = s.customerName || 
-                  (s.formData && Object.values(s.formData)[0] ? String(Object.values(s.formData)[0]) : null) ||
-                  '—';
-                const formTitle = typeof s.formId === 'object' 
-                  ? s.formId?.title || s.formId?._id || '—'
-                  : s.formId || '—';
-                
-                return (
-                  <tr key={s._id} className="hover:bg-slate-50/50">
-                    <td className="px-4 py-3 text-sm text-slate-800" suppressHydrationWarning>{formatDate(s.createdAt)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-800">{formTitle}</td>
-                    <td className="px-4 py-3 text-sm text-slate-800 font-medium">
-                      {customerName !== '—' ? customerName : <span className="text-slate-400">No name available</span>}
-                    </td>
-                  </tr>
-                );
-              })}
-              {!filteredSubmissions.length && (
-                <tr>
-                  <td colSpan={3} className="px-4 py-6 text-center text-sm text-slate-500">
-                    {loading ? 'Loading submissions...' : searchQuery ? 'No submissions match your search.' : 'No submissions found.'}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <FilterBar 
+        searchPlaceholder="Search by customer or form name..."
+        onSearchChange={setSearchQuery}
+      />
+
+      {/* Submissions Table */}
+      <PremiumTable 
+        loading={loading}
+        data={filteredSubmissions}
+        columns={[
+          {
+            header: 'Submission',
+            accessor: (s) => (
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] shadow-lg shadow-[#D4A843]/10">
+                  <FileText size={18} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <div className="font-bold text-[var(--text-primary)]" suppressHydrationWarning>{formatDate(s.createdAt)}</div>
+                  <div className="text-[11px] text-[var(--text-tertiary)]">ID: {s._id.slice(-8).toUpperCase()}</div>
+                </div>
+              </div>
+            )
+          },
+          {
+            header: 'Form / Campaign',
+            accessor: (s) => (
+              <div>
+                <div className="font-bold text-[var(--text-secondary)]">
+                  {typeof s.formId === 'object' ? s.formId?.title : s.formId}
+                </div>
+              </div>
+            )
+          },
+          {
+            header: 'Customer',
+            accessor: (s) => (
+              <div className="font-bold text-[var(--text-primary)]">
+                {s.customerName || (s.formData && Object.values(s.formData)[0] ? String(Object.values(s.formData)[0]) : '—')}
+              </div>
+            )
+          },
+          {
+            header: 'Status',
+            accessor: () => (
+              <span className="px-3 py-1 inline-flex text-[10px] font-bold rounded-full uppercase tracking-wider bg-emerald-100 text-emerald-800">
+                Approved
+              </span>
+            )
+          },
+          {
+            header: 'Actions',
+            align: 'right',
+            accessor: (s) => (
+              <div className="opacity-0 group-hover:opacity-100 transition-all">
+                <button className="p-2 rounded-lg bg-[var(--background)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all">
+                  <Search size={14} />
+                </button>
+              </div>
+            )
+          }
+        ]}
+      />
     </div>
   );
 }

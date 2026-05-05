@@ -5,6 +5,10 @@ import { Download, FileSpreadsheet, FileText, FileDown, Sheet, Loader2, Trash2, 
 import { getPermissions } from '@/lib/permissions';
 import { useSession } from 'next-auth/react';
 import { formatUSDateTime } from '@/lib/dateFormat';
+import PageHeader from '@/components/ui/PageHeader';
+import StatGrid from '@/components/ui/StatGrid';
+import FilterBar from '@/components/ui/FilterBar';
+import PremiumTable from '@/components/ui/PremiumTable';
 
 interface Submission {
   _id: string;
@@ -278,154 +282,76 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="border-b border-slate-200">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-          {canView && (
-            <button
-              onClick={() => setActiveTab('submissions')}
-              className={`
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
-                ${activeTab === 'submissions' 
-                  ? 'border-blue-500 text-blue-600' 
-                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                }
-              `}
-            >
-              <FileText size={18} />
-              Form Submissions
-            </button>
-          )}
-          {canManageUsers && (
-            <button
-              onClick={() => setActiveTab('attendance')}
-              className={`
-                whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2
-                ${activeTab === 'attendance' 
-                  ? 'border-blue-500 text-blue-600' 
-                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
-                }
-              `}
-            >
-              <Fingerprint size={18} />
-              Biometric Attendance
-            </button>
-          )}
-        </nav>
+      <PageHeader 
+        title="Intelligence Reports" 
+        description="Analyze submission data and biometric performance records."
+      />
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1 p-1 bg-slate-100/80 rounded-2xl w-fit">
+         <button 
+          onClick={() => setActiveTab('submissions')}
+          className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'submissions' ? 'bg-[#101013] text-[#D4A843] shadow-lg' : 'text-slate-500 hover:text-slate-800'}`}
+         >
+           <FileText size={16} /> Submissions
+         </button>
+         {canManageUsers && (
+           <button 
+            onClick={() => setActiveTab('attendance')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'attendance' ? 'bg-[#101013] text-[#D4A843] shadow-lg' : 'text-slate-500 hover:text-slate-800'}`}
+           >
+             <Fingerprint size={16} /> Attendance
+           </button>
+         )}
       </div>
 
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white border border-slate-200 rounded-xl shadow-sm p-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            {activeTab === 'submissions' ? 'Submission Reports' : 'Attendance Reports'}
-          </h1>
-          <p className="text-gray-600">
-            {activeTab === 'submissions' 
-              ? 'Export submissions as PDF, CSV, XLSX, or push to Google Sheets.'
-              : 'View biometric check-in records from Hikvision devices.'}
-          </p>
-          {activeTab === 'submissions' && (
-            <p className="text-sm text-blue-600 mt-1">
-              ℹ️ Excel exports include all customer data (phone, email, address, etc.). Agents can only see customer names in the portal.
-            </p>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2 items-center">
-          <label className="text-sm font-medium text-slate-800">From</label>
-          <input
-            type="date"
-            value={fromDate}
-            onChange={(e) => setFromDate(e.target.value)}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm bg-white"
-          />
-          <label className="text-sm font-medium text-slate-800">To</label>
-          <input
-            type="date"
-            value={toDate}
-            onChange={(e) => setToDate(e.target.value)}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm bg-white"
-          />
-          <select
-            value={userFilter}
-            onChange={(e) => setUserFilter(e.target.value)}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm bg-white min-w-[160px]"
-          >
-            <option value="">All Users</option>
-            {users.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name} {u.email ? `(${u.email})` : ''}
-              </option>
-            ))}
-          </select>
-          {activeTab === 'submissions' && (
-            <select
-              value={campaignFilter}
-              onChange={(e) => setCampaignFilter(e.target.value)}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 shadow-sm bg-white min-w-[160px]"
-            >
-              <option value="">All Campaigns</option>
-              {campaigns.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          )}
-          <button
-            onClick={() => activeTab === 'submissions' ? fetchSubs() : fetchAttendance()}
-            disabled={loading}
-            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {loading ? <Loader2 size={14} className="animate-spin" /> : null}
-            Apply
-          </button>
-          <div className="flex flex-wrap gap-1">
-            {presets.map((p) => (
-              <button
-                key={p.label}
-                onClick={() => {
-                  const r = p.range();
-                  setFromDate(r.from);
-                  setToDate(r.to);
-                  setTimeout(() => activeTab === 'submissions' ? fetchSubs() : fetchAttendance(), 0);
-                }}
-                className="px-3 py-1.5 text-xs font-medium rounded-md border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-400 transition"
-              >
-                {p.label}
-              </button>
-            ))}
+      <div className="card-premium p-6">
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+             <div>
+               <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-1 ml-1">Date Range</label>
+               <div className="flex items-center gap-2">
+                 <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--card-border)] bg-slate-50 text-xs outline-none" />
+                 <span className="text-slate-400">to</span>
+                 <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--card-border)] bg-slate-50 text-xs outline-none" />
+               </div>
+             </div>
+             <div>
+               <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-1 ml-1">User</label>
+               <select value={userFilter} onChange={(e) => setUserFilter(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--card-border)] bg-slate-50 text-xs outline-none">
+                 <option value="">All Users</option>
+                 {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+               </select>
+             </div>
+             {activeTab === 'submissions' && (
+               <div>
+                 <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-1 ml-1">Campaign</label>
+                 <select value={campaignFilter} onChange={(e) => setCampaignFilter(e.target.value)} className="w-full px-3 py-2 rounded-xl border border-[var(--card-border)] bg-slate-50 text-xs outline-none">
+                   <option value="">All Campaigns</option>
+                   {campaigns.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                 </select>
+               </div>
+             )}
+             <div className="flex items-end gap-2">
+               <button onClick={() => activeTab === 'submissions' ? fetchSubs() : fetchAttendance()} className="px-5 py-2 bg-[#101013] text-[#D4A843] rounded-xl font-bold text-xs flex-1 transition-all">Filter</button>
+               <button onClick={() => { setFromDate(''); setToDate(''); setUserFilter(''); setCampaignFilter(''); }} className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all"><RefreshCw size={14}/></button>
+             </div>
           </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <ExportButton
-            label="CSV"
-            icon={<FileText size={16} />}
-            onClick={() => handleExport('csv')}
-            loading={exporting === 'csv'}
-            color="bg-emerald-500 hover:bg-emerald-600 text-white"
-          />
-          <ExportButton
-            label="XLSX"
-            icon={<FileSpreadsheet size={16} />}
-            onClick={() => handleExport('xlsx')}
-            loading={exporting === 'xlsx'}
-            color="bg-cyan-500 hover:bg-cyan-600 text-white"
-          />
-          <ExportButton
-            label="PDF"
-            icon={<FileDown size={16} />}
-            onClick={() => handleExport('pdf')}
-            loading={exporting === 'pdf'}
-            color="bg-amber-500 hover:bg-amber-600 text-white"
-          />
-          {activeTab === 'submissions' && (
-            <ExportButton
-              label="Google Sheet"
-              icon={<Sheet size={16} />}
-              onClick={() => handleExport('sheets')}
-              loading={exporting === 'sheets'}
-              color="bg-sky-500 hover:bg-sky-600 text-white"
-            />
-          )}
+          
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t">
+             <div className="flex gap-2">
+               {presets.map(p => (
+                 <button key={p.label} onClick={() => { const r = p.range(); setFromDate(r.from); setToDate(r.to); }} className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider bg-slate-50 text-slate-600 rounded-lg border border-slate-200 hover:bg-white hover:border-[#D4A843]/30 hover:text-[#D4A843] transition-all">
+                   {p.label}
+                 </button>
+               ))}
+             </div>
+             <div className="flex items-center gap-2">
+                <ExportButton label="CSV" icon={<FileText size={14} />} onClick={() => handleExport('csv')} loading={exporting === 'csv'} color="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white" />
+                <ExportButton label="XLSX" icon={<FileSpreadsheet size={14} />} onClick={() => handleExport('xlsx')} loading={exporting === 'xlsx'} color="bg-[#D4A843]/10 text-[#D4A843] hover:bg-[#D4A843] hover:text-[#101013]" />
+                {activeTab === 'submissions' && <ExportButton label="Sheets" icon={<Sheet size={14} />} onClick={() => handleExport('sheets')} loading={exporting === 'sheets'} color="bg-blue-500/10 text-blue-600 hover:bg-blue-500 hover:text-white" />}
+             </div>
+          </div>
         </div>
       </div>
 
@@ -435,198 +361,124 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {activeTab === 'submissions' && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-800">Submissions ({submissions.length})</h3>
-            <button
-              onClick={fetchSubs}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-            >
-              {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-              {loading ? 'Loading' : 'Refresh'}
-            </button>
-          </div>
-          <div className="overflow-auto">
-            {loading ? (
-              <div className="p-6 flex items-center gap-3 text-sm text-gray-600">
-                <Loader2 size={18} className="animate-spin" />
-                Loading submissions...
-              </div>
-            ) : submissions.length === 0 ? (
-              <div className="p-6 text-sm text-gray-600 flex items-center gap-3">
-                <FileText size={18} className="text-slate-400" />
-                No submissions yet.
-              </div>
-            ) : (
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Date</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Phone</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Form ID</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">IP</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">User</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Data</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {submissions.map((s) => {
-                    const isExpanded = expandedRows.has(s._id);
-                    const formDataKeys = Object.keys(s.formData || {});
-                    const formDataPreview = formDataKeys.length > 0 
-                      ? `${formDataKeys.length} field${formDataKeys.length !== 1 ? 's' : ''}`
-                      : 'No data';
-                    const formDataPreviewSample = formDataKeys.slice(0, 2).map(key => {
-                      const value = s.formData?.[key];
-                      return `${key}: ${typeof value === 'string' && value.length > 20 ? value.substring(0, 20) + '...' : value}`;
-                    }).join(', ');
-
-                    return (
-                      <React.Fragment key={s._id}>
-                        <tr className="border-t hover:bg-slate-50 transition-colors">
-                          <td className="px-4 py-2 text-slate-700 whitespace-nowrap" suppressHydrationWarning>
-                            {formatUSDateTime(s.createdAt)}
-                          </td>
-                          <td className="px-4 py-2 text-slate-700">{s.phoneNumber || '-'}</td>
-                          <td className="px-4 py-2 text-slate-700 font-mono text-xs">{s.formId || '-'}</td>
-                          <td className="px-4 py-2 text-slate-700">{s.ipAddress || '-'}</td>
-                          <td className="px-4 py-2 text-slate-700 font-mono text-xs">{s.submittedBy || '-'}</td>
-                          <td className="px-4 py-2 text-slate-700">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => {
-                                  const newExpanded = new Set(expandedRows);
-                                  if (isExpanded) {
-                                    newExpanded.delete(s._id);
-                                  } else {
-                                    newExpanded.add(s._id);
-                                  }
-                                  setExpandedRows(newExpanded);
-                                }}
-                                className="text-blue-600 hover:text-blue-700 transition"
-                                title={isExpanded ? 'Collapse' : 'Expand'}
-                              >
-                                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                              </button>
-                              {!isExpanded ? (
-                                <span className="text-xs text-slate-600">
-                                  {formDataPreview}
-                                  {formDataPreviewSample && ` • ${formDataPreviewSample}${formDataKeys.length > 2 ? '...' : ''}`}
-                                </span>
-                              ) : (
-                                <span className="text-xs text-slate-500">Click to collapse</span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-2 text-slate-700">
-                            <button
-                              onClick={() => handleDelete(s._id)}
-                              className="text-red-600 hover:text-red-700 transition"
-                              title="Delete"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </td>
-                        </tr>
-                        {isExpanded && (
-                          <tr key={`${s._id}-expanded`} className="border-t bg-slate-50">
-                            <td colSpan={7} className="px-4 py-3">
-                              <div className="bg-white rounded-lg border border-slate-200 p-3">
-                                <div className="text-xs font-semibold text-slate-700 mb-2">Form Data:</div>
-                                <pre className="whitespace-pre-wrap text-xs text-slate-600 max-h-96 overflow-y-auto">
-                                  {JSON.stringify(s.formData || {}, null, 2)}
-                                </pre>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'attendance' && (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-800">Attendance Records ({attendanceRecords.length})</h3>
-            <button
-              onClick={fetchAttendance}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
-            >
-              {loading ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-              {loading ? 'Loading' : 'Refresh'}
-            </button>
-          </div>
-          <div className="overflow-auto">
-            {loading ? (
-              <div className="p-6 flex items-center gap-3 text-sm text-gray-600">
-                <Loader2 size={18} className="animate-spin" />
-                Loading attendance...
-              </div>
-            ) : attendanceRecords.length === 0 ? (
-              <div className="p-6 text-sm text-gray-600 flex items-center gap-3">
-                <Fingerprint size={18} className="text-slate-400" />
-                No attendance records found.
-              </div>
-            ) : (
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">User</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Role</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Biometric ID</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Check-In Time</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Status</th>
-                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Fine (Rs.)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {attendanceRecords.map((record) => (
-                    <tr key={record._id} className="border-t hover:bg-slate-50 transition-colors">
-                      <td className="px-4 py-2 text-slate-700 font-medium">
-                        {record.userId?.name || 'Unknown User'}
-                      </td>
-                      <td className="px-4 py-2 text-slate-700">{record.userId?.role || '-'}</td>
-                      <td className="px-4 py-2 text-slate-700 font-mono text-xs">{record.biometricId}</td>
-                      <td className="px-4 py-2 text-slate-700 whitespace-nowrap" suppressHydrationWarning>
-                        {formatUSDateTime(record.checkInTime)}
-                      </td>
-                      <td className="px-4 py-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          record.status === 'Present' ? 'bg-green-100 text-green-700' :
-                          record.status === 'Late' ? 'bg-amber-100 text-amber-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {record.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-slate-700 font-bold">
-                        {(() => {
-                          const fine = record.status === 'Late' 
-                            ? fineSettings.lateFine 
-                            : record.status === 'Absent' 
-                              ? fineSettings.absentFine 
-                              : '0';
-                          return fine !== '0' ? `Rs. ${fine}` : '-';
-                        })()}
-                      </td>
-                    </tr>
+      {/* Main Table Content */}
+      <div className="card-premium overflow-hidden">
+        {activeTab === 'submissions' ? (
+          <PremiumTable 
+            loading={loading}
+            data={submissions}
+            columns={[
+              {
+                header: 'Date',
+                accessor: (s) => (
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                      <FileText size={14} />
+                    </div>
+                    <div className="font-bold text-[var(--text-primary)]" suppressHydrationWarning>{formatUSDateTime(s.createdAt)}</div>
+                  </div>
+                )
+              },
+              { header: 'Phone', accessor: 'phoneNumber' },
+              { header: 'IP Address', accessor: 'ipAddress' },
+              { 
+                header: 'Agent ID', 
+                accessor: (s) => <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded">{s.submittedBy || '—'}</span>
+              },
+              {
+                header: 'Data Preview',
+                accessor: (s) => {
+                  const keys = Object.keys(s.formData || {});
+                  return (
+                    <button 
+                      onClick={() => {
+                        const newExpanded = new Set(expandedRows);
+                        if (expandedRows.has(s._id)) newExpanded.delete(s._id);
+                        else newExpanded.add(s._id);
+                        setExpandedRows(newExpanded);
+                      }}
+                      className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-1"
+                    >
+                      {expandedRows.has(s._id) ? <ChevronDown size={14}/> : <ChevronRight size={14}/>}
+                      {keys.length} Fields
+                    </button>
+                  );
+                }
+              },
+              {
+                header: 'Actions',
+                align: 'right',
+                accessor: (s) => (
+                  <button onClick={() => handleDelete(s._id)} className="p-2 text-slate-400 hover:text-red-500 transition-all">
+                    <Trash2 size={14} />
+                  </button>
+                )
+              }
+            ]}
+            rowExpansion={(s) => (
+              <div className="p-6 bg-slate-50 border-t border-slate-100">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {Object.entries(s.formData || {}).map(([k, v]) => (
+                    <div key={k} className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{k}</div>
+                      <div className="text-sm font-medium text-slate-700">{String(v)}</div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             )}
-          </div>
-        </div>
-      )}
+            isExpanded={(s) => expandedRows.has(s._id)}
+          />
+        ) : (
+          <PremiumTable 
+            loading={loading}
+            data={attendanceRecords}
+            columns={[
+              {
+                header: 'Employee',
+                accessor: (r) => (
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#101013] to-[#202025] flex items-center justify-center text-[#D4A843] font-black text-xs shadow-md">
+                      {r.userId?.name?.[0] || '?'}
+                    </div>
+                    <div>
+                      <div className="font-bold text-[var(--text-primary)]">{r.userId?.name || 'Unknown'}</div>
+                      <div className="text-[10px] text-[var(--text-tertiary)] uppercase tracking-widest">{r.userId?.role}</div>
+                    </div>
+                  </div>
+                )
+              },
+              { 
+                header: 'Check-In', 
+                accessor: (r) => <div suppressHydrationWarning className="font-bold text-slate-700">{formatUSDateTime(r.checkInTime)}</div>
+              },
+              { 
+                header: 'Status', 
+                accessor: (r) => (
+                  <span className={`px-3 py-1 inline-flex text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                    r.status === 'Present' ? 'bg-emerald-100 text-emerald-800' :
+                    r.status === 'Late' ? 'bg-amber-100 text-amber-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {r.status}
+                  </span>
+                )
+              },
+              {
+                header: 'Fine',
+                accessor: (r) => {
+                  const fine = r.status === 'Late' ? fineSettings.lateFine : r.status === 'Absent' ? fineSettings.absentFine : '0';
+                  return fine !== '0' ? <span className="font-black text-red-600">PKR {fine}</span> : <span className="text-slate-400">—</span>;
+                }
+              },
+              {
+                header: 'Device ID',
+                accessor: (r) => <span className="font-mono text-[10px] text-slate-400">{r.biometricId}</span>
+              }
+            ]}
+          />
+        )}
+      </div>
     </div>
   );
 }

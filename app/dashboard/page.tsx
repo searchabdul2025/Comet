@@ -190,7 +190,7 @@ export default function DashboardPage() {
   const medalColors = ['#facc15', '#cbd5e1', '#d97706'];
 
   return (
-    <div className="space-y-8 min-h-screen -mx-6 px-6 pb-20 font-sans">
+    <div className="space-y-6 min-h-screen -mx-6 px-6 pb-20 font-sans">
       {/* ─── Top Greeting & Banner ─── */}
       <AdminBanner adminName={session?.user?.name || 'Admin User'} />
 
@@ -429,7 +429,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Activity Feed + Quick Actions */}
-        <div className="space-y-8">
+        <div className="space-y-6">
            <div className="card-premium p-8 animate-fade-in-up delay-8">
               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Activity Feed</h3>
               <div className="space-y-6">
@@ -456,17 +456,21 @@ export default function DashboardPage() {
               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Quick Actions</h3>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: 'Create Campaign', icon: Megaphone, color: '#D4A843' },
-                  { label: 'Add User', icon: Users, color: '#B8923A' },
-                  { label: 'View Reports', icon: BarChart3, color: '#6B7280' },
-                  { label: 'System Settings', icon: Sparkles, color: '#101013' },
+                  { label: 'Create Campaign', icon: Megaphone, color: '#D4A843', href: '/campaigns' },
+                  { label: 'Add User', icon: Users, color: '#B8923A', href: '/user-management' },
+                  { label: 'View Reports', icon: BarChart3, color: '#6B7280', href: '/dashboard/reports' },
+                  { label: 'System Settings', icon: Sparkles, color: '#101013', href: '/settings' },
                 ].map((action, i) => (
-                  <button key={i} className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[var(--background)] border border-[var(--card-border)] hover:border-[#D4A843]/30 hover:shadow-xl transition-all gap-3 group">
+                  <Link 
+                    key={i} 
+                    href={action.href}
+                    className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[var(--background)] border border-[var(--card-border)] hover:border-[#D4A843]/30 hover:shadow-xl transition-all gap-3 group"
+                  >
                     <div className="h-10 w-10 rounded-xl flex items-center justify-center text-[var(--text-secondary)] group-hover:text-[#D4A843] transition-colors">
                       <action.icon size={24} strokeWidth={1.5} />
                     </div>
                     <span className="text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">{action.label}</span>
-                  </button>
+                  </Link>
                 ))}
               </div>
            </div>

@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { CheckCircle2, XCircle, Clock, DollarSign, FileText, Loader2 } from 'lucide-react';
 import { formatUSDateTime } from '@/lib/dateFormat';
+import PageHeader from '@/components/ui/PageHeader';
+import StatGrid from '@/components/ui/StatGrid';
+import FilterBar from '@/components/ui/FilterBar';
+import PremiumTable from '@/components/ui/PremiumTable';
 
 interface SalesApproval {
   _id: string;
@@ -98,128 +102,143 @@ export default function AgentSalesApprovalsPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-          <FileText size={26} className="text-blue-500" />
-          My Sales Approvals
-        </h1>
-        <p className="text-gray-600">View and track the status of your sales submissions.</p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader 
+        title="Sales Approvals" 
+        description="Track the verification status and payment processing of your submissions."
+      />
 
-      {/* Status Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600">Pending</div>
-          <div className="text-2xl font-bold text-gray-900">{statusCounts.pending}</div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600">Approved</div>
-          <div className="text-2xl font-bold text-green-600">{statusCounts.approved}</div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600">Rejected</div>
-          <div className="text-2xl font-bold text-red-600">{statusCounts.rejected}</div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600">Paid</div>
-          <div className="text-2xl font-bold text-emerald-600">{statusCounts.paid}</div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600">Unpaid</div>
-          <div className="text-2xl font-bold text-amber-600">{statusCounts.unpaid}</div>
-        </div>
-      </div>
+      {/* Approval Stats */}
+      <StatGrid 
+        loading={loading}
+        stats={[
+          { 
+            label: 'Approved', 
+            value: statusCounts.approved,
+            icon: '✅',
+            sparkColor: '#16a34a',
+            sparkData: [5, 8, 12, 10, 15, 18, 20]
+          },
+          { 
+            label: 'Paid', 
+            value: statusCounts.paid,
+            icon: '💰',
+            sparkColor: '#D4A843',
+            sparkData: [2, 4, 6, 8, 10, 12, 14]
+          },
+          { 
+            label: 'Pending', 
+            value: statusCounts.pending,
+            icon: '⏳',
+            sparkColor: '#9CA3AF',
+            sparkData: [3, 5, 2, 4, 6, 3, 5]
+          },
+          { 
+            label: 'Rejected', 
+            value: statusCounts.rejected,
+            icon: '❌',
+            sparkColor: '#ef4444',
+            sparkData: [0, 1, 0, 2, 1, 0, 1]
+          }
+        ]}
+      />
 
-      {/* Filter */}
-      <div className="bg-white border border-slate-200 rounded-lg p-4">
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-          <option value="paid">Paid</option>
-          <option value="unpaid">Unpaid</option>
-        </select>
-      </div>
-
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
-        </div>
-      )}
+      <FilterBar 
+        searchPlaceholder="Search approvals..."
+        filters={[
+          {
+            label: 'All Statuses',
+            options: [
+              { label: 'Pending', value: 'pending' },
+              { label: 'Approved', value: 'approved' },
+              { label: 'Rejected', value: 'rejected' },
+              { label: 'Paid', value: 'paid' },
+              { label: 'Unpaid', value: 'unpaid' }
+            ],
+            onChange: setStatusFilter
+          }
+        ]}
+      />
 
       {/* Approvals Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-100">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Date</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Phone</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Amount</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Comments</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600">Reviewed</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center">
-                    <Loader2 size={20} className="animate-spin mx-auto text-gray-400" />
-                  </td>
-                </tr>
-              ) : approvals.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-sm text-gray-500">
-                    No sales approvals found.
-                  </td>
-                </tr>
-              ) : (
-                approvals.map((approval) => (
-                  <tr key={approval._id} className="hover:bg-slate-50/50">
-                    <td className="px-4 py-3 text-sm text-slate-800">
-                      {approval.submission?.createdAt ? formatUSDateTime(approval.submission.createdAt) : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-800">
-                      {approval.submission?.phoneNumber || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-800 font-medium">
-                      {approval.amount ? `Rs ${approval.amount.toLocaleString()}` : '—'}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(approval.status)}`}>
-                        {getStatusIcon(approval.status)}
-                        {approval.status.charAt(0).toUpperCase() + approval.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-600">
-                      {approval.comments || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-slate-600">
-                      {approval.reviewedAt ? (
-                        <div>
-                          <div>{formatUSDateTime(approval.reviewedAt)}</div>
-                          {approval.reviewedBy && (
-                            <div className="text-xs text-gray-500">
-                              by {approval.reviewedBy.name || approval.reviewedBy.email}
-                            </div>
-                          )}
-                        </div>
-                      ) : '—'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <PremiumTable 
+        loading={loading}
+        data={approvals}
+        columns={[
+          {
+            header: 'Date',
+            accessor: (approval) => (
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#101013] to-[#202025] flex items-center justify-center text-[#D4A843] shadow-lg">
+                  <Clock size={18} />
+                </div>
+                <div>
+                  <div className="font-bold text-[var(--text-primary)]" suppressHydrationWarning>
+                    {approval.submission?.createdAt ? formatUSDateTime(approval.submission.createdAt) : '—'}
+                  </div>
+                  <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest">Submitted Date</div>
+                </div>
+              </div>
+            )
+          },
+          {
+            header: 'Contact',
+            accessor: (approval) => (
+              <div className="font-bold text-[var(--text-secondary)]">
+                {approval.submission?.phoneNumber || '—'}
+              </div>
+            )
+          },
+          {
+            header: 'Amount',
+            accessor: (approval) => (
+              <div className="font-black text-[#D4A843]">
+                {approval.amount ? `PKR ${approval.amount.toLocaleString()}` : '—'}
+              </div>
+            )
+          },
+          {
+            header: 'Status',
+            accessor: (approval) => (
+              <div className="flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${
+                  approval.status === 'approved' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' :
+                  approval.status === 'paid' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]' :
+                  approval.status === 'rejected' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' :
+                  'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+                }`} />
+                <span className={`text-[10px] font-bold uppercase ${
+                  approval.status === 'approved' ? 'text-green-600' :
+                  approval.status === 'paid' ? 'text-emerald-600' :
+                  approval.status === 'rejected' ? 'text-red-600' :
+                  'text-amber-600'
+                }`}>
+                  {approval.status}
+                </span>
+              </div>
+            )
+          },
+          {
+            header: 'Reviewer',
+            accessor: (approval) => (
+              approval.reviewedAt ? (
+                <div>
+                  <div className="text-[12px] font-bold text-[var(--text-secondary)]">{approval.reviewedBy?.name || 'Admin'}</div>
+                  <div className="text-[10px] text-[var(--text-tertiary)]" suppressHydrationWarning>{formatUSDateTime(approval.reviewedAt)}</div>
+                </div>
+              ) : <span className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Waiting</span>
+            )
+          },
+          {
+            header: 'Comments',
+            accessor: (approval) => (
+              <div className="text-[12px] text-[var(--text-tertiary)] italic max-w-[150px] truncate">
+                {approval.comments || 'No comments'}
+              </div>
+            )
+          }
+        ]}
+      />
     </div>
   );
 }
