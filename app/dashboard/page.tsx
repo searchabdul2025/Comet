@@ -281,8 +281,9 @@ export default function DashboardPage() {
         {/* Background glow behind podium */}
         <div className="absolute top-1/2 left-[65%] -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-radial from-[#D4A843]/10 to-transparent rounded-full opacity-50 blur-3xl" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-          <div className="max-w-xl">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 h-full min-h-[300px]">
+          {/* Left Text Content */}
+          <div className="max-w-md lg:w-1/3">
             <div className="flex items-center gap-2 mb-6 w-fit px-4 py-2 rounded-xl border border-[#D4A843]/10 bg-[#D4A843]/5">
               <Clock className="text-[#D4A843]" size={14} />
               <span className="text-[11px] font-black uppercase tracking-widest text-[#D4A843]">
@@ -296,16 +297,18 @@ export default function DashboardPage() {
             <p className="text-slate-500 font-medium">Your enterprise command center is ready.</p>
           </div>
 
-          {/* Podium Visualization (3D Sculpture) */}
-          <div className="relative h-[320px] w-full lg:w-[500px] flex items-center justify-center">
+          {/* Centered Podium Visualization */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[350px] w-full lg:w-[600px] flex items-center justify-center pointer-events-none z-0">
              <img 
                src="/3d-icons/podium.png" 
                alt="Top Performance" 
-               className="relative z-10 h-full w-full object-contain mix-blend-multiply drop-shadow-[0_30px_60px_rgba(212,168,67,0.2)] animate-float scale-110"
+               className="h-full w-full object-contain mix-blend-multiply drop-shadow-[0_40px_80px_rgba(212,168,67,0.25)] animate-float scale-125"
              />
-             
-             {/* Right Status Card */}
-             <div className="absolute top-0 right-0 hidden md:flex items-center gap-4 rounded-3xl bg-white/40 backdrop-blur-3xl border border-black/[0.03] p-5 shadow-2xl z-20">
+          </div>
+
+          {/* Right Status Card */}
+          <div className="lg:w-1/3 flex justify-end items-center relative z-10">
+             <div className="flex items-center gap-4 rounded-3xl bg-white/60 backdrop-blur-3xl border border-black/[0.03] p-5 shadow-2xl transition-all hover:scale-105 cursor-default">
                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center shadow-lg shadow-[#D4A843]/20 overflow-hidden">
                   <img src="/3d-icons/shield.png" className="h-10 w-10 object-contain brightness-110" />
                </div>

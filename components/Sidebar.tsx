@@ -381,23 +381,6 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
         )}
       </nav>
 
-      {/* ─── Upgrade Card ─── */}
-      {!collapsed && (
-        <div className="mx-4 mb-4">
-          <div className="bg-gradient-to-br from-[#1A1A1F] to-[#101013] rounded-2xl p-4 border border-[#D4A843]/10">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-8 w-8 rounded-full bg-[#D4A843]/10 flex items-center justify-center">
-                <Sparkles size={16} className="text-[#D4A843]" />
-              </div>
-            </div>
-            <p className="text-white text-sm font-semibold">Upgrade to Pro</p>
-            <p className="text-[#8B8B94] text-[11px] mt-1 leading-relaxed">Unlock advanced features and analytics.</p>
-            <button className="mt-3 w-full bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#101013] text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 hover:shadow-lg hover:shadow-[#D4A843]/20 transition-all">
-              Upgrade Now <ArrowUpRight size={14} />
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ─── User Card Footer ─── */}
       {session?.user && (
