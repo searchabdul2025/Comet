@@ -13,44 +13,26 @@ export async function GET() {
 
     await connectDB();
 
-    // Get counts from database - handle errors gracefully
-    let totalForms = 0;
-    let totalUsers = 0;
-    let totalSubmissions = 0;
-    let authorizedIPs = 0;
-    let mySubmissions = 0;
+    // Execute all counts in parallel for maximum performance
+    const [
+      totalFormsResult,
+      totalUsersResult,
+      totalSubmissionsResult,
+      authorizedIPsResult,
+      mySubmissionsResult
+    ] = await Promise.allSettled([
+      Form.countDocuments(),
+      User.countDocuments(),
+      FormSubmission.countDocuments(),
+      IPAddress.countDocuments({ status: 'Active' }),
+      currentUser?.id ? FormSubmission.countDocuments({ submittedBy: currentUser.id }) : Promise.resolve(0)
+    ]);
 
-    try {
-      totalForms = await Form.countDocuments();
-    } catch (err) {
-      console.error('Error counting forms:', err);
-    }
-
-    try {
-      totalUsers = await User.countDocuments();
-    } catch (err) {
-      console.error('Error counting users:', err);
-    }
-
-    try {
-      totalSubmissions = await FormSubmission.countDocuments();
-    } catch (err) {
-      console.error('Error counting submissions:', err);
-    }
-
-    try {
-      authorizedIPs = await IPAddress.countDocuments({ status: 'Active' });
-    } catch (err) {
-      console.error('Error counting IPs:', err);
-    }
-
-    if (currentUser?.id) {
-      try {
-        mySubmissions = await FormSubmission.countDocuments({ submittedBy: currentUser.id });
-      } catch (err) {
-        console.error('Error counting user submissions:', err);
-      }
-    }
+    const totalForms = totalFormsResult.status === 'fulfilled' ? totalFormsResult.value : 0;
+    const totalUsers = totalUsersResult.status === 'fulfilled' ? totalUsersResult.value : 0;
+    const totalSubmissions = totalSubmissionsResult.status === 'fulfilled' ? totalSubmissionsResult.value : 0;
+    const authorizedIPs = authorizedIPsResult.status === 'fulfilled' ? authorizedIPsResult.value : 0;
+    const mySubmissions = mySubmissionsResult.status === 'fulfilled' ? mySubmissionsResult.value : 0;
 
     return NextResponse.json({
       success: true,

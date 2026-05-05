@@ -62,5 +62,9 @@ const FormSubmissionSchema = new Schema<IFormSubmission>(
   }
 );
 
+// Compound indexes for optimized reporting and dashboard stats
+FormSubmissionSchema.index({ submittedBy: 1, createdAt: -1 });
+FormSubmissionSchema.index({ formId: 1, createdAt: -1 });
+
 export default mongoose.models.FormSubmission || mongoose.model<IFormSubmission>('FormSubmission', FormSubmissionSchema);
 

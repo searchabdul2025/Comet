@@ -61,12 +61,12 @@ const AdminBanner: React.FC<AdminBannerProps> = ({ adminName }) => {
           </div>
         </div>
 
-        {/* Center Side - Logo */}
+        {/* Center Side - Banner Graphic */}
         <div className="relative z-[1] flex justify-center items-center h-full">
            <img 
-             src="/logo.svg" 
-             alt="Logo" 
-             style={{ width: '160px', height: 'auto', filter: 'drop-shadow(0 4px 12px rgba(180,140,60,0.2))' }}
+             src="/banner.svg" 
+             alt="Banner" 
+             style={{ width: '240px', height: 'auto', filter: 'drop-shadow(0 4px 14px rgba(180,140,60,0.15))' }}
            />
         </div>
 
