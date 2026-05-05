@@ -18,6 +18,11 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  ArrowUpRight,
+  Linkedin,
+  Twitter,
+  Instagram,
+  Facebook,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
@@ -111,21 +116,16 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   // Build grouped navigation
   const adminGroups: NavGroup[] = [
     {
-      label: 'Overview',
+      label: 'MAIN',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null },
-      ],
-    },
-    {
-      label: 'Management',
-      items: [
         { href: '/campaigns', label: 'Campaigns', icon: Megaphone, permission: 'canManageForms' as const },
         { href: '/requests', label: 'Requests', icon: Bell, badge: requestCount, permission: 'canManageRequests' as const },
         { href: '/user-management', label: 'User Management', icon: Users, permission: 'canManageUsers' as const },
       ],
     },
     {
-      label: 'Analytics',
+      label: 'ANALYTICS',
       items: [
         { href: '/dashboard/reports', label: 'Reports', icon: Activity, permission: 'canManageUsers' as const },
         { href: '/monthly-targets', label: 'Monthly Targets', icon: Target, permission: 'canManageUsers' as const, roles: ['Admin'] as const },
@@ -134,29 +134,29 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       ],
     },
     {
-      label: 'Engagement',
+      label: 'SYSTEM',
       items: [
-        { href: '/forms', label: 'Forms', icon: FileText, permission: 'canManageForms' as const },
-        { href: '/chatrooms', label: 'Chatrooms', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
+        { href: '/settings', label: 'Settings', icon: Sparkles, permission: 'canManageSettings' as const },
       ],
     },
     {
-      label: 'System',
+      label: 'COMMUNICATION',
       items: [
-        { href: '/settings', label: 'Settings', icon: Sparkles, permission: 'canManageSettings' as const },
+        { href: '/forms', label: 'Forms', icon: FileText, permission: 'canManageForms' as const },
+        { href: '/chatrooms', label: 'Chatrooms', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
       ],
     },
   ];
 
   const agentGroups: NavGroup[] = [
     {
-      label: 'Overview',
+      label: 'MAIN',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null, roles: ['User', 'Supervisor'] as const },
       ],
     },
     {
-      label: 'Work',
+      label: 'WORK',
       items: [
         { href: '/agent/campaigns', label: 'Campaigns Forms', icon: FolderKanban, permission: null, roles: ['User', 'Supervisor'] as const },
         { href: '/agent/submissions', label: 'My Submissions', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
@@ -164,7 +164,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       ],
     },
     {
-      label: 'Performance',
+      label: 'PERFORMANCE',
       items: [
         { href: '/agent/reports', label: 'Reports', icon: Activity, permission: null, roles: ['User', 'Supervisor'] as const },
         { href: '/agent/targets', label: 'My Target', icon: Target, permission: null, roles: ['User', 'Supervisor'] as const },
@@ -174,7 +174,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       ],
     },
     {
-      label: 'Communication',
+      label: 'COMMUNICATION',
       items: [
         { href: '/agent/requests', label: 'Requests', icon: MessageSquare, permission: null, roles: ['User', 'Supervisor'] as const },
       ],
@@ -206,7 +206,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
 
   if (!mounted) {
     return (
-      <aside className="w-[260px] bg-[#0f172a] min-h-screen flex flex-col">
+      <aside className="w-[260px] bg-[var(--green-900,#0C1A0E)] min-h-screen flex flex-col">
         <div className="p-4 animate-pulse">
           <div className="h-12 bg-white/5 rounded-xl" />
         </div>
@@ -218,7 +218,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     <aside
       className={`${
         collapsed ? 'w-[72px]' : 'w-[260px]'
-      } bg-[#0f172a] min-h-screen flex flex-col transition-all duration-300 ease-in-out relative`}
+      } bg-[#0C1A0E] min-h-screen flex flex-col transition-all duration-300 ease-in-out relative`}
     >
       {/* ─── Brand Header ─── */}
       <div className={`p-4 ${collapsed ? 'px-3' : 'px-5'} flex items-center gap-3 border-b border-white/[0.06]`}>
@@ -227,19 +227,18 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
           <img
             src={brand.logo}
             alt={brand.name}
-            className="h-9 w-9 rounded-xl object-contain bg-white/5 flex-shrink-0"
+            className="h-10 w-10 rounded-xl object-contain bg-white/5 flex-shrink-0"
           />
         ) : (
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-lg shadow-indigo-500/25">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#0C1A0E] text-sm font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/25">
             {brand.name.slice(0, 2).toUpperCase()}
           </div>
         )}
         {!collapsed && (
           <div className="overflow-hidden animate-fade-in">
-            <p className="text-[11px] font-medium text-slate-500 uppercase tracking-wider">
-              {roleLabel} Panel
+            <p className="text-[13px] font-bold text-[#D4A843] tracking-wider uppercase">
+              {brand.name}
             </p>
-            <p className="text-sm font-semibold text-white truncate">{brand.name}</p>
           </div>
         )}
       </div>
@@ -247,7 +246,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       {/* ─── Collapse Toggle ─── */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-[52px] h-6 w-6 rounded-full bg-[#1e293b] border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 transition-all z-50 shadow-lg"
+        className="absolute -right-3 top-[52px] h-6 w-6 rounded-full bg-[#1A3A1E] border border-[#D4A843]/20 flex items-center justify-center text-[#8A9E8C] hover:text-[#D4A843] hover:bg-[#1A3A1E] transition-all z-50 shadow-lg"
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
@@ -259,7 +258,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
           <div key={group.label} className={gi > 0 ? 'mt-6' : ''}>
             {/* Group Label */}
             {!collapsed && (
-              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+              <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#D4A843]/50">
                 {group.label}
               </p>
             )}
@@ -281,22 +280,17 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                       collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
                     } ${
                       isActive
-                        ? 'bg-indigo-500/[0.12] text-white'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                        ? 'bg-[#D4A843] text-[#0C1A0E]'
+                        : 'text-[#8A9E8C] hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
-                    {/* Active Indicator Bar */}
-                    {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-gradient-to-b from-indigo-400 to-violet-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                    )}
-
                     {/* Icon */}
                     <div
                       className={`flex-shrink-0 flex items-center justify-center rounded-lg transition-all duration-200 ${
                         collapsed ? 'h-10 w-10' : 'h-8 w-8'
                       } ${
                         isActive
-                          ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30'
+                          ? 'bg-[#0C1A0E]/15 text-[#0C1A0E]'
                           : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
                       }`}
                     >
@@ -305,7 +299,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
 
                     {/* Label */}
                     {!collapsed && (
-                      <span className="text-[13px] font-medium truncate">{item.label}</span>
+                      <span className={`text-[13px] font-medium truncate ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
                     )}
 
                     {/* Badge */}
@@ -315,8 +309,8 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                           collapsed ? 'absolute -top-0.5 -right-0.5 h-4 w-4 text-[9px]' : 'ml-auto text-[10px] px-1.5 py-0.5'
                         } rounded-full font-semibold flex items-center justify-center ${
                           isActive
-                            ? 'bg-indigo-500 text-white'
-                            : 'bg-red-500/90 text-white'
+                            ? 'bg-[#0C1A0E] text-[#D4A843]'
+                            : 'bg-[#D4A843] text-[#0C1A0E]'
                         }`}
                       >
                         {item.badge}
@@ -333,7 +327,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
         {accessibleChatrooms.length > 0 && (
           <div className="mt-6">
             {!collapsed && (
-              <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
+              <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#D4A843]/50">
                 Chatrooms
               </p>
             )}
@@ -350,19 +344,16 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                       collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
                     } ${
                       isActive
-                        ? 'bg-indigo-500/[0.12] text-white'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                        ? 'bg-[#D4A843] text-[#0C1A0E]'
+                        : 'text-[#8A9E8C] hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
-                    {isActive && (
-                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-gradient-to-b from-indigo-400 to-violet-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                    )}
                     <div
                       className={`flex-shrink-0 flex items-center justify-center rounded-lg transition-all ${
                         collapsed ? 'h-10 w-10' : 'h-8 w-8'
                       } ${
                         isActive
-                          ? 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/30'
+                          ? 'bg-[#0C1A0E]/15 text-[#0C1A0E]'
                           : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
                       }`}
                     >
@@ -372,7 +363,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                       <div className="flex-1 min-w-0">
                         <span className="text-[13px] font-medium block truncate">{chatroom.name}</span>
                         {chatroom.description && (
-                          <span className="text-[10px] text-slate-500 block truncate">{chatroom.description}</span>
+                          <span className="text-[10px] text-[#8A9E8C]/60 block truncate">{chatroom.description}</span>
                         )}
                       </div>
                     )}
@@ -384,6 +375,24 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
         )}
       </nav>
 
+      {/* ─── Upgrade Card ─── */}
+      {!collapsed && (
+        <div className="mx-4 mb-4">
+          <div className="bg-gradient-to-br from-[#1A3A1E] to-[#0C1A0E] rounded-2xl p-4 border border-[#D4A843]/10">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="h-8 w-8 rounded-full bg-[#D4A843]/10 flex items-center justify-center">
+                <Sparkles size={16} className="text-[#D4A843]" />
+              </div>
+            </div>
+            <p className="text-white text-sm font-semibold">Upgrade to Pro</p>
+            <p className="text-[#8A9E8C] text-[11px] mt-1 leading-relaxed">Unlock advanced features and analytics.</p>
+            <button className="mt-3 w-full bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#0C1A0E] text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 hover:shadow-lg hover:shadow-[#D4A843]/20 transition-all">
+              Upgrade Now <ArrowUpRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ─── User Card Footer ─── */}
       {session?.user && (
         <div className={`border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-4'}`}>
@@ -394,7 +403,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
           >
             {/* Avatar / User Info */}
             <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-lg shadow-indigo-500/20">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#0C1A0E] text-xs font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/20">
                 {initials}
               </div>
 
@@ -403,7 +412,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                   <p className="text-[13px] font-semibold text-white truncate">
                     {session.user.name || session.user.email}
                   </p>
-                  <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">
+                  <p className="text-[10px] text-[#8A9E8C] font-medium uppercase tracking-wider">
                     {roleLabel}
                   </p>
                 </div>
@@ -417,12 +426,20 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                 collapsed 
                   ? 'h-9 w-9 mt-2' 
                   : 'h-8 w-8'
-              } rounded-lg flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all border border-transparent hover:border-red-500/20`}
+              } rounded-lg flex items-center justify-center text-[#8A9E8C] hover:text-[#D4A843] hover:bg-[#D4A843]/10 transition-all border border-transparent hover:border-[#D4A843]/20`}
               title="Logout"
             >
               <LogOut size={collapsed ? 18 : 15} />
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ─── Footer ─── */}
+      {!collapsed && (
+        <div className="px-5 pb-4 text-center">
+          <p className="text-[10px] text-[#8A9E8C]/50">© 2026 {brand.name}</p>
+          <p className="text-[10px] text-[#8A9E8C]/40">All rights reserved.</p>
         </div>
       )}
     </aside>

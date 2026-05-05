@@ -7,10 +7,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-indigo-50/50 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-5%] left-[10%] w-[400px] h-[400px] rounded-full bg-violet-50/50 blur-[80px] pointer-events-none" />
+    <div className="min-h-screen bg-[var(--page-bg)] flex relative overflow-hidden transition-colors duration-300">
+      {/* Decorative Background Elements — Gold/Green tints */}
+      <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full bg-[var(--page-blob-1)] blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[-5%] left-[10%] w-[400px] h-[400px] rounded-full bg-[var(--page-blob-2)] blur-[80px] pointer-events-none" />
       
       <Sidebar />
       
@@ -25,4 +25,3 @@ export default function DashboardLayout({
     </div>
   );
 }
-

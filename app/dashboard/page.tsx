@@ -69,10 +69,10 @@ function StatCard({
     <div className={`card-premium p-5 animate-fade-in-up ${delay} group`}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-[13px] font-medium text-slate-500">{label}</p>
-          <p className="text-3xl font-bold text-slate-900 mt-1 tabular-nums animate-count-up">
+          <p className="text-[13px] font-medium text-[var(--text-secondary)]">{label}</p>
+          <p className="text-3xl font-bold text-[var(--text-primary)] mt-1 tabular-nums animate-count-up">
             {loading ? (
-              <span className="inline-block h-8 w-16 bg-slate-100 rounded-lg animate-pulse" />
+              <span className="inline-block h-8 w-16 bg-[var(--card-border)] rounded-lg animate-pulse" />
             ) : (
               animatedValue.toLocaleString()
             )}
@@ -85,8 +85,8 @@ function StatCard({
           )}
         </div>
         <div
-          className={`h-12 w-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}
-          style={{ boxShadow: `0 8px 24px -4px ${gradient.includes('indigo') ? 'rgba(99,102,241,0.3)' : gradient.includes('emerald') ? 'rgba(16,185,129,0.3)' : gradient.includes('amber') ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)'}` }}
+          className={`h-12 w-12 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}
+          style={{ boxShadow: `0 8px 24px -4px rgba(201,168,79,0.25)` }}
         >
           <Icon size={22} strokeWidth={2} />
         </div>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
           label: 'My Submissions',
           value: stats.mySubmissions || stats.totalSubmissions,
           icon: Database,
-          gradient: 'from-indigo-500 to-violet-600',
+          gradient: 'from-[#D4A843] to-[#B8923A]',
           trend: { value: 12, up: true },
         },
       ]
@@ -197,28 +197,28 @@ export default function DashboardPage() {
           label: 'Total Forms',
           value: stats.totalForms,
           icon: ClipboardList,
-          gradient: 'from-indigo-500 to-violet-600',
+          gradient: 'from-[#D4A843] to-[#B8923A]',
           trend: { value: 8, up: true },
         },
         {
           label: 'Total Users',
           value: stats.totalUsers,
           icon: Users,
-          gradient: 'from-emerald-500 to-teal-600',
+          gradient: 'from-[#3D7342] to-[#2D5731]',
           trend: { value: 15, up: true },
         },
         {
           label: 'Submissions',
           value: stats.totalSubmissions,
           icon: Database,
-          gradient: 'from-amber-500 to-orange-600',
+          gradient: 'from-[#C9A84F] to-[#9A7330]',
           trend: { value: 24, up: true },
         },
         {
           label: 'Authorized IPs',
           value: stats.authorizedIPs,
           icon: ShieldCheck,
-          gradient: 'from-blue-500 to-cyan-600',
+          gradient: 'from-[#8A9E8C] to-[#6B7E6D]',
         },
       ];
 
@@ -254,16 +254,16 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 min-h-screen -mx-6 px-6 pb-10">
       {/* ─── Welcome Banner ─── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white p-7 shadow-2xl animate-fade-in-up">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0C1A0E] via-[#1A3A1E] to-[#0C1A0E] text-white p-7 shadow-2xl animate-fade-in-up">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-violet-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+        <div className="absolute top-0 right-0 w-72 h-72 bg-[#D4A843]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#3D7342]/15 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
         
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <Zap size={18} className="text-amber-400" />
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <Zap size={18} className="text-[#D4A843]" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#D4A843]/70">
                 {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'Loading...'}
               </span>
             </div>
@@ -275,14 +275,14 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2.5 rounded-2xl bg-white/[0.05] backdrop-blur border border-white/[0.08] px-4 py-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#3D7342] to-[#2D5731] flex items-center justify-center shadow-lg shadow-[#3D7342]/25">
               <ShieldCheck size={20} />
             </div>
             <div>
               <p className="text-[11px] text-slate-400 font-medium">System Status</p>
               <div className="flex items-center gap-1.5">
                 <span className="status-dot status-dot-online" />
-                <p className="text-sm font-semibold text-emerald-400">All Operational</p>
+                <p className="text-sm font-semibold text-emerald-400">Operational</p>
               </div>
             </div>
           </div>
@@ -311,10 +311,10 @@ export default function DashboardPage() {
         <div className="xl:col-span-2 card-premium p-6 animate-fade-in-up delay-3">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h3 className="text-base font-semibold text-slate-900">Submissions Overview</h3>
-              <p className="text-[12px] text-slate-400 mt-0.5">Monthly trend for {new Date().getFullYear()}</p>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">Submissions Overview</h3>
+              <p className="text-[12px] text-[var(--text-tertiary)] mt-0.5">Monthly trend for {new Date().getFullYear()}</p>
             </div>
-            <div className="flex items-center gap-1.5 bg-indigo-50 text-indigo-600 rounded-lg px-2.5 py-1.5 text-xs font-semibold">
+            <div className="flex items-center gap-1.5 bg-[#D4A843]/10 text-[#D4A843] rounded-lg px-2.5 py-1.5 text-xs font-semibold">
               <BarChart3 size={14} />
               <span>Live</span>
             </div>
@@ -322,7 +322,7 @@ export default function DashboardPage() {
 
           {chartLoading ? (
             <div className="h-56 flex items-center justify-center">
-              <div className="h-8 w-8 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+              <div className="h-8 w-8 border-3 border-[#D4A843]/20 border-t-[#D4A843] rounded-full animate-spin" />
             </div>
           ) : chartError ? (
             <div className="p-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl">{chartError}</div>
@@ -333,12 +333,12 @@ export default function DashboardPage() {
               <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ height: 220 }}>
                 <defs>
                   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" />
-                    <stop offset="100%" stopColor="#818cf8" />
+                    <stop offset="0%" stopColor="#D4A843" />
+                    <stop offset="100%" stopColor="#C9A84F" />
                   </linearGradient>
                   <linearGradient id="barGradHover" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#4f46e5" />
-                    <stop offset="100%" stopColor="#6366f1" />
+                    <stop offset="0%" stopColor="#B8923A" />
+                    <stop offset="100%" stopColor="#D4A843" />
                   </linearGradient>
                 </defs>
 
@@ -391,8 +391,8 @@ export default function DashboardPage() {
                       {/* Value label above bar when hovered */}
                       {isHovered && val > 0 && (
                         <g>
-                          <rect x={cx - 18} y={by - 26} width={36} height={20} rx={6} fill="#0f172a" />
-                          <polygon points={`${cx - 4},${by - 6} ${cx + 4},${by - 6} ${cx},${by - 1}`} fill="#0f172a" />
+                          <rect x={cx - 18} y={by - 26} width={36} height={20} rx={6} fill="#0C1A0E" />
+                          <polygon points={`${cx - 4},${by - 6} ${cx + 4},${by - 6} ${cx},${by - 1}`} fill="#0C1A0E" />
                           <text x={cx} y={by - 13} textAnchor="middle" fill="white" fontSize="11" fontWeight="600" fontFamily="Inter, sans-serif">
                             {val}
                           </text>
@@ -400,7 +400,7 @@ export default function DashboardPage() {
                       )}
 
                       {/* Month label */}
-                      <text x={cx} y={chartH - 6} textAnchor="middle" fill={isHovered ? '#6366f1' : '#94a3b8'} fontSize="10" fontWeight={isHovered ? '600' : '400'} fontFamily="Inter, sans-serif">
+                      <text x={cx} y={chartH - 6} textAnchor="middle" fill={isHovered ? '#D4A843' : '#94a3b8'} fontSize="10" fontWeight={isHovered ? '600' : '400'} fontFamily="Inter, sans-serif">
                         {months[i]}
                       </text>
                     </g>
@@ -411,7 +411,7 @@ export default function DashboardPage() {
               {/* Legend */}
               <div className="flex items-center gap-5 mt-2 text-xs text-slate-500">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded bg-indigo-500" />
+                  <span className="h-2.5 w-2.5 rounded bg-[#D4A843]" />
                   Monthly Submissions
                 </span>
               </div>
@@ -423,15 +423,15 @@ export default function DashboardPage() {
         <div className="space-y-4">
           {/* System Health */}
           <div className="card-premium p-5 animate-fade-in-up delay-4">
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">System Health</h3>
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">System Health</h3>
             <div className="space-y-3">
               {[
                 { label: 'Authentication', status: 'Operational', color: 'emerald' },
                 { label: 'Database', status: 'Connected', color: 'blue' },
                 { label: 'Google Sheets', status: 'Synced', color: 'emerald' },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between py-2 border-b border-slate-100 last:border-0">
-                  <span className="text-[13px] text-slate-600">{item.label}</span>
+                <div key={item.label} className="flex items-center justify-between py-2 border-b border-[var(--card-border)] last:border-0">
+                  <span className="text-[13px] text-[var(--text-secondary)]">{item.label}</span>
                   <div className="flex items-center gap-2">
                     <span className={`status-dot ${item.color === 'emerald' ? 'status-dot-online' : 'bg-blue-500'}`} />
                     <span className={`text-[11px] font-semibold ${item.color === 'emerald' ? 'text-emerald-600' : 'text-blue-600'}`}>
@@ -458,8 +458,8 @@ export default function DashboardPage() {
           {isAdmin && topAgents.length > 0 && (
             <div className="card-premium p-5 animate-fade-in-up delay-5">
               <div className="flex items-center gap-2 mb-4">
-                <Trophy size={16} className="text-amber-500" />
-                <h3 className="text-sm font-semibold text-slate-900">Top Agents</h3>
+                <Trophy size={16} className="text-[#D4A843]" />
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Top Agents</h3>
               </div>
               <div className="space-y-2.5">
                 {topAgents.slice(0, 5).map((agent: any, i: number) => (
@@ -471,9 +471,9 @@ export default function DashboardPage() {
                       {i < 3 ? <Medal size={13} /> : i + 1}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium text-slate-800 truncate">{agent.name || agent.email || 'Agent'}</p>
+                      <p className="text-[12px] font-medium text-[var(--text-primary)] truncate">{agent.name || agent.email || 'Agent'}</p>
                     </div>
-                    <span className="text-[12px] font-bold text-indigo-600 tabular-nums">{agent.count}</span>
+                    <span className="text-[12px] font-bold text-[#D4A843] tabular-nums">{agent.count}</span>
                   </div>
                 ))}
               </div>
@@ -488,9 +488,9 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Clock size={16} className="text-slate-400" />
-              <h3 className="text-sm font-semibold text-slate-900">Recent Submissions</h3>
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">Recent Submissions</h3>
             </div>
-            <a href="/dashboard/reports" className="text-xs font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+            <a href="/dashboard/reports" className="text-xs font-medium text-[#D4A843] hover:text-[#B8923A] flex items-center gap-1">
               View all <ArrowUpRight size={12} />
             </a>
           </div>
@@ -545,8 +545,8 @@ function TargetRing({ achieved, target }: { achieved: number; target: number }) 
           />
           <defs>
             <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#8b5cf6" />
+              <stop offset="0%" stopColor="#D4A843" />
+              <stop offset="100%" stopColor="#B8923A" />
             </linearGradient>
           </defs>
         </svg>

@@ -3,15 +3,22 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import AgentLaunch from './AgentLaunch';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Moon, Sun, ChevronDown } from 'lucide-react';
 
 export default function Header() {
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Portal' });
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Check persisted theme
+    const saved = localStorage.getItem('comet-theme');
+    if (saved === 'dark') {
+      setDarkMode(true);
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
   }, []);
 
   useEffect(() => {
@@ -29,11 +36,23 @@ export default function Header() {
     loadBrand();
   }, []);
 
+  const toggleDarkMode = () => {
+    const next = !darkMode;
+    setDarkMode(next);
+    if (next) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      localStorage.setItem('comet-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('comet-theme', 'light');
+    }
+  };
+
   if (!mounted || status === 'loading') {
     return (
-      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 px-6 py-3 flex items-center justify-between sticky top-0 z-30">
-        <div className="h-6 w-24 bg-slate-100 rounded-lg animate-pulse" />
-        <div className="h-8 w-32 bg-slate-100 rounded-lg animate-pulse" />
+      <header className="bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--header-border)] px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+        <div className="h-6 w-24 bg-[var(--card-border)] rounded-lg animate-pulse" />
+        <div className="h-8 w-32 bg-[var(--card-border)] rounded-lg animate-pulse" />
       </header>
     );
   }
@@ -41,51 +60,63 @@ export default function Header() {
   if (!session?.user) return null;
 
   const user = session.user;
-  const roleColor =
+
+  const roleBadge =
     user.role === 'Admin'
-      ? 'from-indigo-500 to-violet-600 text-white'
+      ? 'bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#0C1A0E]'
       : user.role === 'Supervisor'
-      ? 'from-amber-500 to-orange-600 text-white'
-      : 'from-emerald-500 to-teal-600 text-white';
+      ? 'bg-gradient-to-r from-[#3D7342] to-[#2D5731] text-white'
+      : 'bg-gradient-to-r from-[#8A9E8C] to-[#6B7E6D] text-white';
 
   return (
     <>
       <AgentLaunch />
-      <header className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 px-6 py-3 flex items-center justify-between sticky top-0 z-30">
-        {/* Left: Breadcrumb / Title */}
+      <header className="bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--header-border)] px-6 py-3 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
+        {/* Left: Search */}
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-slate-800">{brand.name}</h1>
+          <div className="hidden md:flex items-center gap-2 bg-[var(--header-input-bg)] border border-[var(--header-input-border)] rounded-xl px-3 py-2 text-sm text-[var(--text-tertiary)] hover:border-[#D4A843]/30 transition-colors cursor-pointer min-w-[220px]">
+            <Search size={15} />
+            <span className="select-none">Search anything...</span>
+            <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-[var(--text-tertiary)] bg-[var(--card-bg)] border border-[var(--card-border)] ml-auto">
+              ⌘K
+            </kbd>
+          </div>
         </div>
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
-          {/* Search (placeholder) */}
-          <div className="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-200/80 rounded-xl px-3 py-2 text-sm text-slate-400 hover:border-indigo-300 transition-colors cursor-pointer">
-            <Search size={15} />
-            <span className="text-slate-400 select-none">Search...</span>
-            <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-slate-400 bg-slate-100 border border-slate-200">
-              ⌘K
-            </kbd>
-          </div>
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="h-9 w-9 rounded-xl bg-[var(--header-input-bg)] border border-[var(--header-input-border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all"
+            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {darkMode ? <Sun size={17} /> : <Moon size={17} />}
+          </button>
 
           {/* Notification bell */}
-          <button className="h-9 w-9 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all relative">
+          <button className="h-9 w-9 rounded-xl bg-[var(--header-input-bg)] border border-[var(--header-input-border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all relative">
             <Bell size={17} />
+            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#D4A843] border-2 border-[var(--card-bg)]" />
           </button>
 
           {/* Divider */}
-          <div className="h-6 w-px bg-slate-200" />
+          <div className="h-6 w-px bg-[var(--card-border)]" />
 
           {/* User Info */}
-          <div className="flex items-center gap-2.5">
-            <span className="text-sm font-medium text-slate-700 hidden sm:block">
-              {user.name || user.email}
-            </span>
-            <span
-              className={`bg-gradient-to-r ${roleColor} px-2.5 py-1 rounded-lg text-[11px] font-semibold shadow-sm`}
-            >
-              {user.role}
-            </span>
+          <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#0C1A0E] text-xs font-bold shadow-sm">
+              {user.name ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'U'}
+            </div>
+            <div className="hidden sm:block">
+              <p className="text-sm font-semibold text-[var(--text-primary)] leading-tight">
+                {user.name || user.email}
+              </p>
+              <p className="text-[10px] text-[var(--text-tertiary)]">
+                {user.role === 'Admin' ? 'Super Admin' : user.role}
+              </p>
+            </div>
+            <ChevronDown size={14} className="text-[var(--text-tertiary)] hidden sm:block" />
           </div>
         </div>
       </header>
