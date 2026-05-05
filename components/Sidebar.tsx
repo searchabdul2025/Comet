@@ -206,7 +206,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
 
   if (!mounted) {
     return (
-      <aside className="w-[260px] bg-[var(--green-900,#0C1A0E)] min-h-screen flex flex-col">
+      <aside className="w-[260px] bg-[var(--green-900,#101013)] min-h-screen flex flex-col">
         <div className="p-4 animate-pulse">
           <div className="h-12 bg-white/5 rounded-xl" />
         </div>
@@ -218,7 +218,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     <aside
       className={`${
         collapsed ? 'w-[72px]' : 'w-[260px]'
-      } bg-[#0C1A0E] min-h-screen flex flex-col transition-all duration-300 ease-in-out relative`}
+      } bg-[#101013] min-h-screen flex flex-col transition-all duration-300 ease-in-out relative`}
     >
       {/* ─── Brand Header ─── */}
       <div className={`p-4 ${collapsed ? 'px-3' : 'px-5'} flex items-center gap-3 border-b border-white/[0.06]`}>
@@ -230,7 +230,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
             className="h-10 w-10 rounded-xl object-contain bg-white/5 flex-shrink-0"
           />
         ) : (
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#0C1A0E] text-sm font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/25">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] text-sm font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/25">
             {brand.name.slice(0, 2).toUpperCase()}
           </div>
         )}
@@ -246,7 +246,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       {/* ─── Collapse Toggle ─── */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-[52px] h-6 w-6 rounded-full bg-[#1A3A1E] border border-[#D4A843]/20 flex items-center justify-center text-[#8A9E8C] hover:text-[#D4A843] hover:bg-[#1A3A1E] transition-all z-50 shadow-lg"
+        className="absolute -right-3 top-[52px] h-6 w-6 rounded-full bg-[#1A1A1F] border border-[#D4A843]/20 flex items-center justify-center text-[#8B8B94] hover:text-[#D4A843] hover:bg-[#1A1A1F] transition-all z-50 shadow-lg"
         aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
@@ -280,8 +280,8 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                       collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
                     } ${
                       isActive
-                        ? 'bg-[#D4A843] text-[#0C1A0E]'
-                        : 'text-[#8A9E8C] hover:text-white hover:bg-white/[0.04]'
+                        ? 'bg-[#D4A843] text-[#101013]'
+                        : 'text-[#8B8B94] hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
                     {/* Icon */}
@@ -290,7 +290,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                         collapsed ? 'h-10 w-10' : 'h-8 w-8'
                       } ${
                         isActive
-                          ? 'bg-[#0C1A0E]/15 text-[#0C1A0E]'
+                          ? 'bg-[#101013]/15 text-[#101013]'
                           : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
                       }`}
                     >
@@ -309,8 +309,8 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                           collapsed ? 'absolute -top-0.5 -right-0.5 h-4 w-4 text-[9px]' : 'ml-auto text-[10px] px-1.5 py-0.5'
                         } rounded-full font-semibold flex items-center justify-center ${
                           isActive
-                            ? 'bg-[#0C1A0E] text-[#D4A843]'
-                            : 'bg-[#D4A843] text-[#0C1A0E]'
+                            ? 'bg-[#101013] text-[#D4A843]'
+                            : 'bg-[#D4A843] text-[#101013]'
                         }`}
                       >
                         {item.badge}
@@ -344,8 +344,8 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                       collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
                     } ${
                       isActive
-                        ? 'bg-[#D4A843] text-[#0C1A0E]'
-                        : 'text-[#8A9E8C] hover:text-white hover:bg-white/[0.04]'
+                        ? 'bg-[#D4A843] text-[#101013]'
+                        : 'text-[#8B8B94] hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
                     <div
@@ -353,7 +353,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                         collapsed ? 'h-10 w-10' : 'h-8 w-8'
                       } ${
                         isActive
-                          ? 'bg-[#0C1A0E]/15 text-[#0C1A0E]'
+                          ? 'bg-[#101013]/15 text-[#101013]'
                           : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
                       }`}
                     >
@@ -363,7 +363,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                       <div className="flex-1 min-w-0">
                         <span className="text-[13px] font-medium block truncate">{chatroom.name}</span>
                         {chatroom.description && (
-                          <span className="text-[10px] text-[#8A9E8C]/60 block truncate">{chatroom.description}</span>
+                          <span className="text-[10px] text-[#8B8B94]/60 block truncate">{chatroom.description}</span>
                         )}
                       </div>
                     )}
@@ -378,15 +378,15 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       {/* ─── Upgrade Card ─── */}
       {!collapsed && (
         <div className="mx-4 mb-4">
-          <div className="bg-gradient-to-br from-[#1A3A1E] to-[#0C1A0E] rounded-2xl p-4 border border-[#D4A843]/10">
+          <div className="bg-gradient-to-br from-[#1A1A1F] to-[#101013] rounded-2xl p-4 border border-[#D4A843]/10">
             <div className="flex items-center gap-2 mb-2">
               <div className="h-8 w-8 rounded-full bg-[#D4A843]/10 flex items-center justify-center">
                 <Sparkles size={16} className="text-[#D4A843]" />
               </div>
             </div>
             <p className="text-white text-sm font-semibold">Upgrade to Pro</p>
-            <p className="text-[#8A9E8C] text-[11px] mt-1 leading-relaxed">Unlock advanced features and analytics.</p>
-            <button className="mt-3 w-full bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#0C1A0E] text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 hover:shadow-lg hover:shadow-[#D4A843]/20 transition-all">
+            <p className="text-[#8B8B94] text-[11px] mt-1 leading-relaxed">Unlock advanced features and analytics.</p>
+            <button className="mt-3 w-full bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#101013] text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1 hover:shadow-lg hover:shadow-[#D4A843]/20 transition-all">
               Upgrade Now <ArrowUpRight size={14} />
             </button>
           </div>
@@ -403,7 +403,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
           >
             {/* Avatar / User Info */}
             <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#0C1A0E] text-xs font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/20">
+              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] text-xs font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/20">
                 {initials}
               </div>
 
@@ -412,7 +412,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                   <p className="text-[13px] font-semibold text-white truncate">
                     {session.user.name || session.user.email}
                   </p>
-                  <p className="text-[10px] text-[#8A9E8C] font-medium uppercase tracking-wider">
+                  <p className="text-[10px] text-[#8B8B94] font-medium uppercase tracking-wider">
                     {roleLabel}
                   </p>
                 </div>
@@ -426,7 +426,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                 collapsed 
                   ? 'h-9 w-9 mt-2' 
                   : 'h-8 w-8'
-              } rounded-lg flex items-center justify-center text-[#8A9E8C] hover:text-[#D4A843] hover:bg-[#D4A843]/10 transition-all border border-transparent hover:border-[#D4A843]/20`}
+              } rounded-lg flex items-center justify-center text-[#8B8B94] hover:text-[#D4A843] hover:bg-[#D4A843]/10 transition-all border border-transparent hover:border-[#D4A843]/20`}
               title="Logout"
             >
               <LogOut size={collapsed ? 18 : 15} />
@@ -438,8 +438,8 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       {/* ─── Footer ─── */}
       {!collapsed && (
         <div className="px-5 pb-4 text-center">
-          <p className="text-[10px] text-[#8A9E8C]/50">© 2026 {brand.name}</p>
-          <p className="text-[10px] text-[#8A9E8C]/40">All rights reserved.</p>
+          <p className="text-[10px] text-[#8B8B94]/50">© 2026 {brand.name}</p>
+          <p className="text-[10px] text-[#8B8B94]/40">All rights reserved.</p>
         </div>
       )}
     </aside>

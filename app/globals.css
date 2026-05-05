@@ -17,11 +17,11 @@
   --gold-800: #7D5D2C;
   --gold-900: #674D27;
 
-  --green-900: #0C1A0E;
+  --green-900: #101013;
   --green-800: #132916;
-  --green-700: #1A3A1E;
-  --green-600: #2D5731;
-  --green-500: #3D7342;
+  --green-700: #1A1A1F;
+  --green-600: #2A2A30;
+  --green-500: #3A3A42;
 
   /* ─── Light Mode (Default) ─── */
   --background: #F5F3EE;
@@ -30,7 +30,7 @@
   --sidebar-bg: var(--green-900);
   --sidebar-hover: rgba(201, 168, 79, 0.08);
   --sidebar-active: var(--gold-400);
-  --sidebar-text: #8A9E8C;
+  --sidebar-text: #8B8B94;
   --sidebar-text-active: var(--green-900);
   --sidebar-group-label: rgba(201, 168, 79, 0.5);
 

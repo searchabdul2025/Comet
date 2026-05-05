@@ -63,10 +63,10 @@ export default function Header() {
 
   const roleBadge =
     user.role === 'Admin'
-      ? 'bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#0C1A0E]'
+      ? 'bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#101013]'
       : user.role === 'Supervisor'
-      ? 'bg-gradient-to-r from-[#3D7342] to-[#2D5731] text-white'
-      : 'bg-gradient-to-r from-[#8A9E8C] to-[#6B7E6D] text-white';
+      ? 'bg-gradient-to-r from-[#3A3A42] to-[#2A2A30] text-white'
+      : 'bg-gradient-to-r from-[#8B8B94] to-[#6B6B74] text-white';
 
   return (
     <>
@@ -105,7 +105,7 @@ export default function Header() {
 
           {/* User Info */}
           <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#0C1A0E] text-xs font-bold shadow-sm">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] text-xs font-bold shadow-sm">
               {user.name ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'U'}
             </div>
             <div className="hidden sm:block">

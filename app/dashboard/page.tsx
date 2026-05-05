@@ -50,7 +50,7 @@ function StatCard({
   label,
   value,
   icon: Icon,
-  gradient,
+  iconBg,
   trend,
   loading,
   delay,
@@ -58,8 +58,8 @@ function StatCard({
   label: string;
   value: number;
   icon: any;
-  gradient: string;
-  trend?: { value: number; up: boolean };
+  iconBg: string;
+  trend?: { value: number; up: boolean; label?: string };
   loading: boolean;
   delay: string;
 }) {
@@ -67,7 +67,12 @@ function StatCard({
 
   return (
     <div className={`card-premium p-5 animate-fade-in-up ${delay} group`}>
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-3">
+        <div
+          className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${iconBg}`}
+        >
+          <Icon size={22} strokeWidth={1.8} />
+        </div>
         <div>
           <p className="text-[13px] font-medium text-[var(--text-secondary)]">{label}</p>
           <p className="text-3xl font-bold text-[var(--text-primary)] mt-1 tabular-nums animate-count-up">
@@ -80,15 +85,9 @@ function StatCard({
           {trend && (
             <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.up ? 'text-emerald-600' : 'text-red-500'}`}>
               {trend.up ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-              <span>{trend.value}% this month</span>
+              <span>{trend.label || `${trend.value}% this month`}</span>
             </div>
           )}
-        </div>
-        <div
-          className={`h-12 w-12 rounded-full bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}
-          style={{ boxShadow: `0 8px 24px -4px rgba(201,168,79,0.25)` }}
-        >
-          <Icon size={22} strokeWidth={2} />
         </div>
       </div>
     </div>
@@ -188,7 +187,7 @@ export default function DashboardPage() {
           label: 'My Submissions',
           value: stats.mySubmissions || stats.totalSubmissions,
           icon: Database,
-          gradient: 'from-[#D4A843] to-[#B8923A]',
+          iconBg: 'bg-[#EDE9DD] text-[#D4A843]',
           trend: { value: 12, up: true },
         },
       ]
@@ -197,28 +196,29 @@ export default function DashboardPage() {
           label: 'Total Forms',
           value: stats.totalForms,
           icon: ClipboardList,
-          gradient: 'from-[#D4A843] to-[#B8923A]',
+          iconBg: 'bg-[#F0EBE0] text-[#B8923A]',
           trend: { value: 8, up: true },
         },
         {
           label: 'Total Users',
           value: stats.totalUsers,
           icon: Users,
-          gradient: 'from-[#3D7342] to-[#2D5731]',
+          iconBg: 'bg-[#EDE9DD] text-[#D4A843]',
           trend: { value: 15, up: true },
         },
         {
           label: 'Submissions',
           value: stats.totalSubmissions,
           icon: Database,
-          gradient: 'from-[#C9A84F] to-[#9A7330]',
+          iconBg: 'bg-[#E8EAF0] text-[#6B7280]',
           trend: { value: 24, up: true },
         },
         {
           label: 'Authorized IPs',
           value: stats.authorizedIPs,
           icon: ShieldCheck,
-          gradient: 'from-[#8A9E8C] to-[#6B7E6D]',
+          iconBg: 'bg-[#E5EDE5] text-[#4A8C5C]',
+          trend: { value: 0, up: true, label: 'No change' },
         },
       ];
 
@@ -241,8 +241,6 @@ export default function DashboardPage() {
   const padB = 28;
   const innerW = chartW - padL - padR;
   const innerH = chartH - padT - padB;
-  const barGap = 8;
-  const barW = Math.max(8, Math.floor((innerW - barGap * 11) / 12));
 
   // Y-axis: nice round ticks
   const niceMax = maxVal <= 5 ? 5 : Math.ceil(maxVal / 5) * 5;
@@ -254,10 +252,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 min-h-screen -mx-6 px-6 pb-10">
       {/* ─── Welcome Banner ─── */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0C1A0E] via-[#1A3A1E] to-[#0C1A0E] text-white p-7 shadow-2xl animate-fade-in-up">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#101013] via-[#1A1A1F] to-[#101013] text-white p-7 shadow-2xl animate-fade-in-up">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-[#D4A843]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#3D7342]/15 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#3A3A42]/15 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
         
         <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -275,7 +273,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2.5 rounded-2xl bg-white/[0.05] backdrop-blur border border-white/[0.08] px-4 py-3">
-            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#3D7342] to-[#2D5731] flex items-center justify-center shadow-lg shadow-[#3D7342]/25">
+            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#3A3A42] to-[#2A2A30] flex items-center justify-center shadow-lg shadow-[#3A3A42]/25">
               <ShieldCheck size={20} />
             </div>
             <div>
@@ -297,7 +295,7 @@ export default function DashboardPage() {
             label={m.label}
             value={m.value}
             icon={m.icon}
-            gradient={m.gradient}
+            iconBg={m.iconBg}
             trend={m.trend}
             loading={loading}
             delay={`delay-${i + 1}`}
@@ -314,9 +312,9 @@ export default function DashboardPage() {
               <h3 className="text-base font-semibold text-[var(--text-primary)]">Submissions Overview</h3>
               <p className="text-[12px] text-[var(--text-tertiary)] mt-0.5">Monthly trend for {new Date().getFullYear()}</p>
             </div>
-            <div className="flex items-center gap-1.5 bg-[#D4A843]/10 text-[#D4A843] rounded-lg px-2.5 py-1.5 text-xs font-semibold">
-              <BarChart3 size={14} />
-              <span>Live</span>
+            <div className="flex items-center gap-1.5 border border-[#D4A843]/30 text-[#D4A843] rounded-lg px-2.5 py-1.5 text-xs font-semibold cursor-pointer hover:bg-[#D4A843]/5 transition-colors">
+              <span>This Year</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
           </div>
 
@@ -332,13 +330,9 @@ export default function DashboardPage() {
             <div className="relative">
               <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full" style={{ height: 220 }}>
                 <defs>
-                  <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#D4A843" />
-                    <stop offset="100%" stopColor="#C9A84F" />
-                  </linearGradient>
-                  <linearGradient id="barGradHover" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#B8923A" />
-                    <stop offset="100%" stopColor="#D4A843" />
+                  <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#D4A843" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#D4A843" stopOpacity="0.02" />
                   </linearGradient>
                 </defs>
 
@@ -355,51 +349,81 @@ export default function DashboardPage() {
                   );
                 })}
 
-                {/* Bars + Labels */}
+                {/* Area fill */}
+                <path
+                  d={(() => {
+                    const points = chartData.map((val, i) => {
+                      const step = innerW / 11;
+                      const x = padL + step * i;
+                      const y = padT + innerH - (val / niceMax) * innerH;
+                      return { x, y };
+                    });
+                    // Smooth curve
+                    let d = `M${points[0].x},${points[0].y}`;
+                    for (let i = 1; i < points.length; i++) {
+                      const cp1x = points[i-1].x + (points[i].x - points[i-1].x) * 0.4;
+                      const cp2x = points[i].x - (points[i].x - points[i-1].x) * 0.4;
+                      d += ` C${cp1x},${points[i-1].y} ${cp2x},${points[i].y} ${points[i].x},${points[i].y}`;
+                    }
+                    // Close for fill
+                    d += ` L${points[points.length-1].x},${padT + innerH} L${points[0].x},${padT + innerH} Z`;
+                    return d;
+                  })()}
+                  fill="url(#areaFill)"
+                />
+
+                {/* Area line */}
+                <path
+                  d={(() => {
+                    const points = chartData.map((val, i) => {
+                      const step = innerW / 11;
+                      const x = padL + step * i;
+                      const y = padT + innerH - (val / niceMax) * innerH;
+                      return { x, y };
+                    });
+                    let d = `M${points[0].x},${points[0].y}`;
+                    for (let i = 1; i < points.length; i++) {
+                      const cp1x = points[i-1].x + (points[i].x - points[i-1].x) * 0.4;
+                      const cp2x = points[i].x - (points[i].x - points[i-1].x) * 0.4;
+                      d += ` C${cp1x},${points[i-1].y} ${cp2x},${points[i].y} ${points[i].x},${points[i].y}`;
+                    }
+                    return d;
+                  })()}
+                  fill="none"
+                  stroke="#D4A843"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+
+                {/* Data points + hover tooltips */}
                 {chartData.map((val, i) => {
-                  const step = (innerW - barW) / 11;
-                  const cx = padL + step * i + barW / 2;
-                  const bx = cx - barW / 2;
-                  const barH = val > 0 ? Math.max(3, (val / niceMax) * innerH) : 0;
-                  const by = padT + innerH - barH;
+                  const step = innerW / 11;
+                  const cx = padL + step * i;
+                  const cy = padT + innerH - (val / niceMax) * innerH;
                   const isHovered = hoveredBar === i;
 
                   return (
                     <g
-                      key={`bar-${i}`}
+                      key={`pt-${i}`}
                       onMouseEnter={() => setHoveredBar(i)}
                       onMouseLeave={() => setHoveredBar(null)}
                       className="cursor-pointer"
                     >
-                      {/* Invisible hit area (full height) */}
-                      <rect x={bx - 4} y={padT} width={barW + 8} height={innerH + padB} fill="transparent" />
-
-                      {/* Bar */}
-                      {val > 0 && (
-                        <rect
-                          x={bx}
-                          y={by}
-                          width={barW}
-                          height={barH}
-                          rx={barW > 16 ? 6 : 4}
-                          fill={isHovered ? 'url(#barGradHover)' : 'url(#barGrad)'}
-                          opacity={isHovered ? 1 : 0.85}
-                          className="transition-opacity duration-150"
-                        />
-                      )}
-
-                      {/* Value label above bar when hovered */}
-                      {isHovered && val > 0 && (
-                        <g>
-                          <rect x={cx - 18} y={by - 26} width={36} height={20} rx={6} fill="#0C1A0E" />
-                          <polygon points={`${cx - 4},${by - 6} ${cx + 4},${by - 6} ${cx},${by - 1}`} fill="#0C1A0E" />
-                          <text x={cx} y={by - 13} textAnchor="middle" fill="white" fontSize="11" fontWeight="600" fontFamily="Inter, sans-serif">
+                      <rect x={cx - 15} y={padT} width={30} height={innerH + padB} fill="transparent" />
+                      {isHovered && (
+                        <>
+                          <line x1={cx} y1={padT} x2={cx} y2={padT + innerH} stroke="#D4A843" strokeWidth="1" strokeDasharray="4 3" opacity="0.3" />
+                          <circle cx={cx} cy={cy} r={6} fill="white" stroke="#D4A843" strokeWidth="2.5" />
+                          <rect x={cx - 24} y={cy - 30} width={48} height={22} rx={6} fill="#101013" />
+                          <polygon points={`${cx - 4},${cy - 8} ${cx + 4},${cy - 8} ${cx},${cy - 3}`} fill="#101013" />
+                          <text x={cx} y={cy - 16} textAnchor="middle" fill="white" fontSize="11" fontWeight="600" fontFamily="Inter, sans-serif">
                             {val}
                           </text>
-                        </g>
+                        </>
                       )}
-
-                      {/* Month label */}
+                      {!isHovered && val > 0 && (
+                        <circle cx={cx} cy={cy} r={3.5} fill="#D4A843" />
+                      )}
                       <text x={cx} y={chartH - 6} textAnchor="middle" fill={isHovered ? '#D4A843' : '#94a3b8'} fontSize="10" fontWeight={isHovered ? '600' : '400'} fontFamily="Inter, sans-serif">
                         {months[i]}
                       </text>
@@ -409,9 +433,9 @@ export default function DashboardPage() {
               </svg>
 
               {/* Legend */}
-              <div className="flex items-center gap-5 mt-2 text-xs text-slate-500">
+              <div className="flex items-center gap-5 mt-2 text-xs text-[var(--text-secondary)]">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded bg-[#D4A843]" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#D4A843]" />
                   Monthly Submissions
                 </span>
               </div>
@@ -423,23 +447,33 @@ export default function DashboardPage() {
         <div className="space-y-4">
           {/* System Health */}
           <div className="card-premium p-5 animate-fade-in-up delay-4">
-            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-4">System Health</h3>
+            <h3 className="text-base font-semibold text-[var(--text-primary)] mb-5">System Health</h3>
             <div className="space-y-3">
               {[
-                { label: 'Authentication', status: 'Operational', color: 'emerald' },
-                { label: 'Database', status: 'Connected', color: 'blue' },
-                { label: 'Google Sheets', status: 'Synced', color: 'emerald' },
+                { label: 'Authentication', status: 'Operational', icon: '🔐' },
+                { label: 'Database', status: 'Connected', icon: '🗄️' },
+                { label: 'Google Sheets', status: 'Synced', icon: '📊' },
+                { label: 'Email Service', status: 'Operational', icon: '✉️' },
               ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between py-2 border-b border-[var(--card-border)] last:border-0">
-                  <span className="text-[13px] text-[var(--text-secondary)]">{item.label}</span>
+                <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-[var(--card-border)] last:border-0">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-base">{item.icon}</span>
+                    <span className="text-[13px] text-[var(--text-secondary)]">{item.label}</span>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <span className={`status-dot ${item.color === 'emerald' ? 'status-dot-online' : 'bg-blue-500'}`} />
-                    <span className={`text-[11px] font-semibold ${item.color === 'emerald' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                    <span className="status-dot status-dot-online" />
+                    <span className="text-[11px] font-semibold text-emerald-600 italic">
                       {item.status}
                     </span>
                   </div>
                 </div>
               ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-[var(--card-border)]">
+              <a href="/settings" className="flex items-center justify-between text-sm text-[var(--text-secondary)] hover:text-[#D4A843] transition-colors">
+                <span>View all services</span>
+                <ArrowUpRight size={14} />
+              </a>
             </div>
           </div>
 
