@@ -273,45 +273,48 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── Welcome Banner ─── */}
-      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#101013] via-[#1A1A1F] to-[#101013] text-white p-10 shadow-2xl animate-fade-in-up">
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-white border border-[var(--card-border)] p-10 shadow-xl animate-fade-in-up">
         {/* Decorative elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4A843]/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#3A3A42]/15 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4A843]/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#F5F3EE] rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4" />
         
+        {/* Background glow behind podium */}
+        <div className="absolute top-1/2 left-[65%] -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-radial from-[#D4A843]/10 to-transparent rounded-full opacity-50 blur-3xl" />
+
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div className="max-w-xl">
-            <div className="flex items-center gap-2 mb-4 bg-white/5 w-fit px-3 py-1.5 rounded-xl border border-white/10">
-              <span className="h-2 w-2 rounded-full bg-[#D4A843]" />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-[#D4A843]/80">
+            <div className="flex items-center gap-2 mb-6 w-fit px-4 py-2 rounded-xl border border-[#D4A843]/10 bg-[#D4A843]/5">
+              <Clock className="text-[#D4A843]" size={14} />
+              <span className="text-[11px] font-black uppercase tracking-widest text-[#D4A843]">
                 {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) : 'Loading...'}
               </span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+            <h1 className="text-4xl md:text-5xl font-black text-[#1A1A1A] leading-tight mb-4">
               Welcome back, <br />
               <span className="text-[#D4A843]">{session?.user?.name || 'Admin User'}</span>
             </h1>
+            <p className="text-slate-500 font-medium">Your enterprise command center is ready.</p>
           </div>
 
           {/* Podium Visualization (3D Sculpture) */}
-          <div className="relative h-[240px] w-full lg:w-[450px] flex items-center justify-center">
-             <div className="absolute inset-0 bg-[#D4A843]/5 rounded-full blur-[60px]" />
+          <div className="relative h-[280px] w-full lg:w-[450px] flex items-center justify-center">
              <img 
                src="/3d-icons/podium.png" 
                alt="Top Performance" 
-               className="relative z-10 h-full w-full object-contain drop-shadow-[0_20px_50px_rgba(212,168,67,0.3)] animate-float"
+               className="relative z-10 h-full w-full object-contain mix-blend-multiply drop-shadow-[0_20px_50px_rgba(212,168,67,0.15)] animate-float"
              />
              
              {/* Right Status Card */}
-             <div className="absolute top-0 right-0 hidden md:flex items-center gap-3 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-4 shadow-2xl z-20">
-               <div className="h-12 w-12 rounded-xl bg-[#D4A843]/10 flex items-center justify-center border border-[#D4A843]/20 overflow-hidden">
-                  <img src="/3d-icons/shield.png" className="h-10 w-10 object-contain" />
+             <div className="absolute top-0 right-0 hidden md:flex items-center gap-4 rounded-3xl bg-white/40 backdrop-blur-3xl border border-black/[0.03] p-5 shadow-2xl z-20">
+               <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center shadow-lg shadow-[#D4A843]/20 overflow-hidden">
+                  <img src="/3d-icons/shield.png" className="h-10 w-10 object-contain brightness-110" />
                </div>
                <div>
-                 <p className="text-[11px] text-white/50 font-bold uppercase tracking-wider">System Status</p>
-                 <p className="text-sm font-bold text-white">All Systems</p>
-                 <div className="flex items-center gap-1.5 mt-0.5">
-                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                   <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter">Operational</span>
+                 <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">System Status</p>
+                 <p className="text-md font-black text-[#1A1A1A]">All Systems</p>
+                 <div className="flex items-center gap-1.5 mt-1">
+                   <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                   <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">Operational</span>
                  </div>
                </div>
              </div>
