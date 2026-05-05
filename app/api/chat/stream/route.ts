@@ -12,8 +12,8 @@ export async function GET(request: NextRequest) {
 
   const stream = new ReadableStream({
     start(controller) {
-      // Main team chat has chatroomId = null
-      const clientId = addClient(controller, null);
+      const room = request.nextUrl.searchParams.get('room');
+      const clientId = addClient(controller, room, user.role);
 
       const send = (message: string) => {
         controller.enqueue(new TextEncoder().encode(message));

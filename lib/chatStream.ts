@@ -2,6 +2,7 @@ type SSEClient = {
   id: string;
   controller: ReadableStreamDefaultController<Uint8Array>;
   chatroomId?: string | null; // null for main team chat, string for specific chatroom
+  userRole?: string;
 };
 
 export type ChatEvent =
@@ -18,9 +19,13 @@ if (!globalAny.__chatClients) {
   globalAny.__chatClients = clients;
 }
 
-export function addClient(controller: ReadableStreamDefaultController<Uint8Array>, chatroomId?: string | null) {
+export function addClient(
+  controller: ReadableStreamDefaultController<Uint8Array>,
+  chatroomId?: string | null,
+  userRole?: string
+) {
   const id = crypto.randomUUID();
-  clients.push({ id, controller, chatroomId: chatroomId ?? null });
+  clients.push({ id, controller, chatroomId: chatroomId ?? null, userRole });
   return id;
 }
 
@@ -35,7 +40,13 @@ export function broadcast(event: ChatEvent) {
   // Broadcast to main team chat (chatroomId is null)
   const payload = encoder.encode(`data: ${JSON.stringify(event)}\n\n`);
   clients.forEach((client) => {
-    if (client.chatroomId === null || client.chatroomId === undefined) {
+    // Regular users get main chat messages.
+    // Management users get everything if they are in the oversight view (indicated by 'management' room or role)
+    const isManagement = client.userRole === 'Admin' || client.userRole === 'Supervisor';
+    const isInMainChat = client.chatroomId === null || client.chatroomId === undefined;
+    const isInOversight = client.chatroomId === 'management';
+
+    if (isInMainChat || (isInOversight && isManagement)) {
       try {
         client.controller.enqueue(payload);
       } catch (err) {

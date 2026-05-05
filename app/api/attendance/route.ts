@@ -42,7 +42,15 @@ export async function GET(req: NextRequest) {
       .sort({ checkInTime: -1 })
       .lean();
 
-    return NextResponse.json({ success: true, data: records }, { status: 200 });
+    const { getSetting } = require('@/lib/settings');
+    const lateFine = await getSetting('ATTENDANCE_LATE_FINE_AMOUNT') || '0';
+    const absentFine = await getSetting('ATTENDANCE_ABSENT_FINE_AMOUNT') || '0';
+
+    return NextResponse.json({ 
+      success: true, 
+      data: records,
+      settings: { lateFine, absentFine }
+    }, { status: 200 });
   } catch (error: any) {
     console.error('Fetch attendance error:', error);
     return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });

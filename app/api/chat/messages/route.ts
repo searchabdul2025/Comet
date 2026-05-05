@@ -18,7 +18,7 @@ export async function GET() {
     const limits = await getChatLimits();
 
     const [messagesRaw, ban] = await Promise.all([
-      ChatMessage.find({ chatroomId: null }) // Only main team chat messages
+      ChatMessage.find({ chatroomId: null, isManagement: { $ne: true } }) // Only main team chat messages
         .sort({ createdAt: -1 })
         .limit(limits.historyLimit)
         .lean(),

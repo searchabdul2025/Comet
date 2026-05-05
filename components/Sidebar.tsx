@@ -120,7 +120,6 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       label: 'Management',
       items: [
         { href: '/campaigns', label: 'Campaigns', icon: Megaphone, permission: 'canManageForms' as const },
-        { href: '/forms', label: 'Forms', icon: FileText, permission: 'canManageForms' as const, roles: ['Supervisor'] as const },
         { href: '/requests', label: 'Requests', icon: Bell, badge: requestCount, permission: 'canManageRequests' as const },
         { href: '/user-management', label: 'User Management', icon: Users, permission: 'canManageUsers' as const },
       ],
@@ -135,10 +134,16 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       ],
     },
     {
+      label: 'Engagement',
+      items: [
+        { href: '/forms', label: 'Forms', icon: FileText, permission: 'canManageForms' as const },
+        { href: '/chatrooms', label: 'Chatrooms', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
+      ],
+    },
+    {
       label: 'System',
       items: [
         { href: '/settings', label: 'Settings', icon: Sparkles, permission: 'canManageSettings' as const },
-        { href: '/chatrooms', label: 'Chatrooms', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
       ],
     },
   ];

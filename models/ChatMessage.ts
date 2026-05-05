@@ -9,6 +9,7 @@ export interface IChatMessage extends Document {
   createdAt: Date;
   updatedAt: Date;
   isSystem?: boolean;
+  isManagement?: boolean;
 }
 
 const ChatMessageSchema = new Schema<IChatMessage>(
@@ -23,6 +24,7 @@ const ChatMessageSchema = new Schema<IChatMessage>(
       index: true,
     },
     isSystem: { type: Boolean, default: false },
+    isManagement: { type: Boolean, default: false, index: true },
   },
   {
     timestamps: true,

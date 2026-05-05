@@ -59,6 +59,7 @@ export default function ReportsPage() {
   const [exporting, setExporting] = useState<'csv' | 'xlsx' | 'pdf' | 'sheets' | null>(null);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [fineSettings, setFineSettings] = useState({ lateFine: '0', absentFine: '0' });
   const [users, setUsers] = useState<UserOption[]>([]);
   const [campaigns, setCampaigns] = useState<CampaignOption[]>([]);
   const [userFilter, setUserFilter] = useState('');
@@ -173,6 +174,7 @@ export default function ReportsPage() {
       const result = await res.json();
       if (result.success) {
         setAttendanceRecords(result.data || []);
+        if (result.settings) setFineSettings(result.settings);
       } else {
         setError(result.error || 'Failed to load attendance');
       }
@@ -584,6 +586,7 @@ export default function ReportsPage() {
                     <th className="px-4 py-2 text-left text-slate-700 font-semibold">Biometric ID</th>
                     <th className="px-4 py-2 text-left text-slate-700 font-semibold">Check-In Time</th>
                     <th className="px-4 py-2 text-left text-slate-700 font-semibold">Status</th>
+                    <th className="px-4 py-2 text-left text-slate-700 font-semibold">Fine (Rs.)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -605,6 +608,16 @@ export default function ReportsPage() {
                         }`}>
                           {record.status}
                         </span>
+                      </td>
+                      <td className="px-4 py-2 text-slate-700 font-bold">
+                        {(() => {
+                          const fine = record.status === 'Late' 
+                            ? fineSettings.lateFine 
+                            : record.status === 'Absent' 
+                              ? fineSettings.absentFine 
+                              : '0';
+                          return fine !== '0' ? `Rs. ${fine}` : '-';
+                        })()}
                       </td>
                     </tr>
                   ))}

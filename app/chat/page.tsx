@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Send, ShieldAlert, WifiOff, MessageSquare } from 'lucide-react';
+import { Send, ShieldAlert, WifiOff, MessageSquare, Loader2 } from 'lucide-react';
+import ChatSelection from '@/components/ChatSelection';
+import { useRouter } from 'next/navigation';
 
 type ChatMessage = {
   _id: string;
@@ -17,7 +19,9 @@ type ChatMessage = {
 const DEFAULT_LIMITS = { rateLimitPerMinute: 15, maxMessageLength: 500, historyLimit: 50 };
 
 export default function ChatPage() {
-  const { data: session } = useSession();
+  const router = useRouter();
+  const { data: session, status: authStatus } = useSession();
+  const [view, setView] = useState<'selection' | 'user' | 'management'>('selection');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [mentionQuery, setMentionQuery] = useState('');
@@ -196,8 +200,44 @@ export default function ChatPage() {
     });
   };
 
+  const handleSelect = (type: 'user' | 'management') => {
+    if (type === 'management') {
+      const role = session?.user?.role;
+      if (role === 'Admin' || role === 'Supervisor') {
+        router.push('/management-chat'); // Redirect to management chat area
+      } else {
+        setError('Access Denied: Only management can access this area.');
+      }
+      return;
+    }
+    setView('user');
+  };
+
+  if (authStatus === 'loading') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh]">
+        <Loader2 className="animate-spin text-blue-600 mb-4" size={32} />
+        <p className="text-slate-500 font-medium">Loading your secure chat session...</p>
+      </div>
+    );
+  }
+
+  if (view === 'selection') {
+    return (
+      <div className="space-y-6">
+        {error && (
+          <div className="max-w-3xl mx-auto flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 animate-in fade-in slide-in-from-top-4">
+            <ShieldAlert size={18} />
+            <span>{error}</span>
+          </div>
+        )}
+        <ChatSelection onSelect={handleSelect} />
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
