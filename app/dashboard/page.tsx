@@ -193,6 +193,7 @@ export default function DashboardPage() {
           label: 'My Submissions',
           value: stats.mySubmissions || stats.totalSubmissions,
           icon: Database,
+          iconSrc: '/3d-icons/submissions.png',
           iconBg: 'bg-[#EDE9DD] text-[#D4A843]',
           trend: { value: 12, up: true },
         },
@@ -202,6 +203,7 @@ export default function DashboardPage() {
           label: 'Total Forms',
           value: stats.totalForms,
           icon: ClipboardList,
+          iconSrc: '/3d-icons/clipboard.png',
           iconBg: 'bg-[#F0EBE0] text-[#B8923A]',
           trend: { value: 8, up: true },
         },
@@ -209,6 +211,7 @@ export default function DashboardPage() {
           label: 'Total Users',
           value: stats.totalUsers,
           icon: Users,
+          iconSrc: '/3d-icons/users.png',
           iconBg: 'bg-[#EDE9DD] text-[#D4A843]',
           trend: { value: 15, up: true },
         },
@@ -216,6 +219,7 @@ export default function DashboardPage() {
           label: 'Submissions',
           value: stats.totalSubmissions,
           icon: Database,
+          iconSrc: '/3d-icons/submissions.png',
           iconBg: 'bg-[#E8EAF0] text-[#6B7280]',
           trend: { value: 24, up: true },
         },
@@ -223,6 +227,7 @@ export default function DashboardPage() {
           label: 'Authorized IPs',
           value: stats.authorizedIPs,
           icon: ShieldCheck,
+          iconSrc: '/3d-icons/shield.png',
           iconBg: 'bg-[#E5EDE5] text-[#4A8C5C]',
           trend: { value: 0, up: true, label: 'No change' },
         },
@@ -287,50 +292,29 @@ export default function DashboardPage() {
             </h1>
           </div>
 
-          {/* Podium Visualization (CSS Mockup of the 3D Trophy) */}
-          <div className="relative h-[240px] w-full lg:w-[400px] flex items-end justify-center perspective-1000">
-            <div className="absolute bottom-4 h-16 w-48 bg-white/10 rounded-full blur-2xl" />
-            
-            {/* The Podium */}
-            <div className="relative flex items-end gap-1">
-              {/* 2nd Place */}
-              <div className="w-16 h-20 bg-gradient-to-b from-[#C0C0C0] to-[#808080] rounded-t-xl flex items-center justify-center border-t border-white/20 shadow-lg">
-                <span className="text-2xl font-bold text-[#101013]">2</span>
-              </div>
-              {/* 1st Place */}
-              <div className="w-20 h-32 bg-gradient-to-b from-[#D4A843] to-[#B8923A] rounded-t-xl flex flex-col items-center justify-center border-t border-white/30 shadow-2xl z-10 relative">
-                <div className="absolute -top-12 animate-bounce">
-                   <div className="relative">
-                      <div className="h-10 w-10 bg-gradient-to-tr from-[#D4A843] to-[#FBF7ED] rounded-full flex items-center justify-center shadow-lg">
-                        <Users size={20} className="text-[#101013]" />
-                      </div>
-                      <div className="absolute -top-1 -right-1 h-4 w-4 bg-[#D4A843] rounded-full flex items-center justify-center border-2 border-[#101013]">
-                        <Check size={8} className="text-white font-bold" />
-                      </div>
-                   </div>
-                </div>
-                <span className="text-3xl font-bold text-[#101013]">1</span>
-              </div>
-              {/* 3rd Place */}
-              <div className="w-16 h-16 bg-gradient-to-b from-[#CD7F32] to-[#8B4513] rounded-t-xl flex items-center justify-center border-t border-white/20 shadow-lg">
-                <span className="text-2xl font-bold text-[#101013]">3</span>
-              </div>
-            </div>
-
-            {/* Right Status Card */}
-            <div className="absolute top-10 right-0 hidden md:flex items-center gap-3 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-4 shadow-2xl">
-              <div className="h-12 w-12 rounded-xl bg-[#D4A843]/10 flex items-center justify-center border border-[#D4A843]/20">
-                 <ShieldCheck size={24} className="text-[#D4A843]" />
-              </div>
-              <div>
-                <p className="text-[11px] text-white/50 font-bold uppercase tracking-wider">System Status</p>
-                <p className="text-sm font-bold text-white">All Systems</p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter">Operational</span>
-                </div>
-              </div>
-            </div>
+          {/* Podium Visualization (3D Sculpture) */}
+          <div className="relative h-[240px] w-full lg:w-[450px] flex items-center justify-center">
+             <div className="absolute inset-0 bg-[#D4A843]/5 rounded-full blur-[60px]" />
+             <img 
+               src="/3d-icons/podium.png" 
+               alt="Top Performance" 
+               className="relative z-10 h-full w-full object-contain drop-shadow-[0_20px_50px_rgba(212,168,67,0.3)] animate-float"
+             />
+             
+             {/* Right Status Card */}
+             <div className="absolute top-0 right-0 hidden md:flex items-center gap-3 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-4 shadow-2xl z-20">
+               <div className="h-12 w-12 rounded-xl bg-[#D4A843]/10 flex items-center justify-center border border-[#D4A843]/20 overflow-hidden">
+                  <img src="/3d-icons/shield.png" className="h-10 w-10 object-contain" />
+               </div>
+               <div>
+                 <p className="text-[11px] text-white/50 font-bold uppercase tracking-wider">System Status</p>
+                 <p className="text-sm font-bold text-white">All Systems</p>
+                 <div className="flex items-center gap-1.5 mt-0.5">
+                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                   <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-tighter">Operational</span>
+                 </div>
+               </div>
+             </div>
           </div>
         </div>
       </div>
@@ -350,8 +334,12 @@ export default function DashboardPage() {
             </div>
 
             <div className="relative z-10 flex flex-col gap-4">
-              <div className={`h-12 w-12 rounded-2xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${m.iconBg}`}>
-                <m.icon size={22} strokeWidth={1.8} />
+              <div className={`h-16 w-16 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110 overflow-hidden`}>
+                {m.iconSrc ? (
+                  <img src={m.iconSrc} alt={m.label} className="h-14 w-14 object-contain drop-shadow-lg" />
+                ) : (
+                  <m.icon size={22} strokeWidth={1.8} className={m.iconBg.split(' ')[1]} />
+                )}
               </div>
               <div>
                 <p className="text-sm font-medium text-[var(--text-secondary)]">{m.label}</p>

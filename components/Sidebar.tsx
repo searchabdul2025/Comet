@@ -224,25 +224,28 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       } bg-[#101013] min-h-screen flex flex-col transition-all duration-300 ease-in-out relative`}
     >
       {/* ─── Brand Header ─── */}
-      <div className={`p-4 ${collapsed ? 'px-3' : 'px-5'} flex items-center gap-3 border-b border-white/[0.06]`}>
+      <div className={`py-10 ${collapsed ? 'px-3' : 'px-6'} flex flex-col items-center justify-center gap-6 border-b border-white/[0.04]`}>
         {brand.logo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={brand.logo}
             alt={brand.name}
-            className="h-10 w-10 rounded-xl object-contain bg-white/5 flex-shrink-0"
+            className={`transition-all duration-300 object-contain ${collapsed ? 'h-10 w-10' : 'h-24 w-24'} rounded-2xl flex-shrink-0`}
           />
         ) : (
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] text-sm font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/25">
-            {brand.name.slice(0, 2).toUpperCase()}
-          </div>
-        )}
-        {!collapsed && (
-          <div className="overflow-hidden animate-fade-in">
-            <p className="text-[13px] font-bold text-[#D4A843] tracking-wider uppercase">
-              {brand.name}
-            </p>
-          </div>
+          <>
+            <div className={`transition-all duration-300 rounded-2xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] font-black flex-shrink-0 shadow-2xl shadow-[#D4A843]/10 ${collapsed ? 'h-10 w-10 text-sm' : 'h-20 w-20 text-2xl'}`}>
+              {brand.name.slice(0, 2).toUpperCase()}
+            </div>
+            {!collapsed && (
+              <div className="text-center animate-fade-in">
+                <h1 className="text-lg font-black text-[#D4A843] tracking-[0.2em] uppercase leading-tight">
+                  {brand.name}
+                </h1>
+                <div className="h-[2px] w-8 bg-[#D4A843]/20 mx-auto mt-3 rounded-full" />
+              </div>
+            )}
+          </>
         )}
       </div>
 
