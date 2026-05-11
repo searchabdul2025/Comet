@@ -10,6 +10,7 @@ interface Stat {
   sparkData?: number[];
   icon?: string;
   sparkColor?: string;
+  href?: string;
 }
 
 interface StatGridProps {
@@ -30,6 +31,7 @@ const StatGrid: React.FC<StatGridProps> = ({ stats, loading }) => {
           sparkData={m.sparkData || [1,1,1,1,1,1,1]}
           sparkColor={m.sparkColor}
           index={i}
+          href={m.href}
         />
       ))}
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 
 interface StatCardWithSparklineProps {
   label: string;
@@ -14,6 +15,7 @@ interface StatCardWithSparklineProps {
   sparkData: number[];
   sparkColor?: string;
   index: number;
+  href?: string;
 }
 
 const StatCardWithSparkline: React.FC<StatCardWithSparklineProps> = ({
@@ -23,7 +25,8 @@ const StatCardWithSparkline: React.FC<StatCardWithSparklineProps> = ({
   trend,
   sparkData,
   sparkColor = '#d4af37',
-  index
+  index,
+  href
 }) => {
   const [displayValue, setDisplayValue] = useState(0);
   const sparkRef = useRef<SVGSVGElement>(null);
@@ -89,33 +92,45 @@ const StatCardWithSparkline: React.FC<StatCardWithSparklineProps> = ({
     );
   };
 
-  return (
+  const content = (
     <div 
-      className="bg-white rounded-[20px] p-[20px_20px_0] border border-[#ede8d8] shadow-[0_2px_14px_rgba(0,0,0,0.05)] overflow-hidden cursor-default transition-all duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_28px_rgba(180,140,60,0.14)]"
+      className={`bg-white rounded-[20px] p-[20px_20px_0] border border-[#ede8d8] shadow-[0_2px_14px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-300 ${
+        href ? 'cursor-pointer hover:-translate-y-[6px] hover:shadow-[0_15px_35px_rgba(180,140,60,0.18)] hover:border-[#D4A843]/30' : 'cursor-default'
+      }`}
       style={{ fontFamily: "'DM Sans', sans-serif" }}
     >
       <div className="w-[46px] h-[46px] rounded-full bg-gradient-to-br from-[#f5e49a] to-[#d4af37] flex items-center justify-center text-[1.2rem] mb-[14px] shadow-[0_4px_12px_rgba(212,175,55,0.28)]">
         {icon}
       </div>
-      <div className="text-[0.82rem] text-[#8a7a5a] mb-[4px]">{label}</div>
+      <div className="text-[0.82rem] text-[#8a7a5a] mb-[4px] font-bold tracking-tight uppercase">{label}</div>
       <div className="text-[2.1rem] font-[800] text-[#1a1209] leading-none mb-[6px]">
         {displayValue.toLocaleString()}
       </div>
       {trend && (
-        <div className={`text-[0.75rem] font-[600] mb-[10px] ${trend.up ? 'text-[#16a34a]' : 'text-[#9a8a6a]'}`}>
-          {trend.up ? '↗ ' : ''}{trend.label || `${trend.value}% this month`}
+        <div className={`text-[0.75rem] font-[700] mb-[10px] flex items-center gap-1 ${trend.up ? 'text-[#16a34a]' : 'text-[#9a8a6a]'}`}>
+          {trend.up ? '↗' : ''} {trend.label || `${trend.value}% this month`}
         </div>
       )}
       <svg 
         ref={sparkRef} 
         viewBox="0 0 120 40" 
-        className="w-full h-[40px]" 
+        className="w-full h-[40px] mt-2 opacity-80" 
         preserveAspectRatio="none"
       >
         {renderSparkline()}
       </svg>
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block no-underline">
+        {content}
+      </Link>
+    );
+  }
+
+  return content;
 };
 
 export default StatCardWithSparkline;

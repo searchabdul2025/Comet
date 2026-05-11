@@ -154,6 +154,7 @@ export default function DashboardPage() {
           iconSrc: '/3d-icons/submissions.png',
           iconBg: 'bg-[#EDE9DD] text-[#D4A843]',
           trend: { value: 12, up: true },
+          href: '/dashboard/reports'
         },
       ]
     : [
@@ -164,6 +165,7 @@ export default function DashboardPage() {
           iconSrc: '/3d-icons/clipboard.png',
           iconBg: 'bg-[#F0EBE0] text-[#B8923A]',
           trend: { value: 8, up: true },
+          href: '/forms'
         },
         {
           label: 'Total Users',
@@ -172,6 +174,7 @@ export default function DashboardPage() {
           iconSrc: '/3d-icons/users.png',
           iconBg: 'bg-[#EDE9DD] text-[#D4A843]',
           trend: { value: 15, up: true },
+          href: '/user-management'
         },
         {
           label: 'Submissions',
@@ -180,6 +183,7 @@ export default function DashboardPage() {
           iconSrc: '/3d-icons/submissions.png',
           iconBg: 'bg-[#E8EAF0] text-[#6B7280]',
           trend: { value: 24, up: true },
+          href: '/dashboard/reports'
         },
         {
           label: 'Authorized IPs',
@@ -188,6 +192,7 @@ export default function DashboardPage() {
           iconSrc: '/3d-icons/shield.png',
           iconBg: 'bg-[#E5EDE5] text-[#4A8C5C]',
           trend: { value: 0, up: true, label: 'No change' },
+          href: '/settings'
         },
       ];
 
@@ -251,6 +256,7 @@ export default function DashboardPage() {
               m.label === 'Authorized IPs' ? '#c8bc99' : '#d4af37'
             }
             index={i}
+            href={m.href}
           />
         ))}
       </div>

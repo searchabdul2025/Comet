@@ -134,21 +134,24 @@ export default function FormsPage() {
             value: forms.length,
             icon: '📋',
             sparkColor: '#D4A843',
-            sparkData: [5, 6, 8, 7, 9, 10, 12]
+            sparkData: [5, 6, 8, 7, 9, 10, 12],
+            href: '/forms'
           },
           { 
             label: 'Active Fields', 
             value: forms.reduce((acc, f) => acc + (f.fields?.length || 0), 0),
             icon: '🔢',
             sparkColor: '#16a34a',
-            sparkData: [40, 50, 65, 60, 80, 95, 110]
+            sparkData: [40, 50, 65, 60, 80, 95, 110],
+            href: '/form-builder'
           },
           { 
             label: 'Linked Campaigns', 
             value: Array.from(new Set(forms.map(f => (f.campaign && typeof f.campaign === 'object') ? f.campaign._id : f.campaign))).filter(Boolean).length,
             icon: '🔗',
             sparkColor: '#101013',
-            sparkData: [2, 3, 3, 4, 4, 5, 5]
+            sparkData: [2, 3, 3, 4, 4, 5, 5],
+            href: '/campaigns'
           }
         ]}
       />
