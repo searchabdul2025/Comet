@@ -77,19 +77,20 @@ export default function Header() {
     <>
       <AgentLaunch />
       <header className="bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--header-border)] px-6 py-3 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
-        {/* Left: Search */}
+        {/* Left: Empty spacer */}
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 bg-[var(--header-input-bg)] border border-[var(--header-input-border)] rounded-xl px-3 py-2 text-sm text-[var(--text-tertiary)] hover:border-[#D4A843]/30 transition-colors cursor-pointer min-w-[220px]">
-            <Search size={15} />
-            <span className="select-none">Search anything...</span>
-            <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-[var(--text-tertiary)] bg-[var(--card-bg)] border border-[var(--card-border)] ml-auto">
-              ⌘K
-            </kbd>
-          </div>
         </div>
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
+          {/* Search Bar (Moved to Right) */}
+          <div className="hidden lg:flex items-center gap-2 bg-[var(--header-input-bg)] border border-[var(--header-input-border)] rounded-xl px-3 py-1.5 text-sm text-[var(--text-tertiary)] hover:border-[#D4A843]/30 transition-colors cursor-pointer min-w-[200px]">
+            <Search size={14} />
+            <span className="select-none text-xs">Search...</span>
+            <kbd className="hidden xl:inline-flex items-center px-1.2 py-0.3 rounded text-[9px] font-semibold text-[var(--text-tertiary)] bg-[var(--card-bg)] border border-[var(--card-border)] ml-auto">
+              ⌘K
+            </kbd>
+          </div>
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
