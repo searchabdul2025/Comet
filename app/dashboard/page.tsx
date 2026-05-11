@@ -258,7 +258,7 @@ export default function DashboardPage() {
 
       {/* ─── Chart + System Health ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2 card-premium p-8 animate-fade-in-up delay-4">
+        <div className={`${isUser ? 'xl:col-span-3' : 'xl:col-span-2'} card-premium p-8 animate-fade-in-up delay-4`}>
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="text-xl font-bold text-[var(--text-primary)]">Submissions Overview</h3>
@@ -341,44 +341,46 @@ export default function DashboardPage() {
         </div>
 
         {/* System Health */}
-        <div className="card-premium p-8 flex flex-col animate-fade-in-up delay-5">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-8">System Health</h3>
-            
-            <div className="relative h-40 w-full flex items-center justify-center mb-10">
-               <div className="absolute h-32 w-32 rounded-full border border-[#D4A843]/20 animate-ping" />
-               <div className="absolute h-24 w-24 rounded-full bg-white border border-[#D4A843]/10 shadow-2xl flex items-center justify-center">
-                  <div className="h-16 w-16 bg-[#101013] rounded-full flex items-center justify-center shadow-inner">
-                     <Activity size={32} className="text-[#D4A843] animate-pulse" />
-                  </div>
-               </div>
-               <div className="absolute h-32 w-32 rounded-full border border-dashed border-[#D4A843]/30 animate-spin-slow" />
-            </div>
+        {!isUser && (
+          <div className="card-premium p-8 flex flex-col animate-fade-in-up delay-5">
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-8">System Health</h3>
+              
+              <div className="relative h-40 w-full flex items-center justify-center mb-10">
+                 <div className="absolute h-32 w-32 rounded-full border border-[#D4A843]/20 animate-ping" />
+                 <div className="absolute h-24 w-24 rounded-full bg-white border border-[#D4A843]/10 shadow-2xl flex items-center justify-center">
+                    <div className="h-16 w-16 bg-[#101013] rounded-full flex items-center justify-center shadow-inner">
+                       <Activity size={32} className="text-[#D4A843] animate-pulse" />
+                    </div>
+                 </div>
+                 <div className="absolute h-32 w-32 rounded-full border border-dashed border-[#D4A843]/30 animate-spin-slow" />
+              </div>
 
-            <div className="space-y-4">
-              {[
-                { label: 'Database', status: 'Connected', icon: '🗄️' },
-                { label: 'Google Sheets', status: 'Synced', icon: '📊' },
-                { label: 'WhatsApp API', status: 'Operational', icon: '💬' },
-              ].map((item) => (
-                <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-[var(--card-border)] last:border-0">
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg grayscale">{item.icon}</span>
-                    <span className="text-sm font-medium text-[var(--text-secondary)]">{item.label}</span>
+              <div className="space-y-4">
+                {[
+                  { label: 'Database', status: 'Connected', icon: '🗄️' },
+                  { label: 'Google Sheets', status: 'Synced', icon: '📊' },
+                  { label: 'WhatsApp API', status: 'Operational', icon: '💬' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-[var(--card-border)] last:border-0">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg grayscale">{item.icon}</span>
+                      <span className="text-sm font-medium text-[var(--text-secondary)]">{item.label}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span className="text-[11px] font-bold text-emerald-600 uppercase">{item.status}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-[11px] font-bold text-emerald-600 uppercase">{item.status}</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
-          </div>
-        </div>
+        )}
+      </div>
 
       {/* ─── Bottom Sections ─── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+      <div className={`grid grid-cols-1 ${isUser ? 'xl:grid-cols-2' : 'xl:grid-cols-3'} gap-8 items-start`}>
         {/* Top Agents */}
         <div className="card-premium p-8 animate-fade-in-up delay-6">
            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-8">Top Agents</h3>
@@ -463,53 +465,55 @@ export default function DashboardPage() {
         </div>
 
         {/* Activity Feed + Quick Actions */}
-        <div className="space-y-6">
-            <div className="card-premium p-8 animate-fade-in-up delay-8">
-               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Activity Feed</h3>
-               <div className="space-y-6">
-                 {activities.length > 0 ? (
-                   activities.map((act, i) => (
-                     <Link key={act.id} href={act.link} className="flex gap-4 group cursor-pointer">
-                       <div className="h-10 w-10 rounded-xl bg-[var(--background)] flex items-center justify-center text-lg shadow-sm border border-[var(--card-border)] group-hover:border-[#D4A843]/30 group-hover:shadow-md transition-all flex-shrink-0">
-                         {act.icon}
-                       </div>
-                       <div>
-                         <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[#D4A843] transition-colors">{act.label}</p>
-                         <p className="text-xs text-[var(--text-tertiary)] mt-1">{formatTimeAgo(act.time)}</p>
-                       </div>
-                     </Link>
-                   ))
-                 ) : (
-                   <div className="text-center py-8">
-                     <p className="text-sm text-[var(--text-tertiary)]">No recent activity</p>
-                   </div>
-                 )}
-               </div>
-            </div>
-
-           <div className="card-premium p-8 animate-fade-in-up delay-9">
-              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: 'Create Campaign', icon: Megaphone, color: '#D4A843', href: '/campaigns' },
-                  { label: 'Add User', icon: Users, color: '#B8923A', href: '/user-management' },
-                  { label: 'View Reports', icon: BarChart3, color: '#6B7280', href: '/dashboard/reports' },
-                  { label: 'System Settings', icon: Sparkles, color: '#101013', href: '/settings' },
-                ].map((action, i) => (
-                  <Link 
-                    key={i} 
-                    href={action.href}
-                    className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[var(--background)] border border-[var(--card-border)] hover:border-[#D4A843]/30 hover:shadow-xl transition-all gap-3 group"
-                  >
-                    <div className="h-10 w-10 rounded-xl flex items-center justify-center text-[var(--text-secondary)] group-hover:text-[#D4A843] transition-colors">
-                      <action.icon size={24} strokeWidth={1.5} />
-                    </div>
-                    <span className="text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">{action.label}</span>
-                  </Link>
-                ))}
+        {!isUser && (
+          <div className="space-y-6">
+              <div className="card-premium p-8 animate-fade-in-up delay-8">
+                 <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Activity Feed</h3>
+                 <div className="space-y-6">
+                   {activities.length > 0 ? (
+                     activities.map((act, i) => (
+                       <Link key={act.id} href={act.link} className="flex gap-4 group cursor-pointer">
+                         <div className="h-10 w-10 rounded-xl bg-[var(--background)] flex items-center justify-center text-lg shadow-sm border border-[var(--card-border)] group-hover:border-[#D4A843]/30 group-hover:shadow-md transition-all flex-shrink-0">
+                           {act.icon}
+                         </div>
+                         <div>
+                           <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[#D4A843] transition-colors">{act.label}</p>
+                           <p className="text-xs text-[var(--text-tertiary)] mt-1">{formatTimeAgo(act.time)}</p>
+                         </div>
+                       </Link>
+                     ))
+                   ) : (
+                     <div className="text-center py-8">
+                       <p className="text-sm text-[var(--text-tertiary)]">No recent activity</p>
+                     </div>
+                   )}
+                 </div>
               </div>
-           </div>
-        </div>
+
+             <div className="card-premium p-8 animate-fade-in-up delay-9">
+                <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Quick Actions</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'Create Campaign', icon: Megaphone, color: '#D4A843', href: '/campaigns' },
+                    { label: 'Add User', icon: Users, color: '#B8923A', href: '/user-management' },
+                    { label: 'View Reports', icon: BarChart3, color: '#6B7280', href: '/dashboard/reports' },
+                    { label: 'System Settings', icon: Sparkles, color: '#101013', href: '/settings' },
+                  ].map((action, i) => (
+                    <Link 
+                      key={i} 
+                      href={action.href}
+                      className="flex flex-col items-center justify-center p-4 rounded-2xl bg-[var(--background)] border border-[var(--card-border)] hover:border-[#D4A843]/30 hover:shadow-xl transition-all gap-3 group"
+                    >
+                      <div className="h-10 w-10 rounded-xl flex items-center justify-center text-[var(--text-secondary)] group-hover:text-[#D4A843] transition-colors">
+                        <action.icon size={24} strokeWidth={1.5} />
+                      </div>
+                      <span className="text-xs font-bold text-[var(--text-secondary)] group-hover:text-[var(--text-primary)]">{action.label}</span>
+                    </Link>
+                  ))}
+                </div>
+             </div>
+          </div>
+        )}
       </div>
     </div>
   );
