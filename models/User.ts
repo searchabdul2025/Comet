@@ -106,8 +106,5 @@ const UserSchema = new Schema<IUser>(
   }
 );
 
-UserSchema.index({ name: 'text', username: 'text', email: 'text' });
-UserSchema.index({ role: 1 });
-
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
