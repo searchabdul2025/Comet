@@ -411,8 +411,9 @@ export default function DashboardPage() {
                     {agent.count} Submission
                   </div>
                 </div>
-              ))}
-           </div>
+                ))
+              ) : null}
+            </div>
         </div>
 
         {/* Recent Submissions */}
