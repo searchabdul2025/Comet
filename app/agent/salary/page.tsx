@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { DollarSign, Gift, Loader2 } from 'lucide-react';
+import { Wallet, Gift, Loader2, Coins } from 'lucide-react';
 
 export default function AgentSalaryPage() {
   const { data: session } = useSession();
@@ -82,8 +82,8 @@ export default function AgentSalaryPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                <DollarSign size={24} className="text-blue-600" />
+              <div className="h-12 w-12 rounded-lg bg-[#D4A843]/10 flex items-center justify-center">
+                <Wallet size={24} className="text-[#D4A843]" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Monthly Salary</p>
@@ -95,8 +95,8 @@ export default function AgentSalaryPage() {
 
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
-                <Gift size={24} className="text-green-600" />
+              <div className="h-12 w-12 rounded-lg bg-[#B8923A]/10 flex items-center justify-center">
+                <Gift size={24} className="text-[#B8923A]" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Bonus</p>
@@ -106,17 +106,17 @@ export default function AgentSalaryPage() {
             <p className="text-sm text-gray-500">Your performance bonus amount</p>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl shadow-sm border border-emerald-200 p-6 md:col-span-2">
+          <div className="bg-gradient-to-br from-[#FBF7ED] to-[#F2EBD4] rounded-xl shadow-sm border border-[#D4A843]/20 p-6 md:col-span-2">
             <div className="flex items-center gap-4 mb-4">
-              <div className="h-12 w-12 rounded-lg bg-emerald-600 flex items-center justify-center">
-                <DollarSign size={24} className="text-white" />
+              <div className="h-12 w-12 rounded-lg bg-[#101013] flex items-center justify-center shadow-lg">
+                <Coins size={24} className="text-[#D4A843]" />
               </div>
               <div>
-                <p className="text-sm text-emerald-700 font-medium">Total Compensation</p>
-                <h2 className="text-3xl font-bold text-emerald-900">Rs {(salary + bonus).toLocaleString()}</h2>
+                <p className="text-sm text-[#B8923A] font-bold uppercase tracking-wider">Total Compensation</p>
+                <h2 className="text-3xl font-bold text-[#101013]">Rs {(salary + bonus).toLocaleString()}</h2>
               </div>
             </div>
-            <p className="text-sm text-emerald-700">Combined monthly salary and bonus</p>
+            <p className="text-sm text-[#B8923A]/80">Combined monthly salary and bonus</p>
           </div>
         </div>
       ) : null}

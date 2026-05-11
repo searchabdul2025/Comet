@@ -73,7 +73,7 @@ export default function AgentCampaignsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Megaphone size={24} className="text-blue-600" />
+            <Megaphone size={24} className="text-[#D4A843]" />
             Campaign Forms
           </h1>
           <p className="text-gray-600">Browse the forms for your campaigns.</p>
@@ -114,7 +114,7 @@ export default function AgentCampaignsPage() {
           {filteredForms.map((form) => (
             <div key={form._id} className="rounded-xl border border-slate-200 bg-white shadow-sm p-4 flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <FileText size={18} className="text-blue-600" />
+                <FileText size={18} className="text-[#D4A843]" />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{form.title}</h3>
                   <p className="text-xs text-gray-500">
@@ -126,7 +126,7 @@ export default function AgentCampaignsPage() {
               <div className="flex gap-2 mt-auto">
                 <Link
                   href={`/forms/${form._id}/preview`}
-                  className="inline-flex items-center justify-center px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+                  className="inline-flex items-center justify-center px-3 py-2 text-sm rounded-md bg-[#D4A843] text-[#101013] font-bold hover:bg-[#B8923A] transition shadow-sm hover:shadow-md"
                 >
                   Open Form
                 </Link>

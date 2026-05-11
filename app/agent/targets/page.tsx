@@ -56,7 +56,7 @@ export default function AgentTargetsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Target size={26} className="text-emerald-600" />
+            <Target size={26} className="text-[#D4A843]" />
             My Target
           </h1>
           <p className="text-gray-600">Track your submissions vs. assigned target.</p>
@@ -89,7 +89,7 @@ export default function AgentTargetsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5">
           <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
-            <Target size={16} className="text-blue-600" />
+            <Target size={16} className="text-[#D4A843]" />
             Target
           </div>
           <div className="text-3xl font-semibold text-gray-900">{summary.target}</div>
@@ -98,7 +98,7 @@ export default function AgentTargetsPage() {
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5">
           <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
-            <FileText size={16} className="text-purple-600" />
+            <FileText size={16} className="text-[#D4A843]" />
             Submitted
           </div>
           <div className="text-3xl font-semibold text-gray-900">{summary.submitted || 0}</div>
@@ -106,7 +106,7 @@ export default function AgentTargetsPage() {
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white shadow-sm p-5">
           <div className="flex items-center gap-2 text-slate-600 text-sm mb-1">
-            <Activity size={16} className="text-emerald-600" />
+            <Activity size={16} className="text-[#D4A843]" />
             Achieved
           </div>
           <div className="text-3xl font-semibold text-gray-900">{summary.achieved}</div>
@@ -137,7 +137,7 @@ export default function AgentTargetsPage() {
         <div className="flex items-center gap-3">
           <div className="flex-1 h-3 rounded-full bg-slate-100 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-emerald-500 to-blue-500"
+              className="h-full bg-gradient-to-r from-[#D4A843] to-[#B8923A]"
               style={{ width: `${progress}%` }}
             />
           </div>
