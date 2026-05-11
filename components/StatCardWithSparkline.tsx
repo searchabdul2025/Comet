@@ -12,7 +12,7 @@ interface StatCardWithSparklineProps {
     label?: string;
   };
   sparkData: number[];
-  sparkColor: string;
+  sparkColor?: string;
   index: number;
 }
 
@@ -22,7 +22,7 @@ const StatCardWithSparkline: React.FC<StatCardWithSparklineProps> = ({
   icon,
   trend,
   sparkData,
-  sparkColor,
+  sparkColor = '#d4af37',
   index
 }) => {
   const [displayValue, setDisplayValue] = useState(0);
