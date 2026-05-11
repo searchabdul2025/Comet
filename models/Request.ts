@@ -63,5 +63,8 @@ const RequestSchema = new Schema<IRequest>(
   }
 );
 
+RequestSchema.index({ status: 1, createdAt: -1 });
+RequestSchema.index({ requester: 1, createdAt: -1 });
+
 export default mongoose.models.Request || mongoose.model<IRequest>('Request', RequestSchema);
 

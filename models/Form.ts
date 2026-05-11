@@ -73,5 +73,7 @@ const FormSchema = new Schema<IForm>(
   }
 );
 
+FormSchema.index({ title: 'text', formId: 'text' });
+
 export default mongoose.models.Form || mongoose.model<IForm>('Form', FormSchema);
 

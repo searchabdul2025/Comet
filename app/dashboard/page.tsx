@@ -49,83 +49,35 @@ export default function DashboardPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    fetchStats();
-    fetchChart();
-    fetchRecentAndTop();
-    fetchActivities();
-  }, []);
-
-  const fetchStats = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/stats');
+      setChartLoading(true);
+      const response = await fetch('/api/dashboard/mega-stats');
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const result = await response.json();
-      if (result.success || result.data) setStats(result.data);
-    } catch (err) {
-      console.error('Failed to fetch stats:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchChart = async () => {
-    try {
-      setChartLoading(true);
-      setChartError('');
-      const scope = session?.user?.role === 'User' ? 'self' : undefined;
-      const res = await fetch(`/api/submissions/summary${scope ? `?scope=${scope}` : ''}`);
-      const result = await res.json();
+      
       if (result.success) {
-        const arr: number[] = Array(12).fill(0);
-        (result.data as { month: number; count: number }[]).forEach((m) => {
-          if (m.month >= 1 && m.month <= 12) arr[m.month - 1] = m.count;
-        });
-        setChartData(arr);
-      } else {
-        setChartError(result.error || 'Failed to load summary');
-        setChartData(Array(12).fill(0));
+        const { stats, chartData, recentSubmissions, topAgents, activities } = result.data;
+        setStats(stats);
+        setChartData(chartData);
+        setRecentSubmissions(recentSubmissions || []);
+        setTopAgents(topAgents || []);
+        setActivities(activities || []);
       }
     } catch (err) {
-      setChartError((err as any)?.message || 'Failed to load summary');
-      setChartData(Array(12).fill(0));
+      console.error('Failed to fetch dashboard data:', err);
+      setChartError((err as any)?.message || 'Failed to load dashboard data');
     } finally {
+      setLoading(false);
       setChartLoading(false);
     }
   };
 
-  const fetchRecentAndTop = async () => {
-    try {
-      const [recentRes, topRes] = await Promise.allSettled([
-        fetch('/api/stats/recent-submissions'),
-        fetch('/api/stats/top-agents'),
-      ]);
-      if (recentRes.status === 'fulfilled' && recentRes.value.ok) {
-        const data = await recentRes.value.json();
-        if (data.success) setRecentSubmissions(data.data || []);
-      }
-      if (topRes.status === 'fulfilled' && topRes.value.ok) {
-        const data = await topRes.value.json();
-        if (data.success) setTopAgents(data.data || []);
-      }
-    } catch {
-      // silently ignore — these are supplementary
-    }
-  };
-
-  const fetchActivities = async () => {
-    try {
-      const res = await fetch('/api/stats/activity');
-      if (res.ok) {
-        const result = await res.json();
-        if (result.success) setActivities(result.data || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch activities:', err);
-    }
-  };
+  useEffect(() => {
+    setMounted(true);
+    fetchData();
+  }, []);
 
   const formatTimeAgo = (date: string | Date) => {
     const now = new Date();

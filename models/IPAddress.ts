@@ -38,5 +38,7 @@ const IPAddressSchema = new Schema<IIPAddress>(
   }
 );
 
+IPAddressSchema.index({ status: 1 });
+
 export default mongoose.models.IPAddress || mongoose.model<IIPAddress>('IPAddress', IPAddressSchema);
 
