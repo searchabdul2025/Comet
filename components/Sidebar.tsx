@@ -122,9 +122,16 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       label: 'MAIN',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null },
-        { href: '/campaigns', label: 'Campaigns', icon: Megaphone, permission: 'canManageForms' as const },
+        { href: '/chat', label: 'Chat Hub', icon: MessageSquare, permission: null },
         { href: '/requests', label: 'Requests', icon: Bell, badge: requestCount, permission: 'canManageRequests' as const },
         { href: '/user-management', label: 'User Management', icon: Users, permission: 'canManageUsers' as const },
+      ],
+    },
+    {
+      label: 'FORMS',
+      items: [
+        { href: '/campaigns', label: 'Campaigns', icon: Megaphone, permission: 'canManageForms' as const },
+        { href: '/forms', label: 'Form Builder', icon: FileText, permission: 'canManageForms' as const },
       ],
     },
     {
@@ -145,7 +152,6 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     {
       label: 'COMMUNICATION',
       items: [
-        { href: '/forms', label: 'Forms', icon: FileText, permission: 'canManageForms' as const },
         { href: '/chatrooms', label: 'Chatrooms', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
       ],
     },
@@ -156,12 +162,18 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       label: 'MAIN',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null, roles: ['User', 'Supervisor'] as const },
+        { href: '/chat', label: 'Chat Hub', icon: MessageSquare, permission: null, roles: ['User', 'Supervisor'] as const },
+      ],
+    },
+    {
+      label: 'FORMS',
+      items: [
+        { href: '/agent/campaigns', label: 'Campaigns Forms', icon: FolderKanban, permission: null, roles: ['User', 'Supervisor'] as const },
       ],
     },
     {
       label: 'WORK',
       items: [
-        { href: '/agent/campaigns', label: 'Campaigns Forms', icon: FolderKanban, permission: null, roles: ['User', 'Supervisor'] as const },
         { href: '/agent/submissions', label: 'My Submissions', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
         { href: '/agent/sales-approvals', label: 'Sales Approvals', icon: FileText, permission: null, roles: ['User', 'Supervisor'] as const },
       ],

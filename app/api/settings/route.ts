@@ -31,6 +31,10 @@ export async function GET() {
       'ATTENDANCE_LATE_THRESHOLD_MINUTES',
       'ATTENDANCE_LATE_FINE_AMOUNT',
       'ATTENDANCE_ABSENT_FINE_AMOUNT',
+      'ATTENDANCE_BREAK_START_TIME',
+      'ATTENDANCE_BREAK_END_TIME',
+      'ATTENDANCE_LATE_RULES',
+      'ATTENDANCE_HOLIDAYS',
     ];
     const entries = await Promise.all(keys.map(async (key) => [key, await getSetting(key)] as const));
     const data: Record<string, string | null> = {};

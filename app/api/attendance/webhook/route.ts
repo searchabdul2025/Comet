@@ -46,13 +46,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'User with this biometric ID not found' }, { status: 404 });
     }
 
-    // Check rules to determine status
+    // Check rules to determine status and fine
     const shiftStartTimeSetting = await Setting.findOne({ key: 'ATTENDANCE_SHIFT_START_TIME' });
     const lateThresholdSetting = await Setting.findOne({ key: 'ATTENDANCE_LATE_THRESHOLD_MINUTES' });
+    const lateRulesSetting = await Setting.findOne({ key: 'ATTENDANCE_LATE_RULES' });
+    const baseLateFineSetting = await Setting.findOne({ key: 'ATTENDANCE_LATE_FINE_AMOUNT' });
+    const holidaysSetting = await Setting.findOne({ key: 'ATTENDANCE_HOLIDAYS' });
 
-    let status: 'Present' | 'Late' = 'Present';
+    let status: 'Present' | 'Late' | 'Holiday' = 'Present';
+    let fineAmount = 0;
     
-    if (shiftStartTimeSetting?.value && lateThresholdSetting?.value) {
+    // Check if it's a holiday
+    const dateStr = checkInTime.toISOString().slice(0, 10);
+    const holidays = JSON.parse(holidaysSetting?.value || '[]');
+    if (holidays.includes(dateStr)) {
+      status = 'Holiday';
+    } else if (shiftStartTimeSetting?.value && lateThresholdSetting?.value) {
       const [shiftHour, shiftMinute] = shiftStartTimeSetting.value.split(':').map(Number);
       const lateThreshold = Number(lateThresholdSetting.value);
       
@@ -64,6 +73,21 @@ export async function POST(req: NextRequest) {
       
       if (diffMinutes > lateThreshold) {
         status = 'Late';
+        
+        // Tiered Late Fines
+        const rules = JSON.parse(lateRulesSetting?.value || '[]');
+        if (rules.length > 0) {
+          // Sort rules by minutes descending to find the highest match
+          const sortedRules = [...rules].sort((a: any, b: any) => b.min - a.min);
+          const matchedRule = sortedRules.find((r: any) => diffMinutes >= r.min);
+          if (matchedRule) {
+            fineAmount = Number(matchedRule.fine);
+          } else {
+            fineAmount = Number(baseLateFineSetting?.value || 0);
+          }
+        } else {
+          fineAmount = Number(baseLateFineSetting?.value || 0);
+        }
       }
     }
 
@@ -86,7 +110,8 @@ export async function POST(req: NextRequest) {
       userId: user._id,
       biometricId: employeeNo,
       checkInTime,
-      status
+      status,
+      fineAmount
     });
 
     return NextResponse.json({ success: true }, { status: 201 });

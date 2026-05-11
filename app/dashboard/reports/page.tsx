@@ -42,7 +42,11 @@ interface AttendanceRecord {
   };
   biometricId: string;
   checkInTime: string;
-  status: 'Present' | 'Late' | 'Absent';
+  checkOutTime?: string;
+  breakStartTime?: string;
+  breakEndTime?: string;
+  status: 'Present' | 'Late' | 'Absent' | 'Holiday';
+  fineAmount?: number;
 }
 
 export default function ReportsPage() {
@@ -453,11 +457,21 @@ export default function ReportsPage() {
                 accessor: (r) => <div suppressHydrationWarning className="font-bold text-slate-700">{formatUSDateTime(r.checkInTime)}</div>
               },
               { 
+                header: 'Break/Out', 
+                accessor: (r) => (
+                  <div className="text-[10px] space-y-0.5">
+                    <div className="text-slate-500"><span className="font-bold text-slate-400">B:</span> {r.breakStartTime ? formatUSDateTime(r.breakStartTime).split(', ')[1] : '—'}</div>
+                    <div className="text-slate-500"><span className="font-bold text-slate-400">O:</span> {r.checkOutTime ? formatUSDateTime(r.checkOutTime).split(', ')[1] : '—'}</div>
+                  </div>
+                )
+              },
+              { 
                 header: 'Status', 
                 accessor: (r) => (
                   <span className={`px-3 py-1 inline-flex text-[10px] font-bold rounded-full uppercase tracking-wider ${
                     r.status === 'Present' ? 'bg-emerald-100 text-emerald-800' :
                     r.status === 'Late' ? 'bg-amber-100 text-amber-800' :
+                    r.status === 'Holiday' ? 'bg-blue-100 text-blue-800' :
                     'bg-red-100 text-red-800'
                   }`}>
                     {r.status}
@@ -467,8 +481,8 @@ export default function ReportsPage() {
               {
                 header: 'Fine',
                 accessor: (r) => {
-                  const fine = r.status === 'Late' ? fineSettings.lateFine : r.status === 'Absent' ? fineSettings.absentFine : '0';
-                  return fine !== '0' ? <span className="font-black text-red-600">PKR {fine}</span> : <span className="text-slate-400">—</span>;
+                  const fine = r.fineAmount || 0;
+                  return fine > 0 ? <span className="font-black text-red-600">PKR {fine.toLocaleString()}</span> : <span className="text-slate-400">—</span>;
                 }
               },
               {

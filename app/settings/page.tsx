@@ -44,6 +44,10 @@ interface SettingsData {
   ATTENDANCE_LATE_THRESHOLD_MINUTES?: string | null;
   ATTENDANCE_LATE_FINE_AMOUNT?: string | null;
   ATTENDANCE_ABSENT_FINE_AMOUNT?: string | null;
+  ATTENDANCE_BREAK_START_TIME?: string | null;
+  ATTENDANCE_BREAK_END_TIME?: string | null;
+  ATTENDANCE_LATE_RULES?: string | null;
+  ATTENDANCE_HOLIDAYS?: string | null;
 }
 
 interface CampaignRow {
@@ -100,6 +104,10 @@ export default function SettingsPage() {
     ATTENDANCE_LATE_THRESHOLD_MINUTES: '15',
     ATTENDANCE_LATE_FINE_AMOUNT: '0',
     ATTENDANCE_ABSENT_FINE_AMOUNT: '0',
+    ATTENDANCE_BREAK_START_TIME: '13:00',
+    ATTENDANCE_BREAK_END_TIME: '14:00',
+    ATTENDANCE_LATE_RULES: '[]',
+    ATTENDANCE_HOLIDAYS: '[]',
   });
   
   const [loading, setLoading] = useState(true);
@@ -603,6 +611,145 @@ export default function SettingsPage() {
                 onChange={(e) => setSettings({ ...settings, ATTENDANCE_ABSENT_FINE_AMOUNT: e.target.value })}
                 className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
               />
+            </div>
+          </div>
+
+          {/* Break & Shift End */}
+          <div className="grid grid-cols-2 gap-6 border-t border-[var(--card-border)] pt-8">
+            <div>
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Break Starts</label>
+              <input
+                type="time"
+                value={settings.ATTENDANCE_BREAK_START_TIME || ''}
+                onChange={(e) => setSettings({ ...settings, ATTENDANCE_BREAK_START_TIME: e.target.value })}
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Break Ends</label>
+              <input
+                type="time"
+                value={settings.ATTENDANCE_BREAK_END_TIME || ''}
+                onChange={(e) => setSettings({ ...settings, ATTENDANCE_BREAK_END_TIME: e.target.value })}
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Shift Ends</label>
+              <input
+                type="time"
+                value={settings.ATTENDANCE_SHIFT_END_TIME || ''}
+                onChange={(e) => setSettings({ ...settings, ATTENDANCE_SHIFT_END_TIME: e.target.value })}
+                className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Tiered Late Rules */}
+          <div className="space-y-6 border-t border-[var(--card-border)] pt-8">
+            <div className="flex items-center justify-between">
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Tiered Late Fines</label>
+              <button 
+                onClick={() => {
+                  const current = JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]');
+                  setSettings({ ...settings, ATTENDANCE_LATE_RULES: JSON.stringify([...current, { min: 15, fine: 0 }]) });
+                }}
+                className="text-[10px] font-bold text-[#D4A843] uppercase hover:underline"
+              >
+                + Add Rule
+              </button>
+            </div>
+            <div className="space-y-3">
+              {JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]').map((rule: any, i: number) => (
+                <div key={i} className="flex gap-4 items-center animate-in fade-in slide-in-from-left-2">
+                  <div className="flex-1 flex items-center gap-2 bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3">
+                    <span className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase">Late</span>
+                    <input 
+                      type="number" 
+                      value={rule.min}
+                      onChange={(e) => {
+                        const rules = JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]');
+                        rules[i].min = parseInt(e.target.value) || 0;
+                        setSettings({ ...settings, ATTENDANCE_LATE_RULES: JSON.stringify(rules) });
+                      }}
+                      className="w-12 bg-transparent text-sm font-bold text-[#D4A843] outline-none"
+                    />
+                    <span className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase">Mins</span>
+                  </div>
+                  <div className="flex-1 flex items-center gap-2 bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3">
+                    <span className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase">Fine</span>
+                    <input 
+                      type="number" 
+                      value={rule.fine}
+                      onChange={(e) => {
+                        const rules = JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]');
+                        rules[i].fine = parseInt(e.target.value) || 0;
+                        setSettings({ ...settings, ATTENDANCE_LATE_RULES: JSON.stringify(rules) });
+                      }}
+                      className="w-20 bg-transparent text-sm font-bold text-[#D4A843] outline-none"
+                    />
+                    <span className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase text-right flex-1 text-slate-400">PKR</span>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      const rules = JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]');
+                      rules.splice(i, 1);
+                      setSettings({ ...settings, ATTENDANCE_LATE_RULES: JSON.stringify(rules) });
+                    }}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+              {JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]').length === 0 && (
+                <p className="text-[10px] text-[var(--text-tertiary)] italic">No tiered rules defined. Using default late fine.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Holiday Management */}
+          <div className="space-y-6 border-t border-[var(--card-border)] pt-8">
+            <div className="flex items-center justify-between">
+              <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Company Holidays</label>
+              <button 
+                onClick={() => {
+                  const current = JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]');
+                  setSettings({ ...settings, ATTENDANCE_HOLIDAYS: JSON.stringify([...current, new Date().toISOString().slice(0, 10)]) });
+                }}
+                className="text-[10px] font-bold text-[#D4A843] uppercase hover:underline"
+              >
+                + Add Holiday
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]').map((date: string, i: number) => (
+                <div key={i} className="flex gap-2 items-center bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 animate-in fade-in slide-in-from-right-2">
+                  <input 
+                    type="date" 
+                    value={date}
+                    onChange={(e) => {
+                      const dates = JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]');
+                      dates[i] = e.target.value;
+                      setSettings({ ...settings, ATTENDANCE_HOLIDAYS: JSON.stringify(dates) });
+                    }}
+                    className="bg-transparent text-sm font-bold text-[var(--text-secondary)] outline-none flex-1"
+                  />
+                  <button 
+                    onClick={() => {
+                      const dates = JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]');
+                      dates.splice(i, 1);
+                      setSettings({ ...settings, ATTENDANCE_HOLIDAYS: JSON.stringify(dates) });
+                    }}
+                    className="p-1 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+              {JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]').length === 0 && (
+                <p className="col-span-2 text-[10px] text-[var(--text-tertiary)] italic">No holidays defined.</p>
+              )}
             </div>
           </div>
         </div>
