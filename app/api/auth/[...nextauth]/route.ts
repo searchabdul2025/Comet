@@ -18,6 +18,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          console.log('Auth attempt for:', credentials.identifier);
           await connectDB();
           const identifier = credentials.identifier.toLowerCase().trim();
           const user = await User.findOne({
@@ -25,18 +26,22 @@ export const authOptions: NextAuthOptions = {
           }).lean();
 
           if (!user) {
+            console.log('Auth failed: User not found for', identifier);
             return null;
           }
 
+          console.log('User found, verifying password...');
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
             (user as any).password
           );
 
           if (!isPasswordValid) {
+            console.log('Auth failed: Invalid password for', identifier);
             return null;
           }
 
+          console.log('Auth success for', identifier);
           const u: any = user;
           return {
             id: u._id?.toString?.() || '',
@@ -46,8 +51,8 @@ export const authOptions: NextAuthOptions = {
             role: u.role,
             permissions: u.permissions || {},
           };
-        } catch (error) {
-          console.error('Auth error:', error);
+        } catch (error: any) {
+          console.error('CRITICAL Auth error:', error.message);
           return null;
         }
       },
