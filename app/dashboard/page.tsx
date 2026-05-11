@@ -46,6 +46,7 @@ export default function DashboardPage() {
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
   const [topAgents, setTopAgents] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export default function DashboardPage() {
     fetchStats();
     fetchChart();
     fetchRecentAndTop();
+    fetchActivities();
   }, []);
 
   const fetchStats = async () => {
@@ -111,6 +113,33 @@ export default function DashboardPage() {
     } catch {
       // silently ignore — these are supplementary
     }
+  };
+
+  const fetchActivities = async () => {
+    try {
+      const res = await fetch('/api/stats/activity');
+      if (res.ok) {
+        const result = await res.json();
+        if (result.success) setActivities(result.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch activities:', err);
+    }
+  };
+
+  const formatTimeAgo = (date: string | Date) => {
+    const now = new Date();
+    const past = new Date(date);
+    const diffInMs = now.getTime() - past.getTime();
+    const diffInSecs = Math.floor(diffInMs / 1000);
+    const diffInMins = Math.floor(diffInSecs / 60);
+    const diffInHours = Math.floor(diffInMins / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInDays > 0) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    if (diffInHours > 0) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    if (diffInMins > 0) return `${diffInMins} minute${diffInMins > 1 ? 's' : ''} ago`;
+    return 'Just now';
   };
 
   const isUser = session?.user?.role === 'User';
@@ -430,27 +459,28 @@ export default function DashboardPage() {
 
         {/* Activity Feed + Quick Actions */}
         <div className="space-y-6">
-           <div className="card-premium p-8 animate-fade-in-up delay-8">
-              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Activity Feed</h3>
-              <div className="space-y-6">
-                {[
-                  { label: 'New form submission received', time: '7 hours ago', icon: '📝' },
-                  { label: 'New user registered', time: '1 day ago', icon: '👤' },
-                  { label: 'System backup completed', time: '2 days ago', icon: '💾' },
-                  { label: 'Monthly report generated', time: '3 days ago', icon: '📅' },
-                ].map((act, i) => (
-                  <div key={i} className="flex gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-[var(--background)] flex items-center justify-center text-lg shadow-sm border border-[var(--card-border)] flex-shrink-0">
-                      {act.icon}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[var(--text-primary)]">{act.label}</p>
-                      <p className="text-xs text-[var(--text-tertiary)] mt-1">{act.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-           </div>
+            <div className="card-premium p-8 animate-fade-in-up delay-8">
+               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Activity Feed</h3>
+               <div className="space-y-6">
+                 {activities.length > 0 ? (
+                   activities.map((act, i) => (
+                     <Link key={act.id} href={act.link} className="flex gap-4 group cursor-pointer">
+                       <div className="h-10 w-10 rounded-xl bg-[var(--background)] flex items-center justify-center text-lg shadow-sm border border-[var(--card-border)] group-hover:border-[#D4A843]/30 group-hover:shadow-md transition-all flex-shrink-0">
+                         {act.icon}
+                       </div>
+                       <div>
+                         <p className="text-sm font-bold text-[var(--text-primary)] group-hover:text-[#D4A843] transition-colors">{act.label}</p>
+                         <p className="text-xs text-[var(--text-tertiary)] mt-1">{formatTimeAgo(act.time)}</p>
+                       </div>
+                     </Link>
+                   ))
+                 ) : (
+                   <div className="text-center py-8">
+                     <p className="text-sm text-[var(--text-tertiary)]">No recent activity</p>
+                   </div>
+                 )}
+               </div>
+            </div>
 
            <div className="card-premium p-8 animate-fade-in-up delay-9">
               <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Quick Actions</h3>
