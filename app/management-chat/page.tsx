@@ -36,9 +36,13 @@ export default function ManagementChatPage() {
   const [managementMessages, setManagementMessages] = useState<ChatMessage[]>([]);
   const [userConversations, setUserConversations] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionCaret, setMentionCaret] = useState(0);
+  const [allUsers, setAllUsers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Authorization check
@@ -76,15 +80,19 @@ export default function ManagementChatPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      // Fetch management messages
-      const res = await fetch('/api/chat/management');
+      const [res, userRes, usersRes] = await Promise.all([
+        fetch('/api/chat/management'),
+        fetch('/api/chat/all'),
+        fetch('/api/users/mentions'),
+      ]);
       const data = await res.json();
       if (data.success) setManagementMessages(data.messages);
-      
-      // Fetch all user conversations (recent messages from everyone)
-      const userRes = await fetch('/api/chat/all');
       const userData = await userRes.json();
       if (userData.success) setUserConversations(userData.messages);
+      if (usersRes.ok) {
+        const usersData = await usersRes.json();
+        if (usersData.success) setAllUsers(usersData.data || []);
+      }
     } catch (error) {
       console.error('Failed to load chat data', error);
     } finally {
@@ -101,7 +109,10 @@ export default function ManagementChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: input.trim() }),
       });
-      if (res.ok) setInput('');
+      if (res.ok) {
+        setInput('');
+        setMentionQuery('');
+      }
     } catch (error) {
       console.error('Failed to send message', error);
     } finally {
@@ -109,9 +120,51 @@ export default function ManagementChatPage() {
     }
   };
 
+  const handleInputChange = (value: string, caretPos: number | null) => {
+    setInput(value);
+    const caret = caretPos ?? value.length;
+    setMentionCaret(caret);
+    const before = value.slice(0, caret);
+    const match = /(^|\s)@([a-zA-Z0-9_. -]{0,24})$/i.exec(before);
+    if (match) setMentionQuery(match[2]);
+    else setMentionQuery('');
+  };
+
+  const insertMention = (name: string) => {
+    const caret = mentionCaret;
+    const before = input.slice(0, caret);
+    const after = input.slice(caret);
+    const match = /(^|\s)@([a-zA-Z0-9_. -]{0,24})$/i.exec(before);
+    if (!match) return;
+    const start = (match.index ?? 0) + match[1].length;
+    const newValue = `${before.slice(0, start)}@${name} ${after}`;
+    setInput(newValue);
+    setMentionQuery('');
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
+  // Mention suggestions (all users + chat participants deduped)
+  const mentionPool = (() => {
+    const seen = new Set<string>(allUsers.map((n) => n.toLowerCase()));
+    const combined = [...allUsers];
+    managementMessages.forEach((m) => {
+      if (m.userName && !seen.has(m.userName.toLowerCase())) {
+        seen.add(m.userName.toLowerCase());
+        combined.push(m.userName);
+      }
+    });
+    return combined.sort((a, b) => a.localeCompare(b));
+  })();
+
+  const mentionSuggestions = mentionQuery
+    ? mentionPool.filter((p) => p.toLowerCase().startsWith(mentionQuery.toLowerCase())).slice(0, 8)
+    : [];
+
   const handleTagUser = (userName: string) => {
     setActiveTab('management');
     setInput(`@${userName} `);
+    setMentionQuery('');
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   if (authStatus === 'loading') {
@@ -252,13 +305,40 @@ export default function ManagementChatPage() {
 
               {/* Input Area */}
               <div className="p-10 border-t border-slate-50">
-                <div className="flex gap-4 bg-slate-50 border border-slate-100 p-3 rounded-[2rem] focus-within:ring-4 focus-within:ring-indigo-500/10 focus-within:border-indigo-500/30 focus-within:bg-white transition-all shadow-inner">
+                <div className="relative flex gap-4 bg-slate-50 border border-slate-100 p-3 rounded-[2rem] focus-within:ring-4 focus-within:ring-indigo-500/10 focus-within:border-indigo-500/30 focus-within:bg-white transition-all shadow-inner">
+                  {/* @mention dropdown */}
+                  {mentionSuggestions.length > 0 && (
+                    <div className="absolute bottom-full left-3 mb-2 w-64 bg-white border border-slate-200 shadow-2xl rounded-2xl overflow-hidden z-30">
+                      <div className="px-3 py-1.5 border-b border-slate-100">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mention someone</span>
+                      </div>
+                      <div className="max-h-44 overflow-y-auto">
+                        {mentionSuggestions.map((name) => (
+                          <button
+                            key={name}
+                            type="button"
+                            onMouseDown={(e) => { e.preventDefault(); insertMention(name); }}
+                            className="w-full text-left px-3 py-2.5 text-sm hover:bg-indigo-50 flex items-center gap-2.5 transition-colors"
+                          >
+                            <div className="h-7 w-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                              {name[0]?.toUpperCase()}
+                            </div>
+                            <span className="font-medium text-slate-700">@{name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <input
+                    ref={inputRef}
                     type="text"
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                    placeholder="Brief management team..."
+                    onChange={(e) => handleInputChange(e.target.value, e.currentTarget.selectionStart)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSendMessage();
+                      if (e.key === 'Escape') setMentionQuery('');
+                    }}
+                    placeholder="Type @ to mention someone..."
                     className="flex-1 bg-transparent border-none focus:ring-0 text-slate-900 placeholder:text-slate-400 px-6 font-medium"
                   />
                   <button

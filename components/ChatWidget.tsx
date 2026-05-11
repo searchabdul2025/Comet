@@ -34,6 +34,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
   const [banned, setBanned] = useState<{ reason?: string | null } | null>(null);
   const [sending, setSending] = useState(false);
   const [limits, setLimits] = useState(DEFAULT_LIMITS);
+  const [allUsers, setAllUsers] = useState<string[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -42,45 +43,49 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
   const currentUsername = session?.user?.username?.toLowerCase?.() || '';
 
   const sortedMessages = useMemo(() => messages, [messages]);
-  const participants = useMemo(() => {
-    const seen = new Map<string, string>();
+
+  // Combined list: all registered users + anyone who has chatted (deduped)
+  const mentionPool = useMemo(() => {
+    const seen = new Set<string>(allUsers.map((n) => n.toLowerCase()));
+    const combined = [...allUsers];
     messages.forEach((m) => {
-      if (m.userName) {
-        seen.set(m.userName.toLowerCase(), m.userName);
+      if (m.userName && !seen.has(m.userName.toLowerCase())) {
+        seen.add(m.userName.toLowerCase());
+        combined.push(m.userName);
       }
     });
-    if (session?.user?.name) {
-      seen.set(session.user.name.toLowerCase(), session.user.name);
-    }
-    return Array.from(seen.values()).sort();
-  }, [messages, session?.user?.name]);
+    return combined.sort((a, b) => a.localeCompare(b));
+  }, [allUsers, messages]);
 
   const mentionSuggestions = useMemo(() => {
-    if (!mentionQuery) return participants;
+    if (!mentionQuery) return mentionPool.slice(0, 8);
     const q = mentionQuery.toLowerCase();
-    return participants.filter((p) => p.toLowerCase().startsWith(q));
-  }, [mentionQuery, participants]);
+    return mentionPool.filter((p) => p.toLowerCase().startsWith(q)).slice(0, 8);
+  }, [mentionQuery, mentionPool]);
 
   useEffect(() => {
     if (!isOpen || isMinimized) return;
 
     const loadInitial = async () => {
       try {
-        const res = await fetch('/api/chat/messages');
-        const result = await res.json();
-        if (!res.ok || !result.success) {
+        const [chatRes, usersRes] = await Promise.all([
+          fetch('/api/chat/messages'),
+          fetch('/api/users/mentions'),
+        ]);
+        const result = await chatRes.json();
+        if (!chatRes.ok || !result.success) {
           throw new Error(result.error || 'Failed to load chat');
         }
         setMessages(result.data.messages || []);
-        if (result.data?.limits) {
-          setLimits(result.data.limits);
-        }
-        if (result.data?.ban) {
-          setBanned(result.data.ban);
-        } else {
-          setBanned(null);
-        }
+        if (result.data?.limits) setLimits(result.data.limits);
+        if (result.data?.ban) setBanned(result.data.ban);
+        else setBanned(null);
         setStatus('live');
+
+        if (usersRes.ok) {
+          const usersData = await usersRes.json();
+          if (usersData.success) setAllUsers(usersData.data || []);
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load chat');
         setStatus('offline');
@@ -369,18 +374,26 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
             rows={2}
             maxLength={limits.maxMessageLength}
           />
-          {mentionQuery && mentionSuggestions.length > 0 && (
-            <div className="absolute bottom-16 left-0 right-20 bg-white border border-slate-200 shadow-lg rounded-xl overflow-hidden z-20 max-h-48 overflow-y-auto">
-              {mentionSuggestions.map((name) => (
-                <button
-                  key={name}
-                  type="button"
-                  onClick={() => insertMention(name)}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 focus:bg-slate-100"
-                >
-                  @{name}
-                </button>
-              ))}
+          {mentionQuery !== null && mentionQuery !== undefined && mentionQuery.length >= 0 && mentionSuggestions.length > 0 && mentionQuery !== '' && (
+            <div className="absolute bottom-16 left-0 right-16 bg-white border border-slate-200 shadow-xl rounded-2xl overflow-hidden z-20">
+              <div className="px-3 py-1.5 border-b border-slate-100">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mention someone</span>
+              </div>
+              <div className="max-h-40 overflow-y-auto">
+                {mentionSuggestions.map((name) => (
+                  <button
+                    key={name}
+                    type="button"
+                    onMouseDown={(e) => { e.preventDefault(); insertMention(name); }}
+                    className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#D4A843]/5 flex items-center gap-2.5 transition-colors"
+                  >
+                    <div className="h-7 w-7 rounded-full bg-[#D4A843]/10 text-[#D4A843] flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                      {name[0]?.toUpperCase()}
+                    </div>
+                    <span className="font-medium text-slate-700">@{name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           <button
