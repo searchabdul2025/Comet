@@ -21,7 +21,7 @@ const AdminBanner: React.FC<AdminBannerProps> = ({ adminName }) => {
   }, [adminName]);
 
   return (
-    <div className="w-full">
+    <div className="w-full relative z-[10]">
       {/* Heading */}
       <div className="mb-[14px]">
         <h1 className="text-[1.45rem] font-[800] text-[#1a1209] leading-tight">
@@ -34,7 +34,7 @@ const AdminBanner: React.FC<AdminBannerProps> = ({ adminName }) => {
 
       {/* Banner */}
       <div 
-        className="relative rounded-[22px] border-[1.5px] border-[rgba(212,175,55,0.18)] shadow-[0_4px_32px_rgba(180,140,60,0.12)] p-[30px_36px] mb-[20px] grid grid-cols-[1fr_auto_1fr] items-center gap-[16px] min-h-[180px]"
+        className="relative overflow-visible rounded-[22px] border-[1.5px] border-[rgba(212,175,55,0.18)] shadow-[0_4px_32px_rgba(180,140,60,0.12)] p-[30px_36px] mb-[20px] grid grid-cols-[1fr_auto_1fr] items-center gap-[16px] min-h-[180px]"
         style={{
           background: 'linear-gradient(115deg, #fdfbf2 0%, #fef9ec 50%, #fdf5df 100%)',
           fontFamily: "'DM Sans', sans-serif"
@@ -62,12 +62,12 @@ const AdminBanner: React.FC<AdminBannerProps> = ({ adminName }) => {
         </div>
 
         {/* Center Side - Banner Graphic */}
-        <div className="relative z-[1] flex justify-center items-end h-full min-w-[320px]">
+        <div className="relative z-[2] flex justify-center items-end h-full min-w-[320px] overflow-visible">
            <img 
              src="/banner.svg" 
              alt="Banner" 
-             className="absolute bottom-[-80px] transform scale-[1.35] drop-shadow-[0_20px_50px_rgba(180,140,60,0.3)]"
-             style={{ width: '420px', height: 'auto' }}
+             className="absolute bottom-[-60px] transform scale-[1.3] drop-shadow-[0_20px_60px_rgba(180,140,60,0.4)] z-[30]"
+             style={{ width: '400px', height: 'auto' }}
            />
         </div>
 
