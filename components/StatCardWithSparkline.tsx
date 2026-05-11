@@ -6,7 +6,7 @@ interface StatCardWithSparklineProps {
   label: string;
   value: number;
   icon: string;
-  trend: {
+  trend?: {
     value: number | string;
     up: boolean;
     label?: string;
@@ -101,9 +101,11 @@ const StatCardWithSparkline: React.FC<StatCardWithSparklineProps> = ({
       <div className="text-[2.1rem] font-[800] text-[#1a1209] leading-none mb-[6px]">
         {displayValue.toLocaleString()}
       </div>
-      <div className={`text-[0.75rem] font-[600] mb-[10px] ${trend.up ? 'text-[#16a34a]' : 'text-[#9a8a6a]'}`}>
-        {trend.up ? '↗ ' : ''}{trend.label || `${trend.value}% this month`}
-      </div>
+      {trend && (
+        <div className={`text-[0.75rem] font-[600] mb-[10px] ${trend.up ? 'text-[#16a34a]' : 'text-[#9a8a6a]'}`}>
+          {trend.up ? '↗ ' : ''}{trend.label || `${trend.value}% this month`}
+        </div>
+      )}
       <svg 
         ref={sparkRef} 
         viewBox="0 0 120 40" 
