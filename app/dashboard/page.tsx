@@ -357,11 +357,9 @@ export default function DashboardPage() {
 
             <div className="space-y-4">
               {[
-                { label: 'Authentication', status: 'Operational', icon: '🔐' },
                 { label: 'Database', status: 'Connected', icon: '🗄️' },
                 { label: 'Google Sheets', status: 'Synced', icon: '📊' },
                 { label: 'WhatsApp API', status: 'Operational', icon: '💬' },
-                { label: 'Email Service', status: 'Operational', icon: '✉️' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between py-2.5 border-b border-[var(--card-border)] last:border-0">
                   <div className="flex items-center gap-3">
@@ -376,9 +374,7 @@ export default function DashboardPage() {
               ))}
             </div>
           </div>
-          <button className="mt-8 w-full py-4 bg-[var(--background)] border border-[var(--card-border)] rounded-2xl text-sm font-bold text-[var(--text-secondary)] hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all flex items-center justify-center gap-2">
-            View all services <ArrowUpRight size={16} />
-          </button>
+          </div>
         </div>
       </div>
 
