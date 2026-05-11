@@ -101,6 +101,22 @@ export default function AgentSalesApprovalsPage() {
     unpaid: approvals.filter(a => a.status === 'unpaid').length,
   };
 
+  const getSparkData = (status: string) => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d.toISOString().slice(0, 10);
+    });
+
+    return last7Days.map(day => {
+      return approvals.filter(a => {
+        if (a.status !== status) return false;
+        const dateStr = (a.reviewedAt || a.createdAt || a.submission?.createdAt || '')?.slice(0, 10);
+        return dateStr === day;
+      }).length;
+    });
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader 
@@ -117,28 +133,28 @@ export default function AgentSalesApprovalsPage() {
             value: statusCounts.approved,
             icon: '✅',
             sparkColor: '#16a34a',
-            sparkData: [5, 8, 12, 10, 15, 18, 20]
+            sparkData: getSparkData('approved')
           },
           { 
             label: 'Paid', 
             value: statusCounts.paid,
             icon: '💰',
             sparkColor: '#D4A843',
-            sparkData: [2, 4, 6, 8, 10, 12, 14]
+            sparkData: getSparkData('paid')
           },
           { 
             label: 'Pending', 
             value: statusCounts.pending,
             icon: '⏳',
             sparkColor: '#9CA3AF',
-            sparkData: [3, 5, 2, 4, 6, 3, 5]
+            sparkData: getSparkData('pending')
           },
           { 
             label: 'Rejected', 
             value: statusCounts.rejected,
             icon: '❌',
             sparkColor: '#ef4444',
-            sparkData: [0, 1, 0, 2, 1, 0, 1]
+            sparkData: getSparkData('rejected')
           }
         ]}
       />
