@@ -1,6 +1,11 @@
+'use client';
+
+import { useSession, signOut } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 import { Search, Bell, Moon, Sun, ChevronDown, Settings, LogOut, X, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import CommandPalette from './CommandPalette';
+import AgentLaunch from './AgentLaunch';
 
 export default function Header() {
   const { data: session, status } = useSession();
