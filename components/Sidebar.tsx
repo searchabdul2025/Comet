@@ -224,7 +224,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       } bg-[#101013] h-screen sticky top-0 flex flex-col transition-all duration-300 ease-in-out z-40 border-r border-white/[0.02]`}
     >
       {/* ─── Brand Header ─── */}
-      <div className={`pt-6 pb-8 ${collapsed ? 'px-3' : 'px-6'} flex flex-col items-center justify-center gap-5 border-b border-white/[0.04]`}>
+      <div className={`pt-2 pb-8 ${collapsed ? 'px-3' : 'px-6'} flex flex-col items-center justify-center gap-4 border-b border-white/[0.04]`}>
         {brand.logo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
