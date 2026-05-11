@@ -378,7 +378,7 @@ export default function DashboardPage() {
         </div>
 
       {/* ─── Bottom Sections ─── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
         {/* Top Agents */}
         <div className="card-premium p-8 animate-fade-in-up delay-6">
            <h3 className="text-xl font-bold text-[var(--text-primary)] mb-8">Top Agents</h3>
@@ -398,7 +398,8 @@ export default function DashboardPage() {
            </div>
            
            <div className="space-y-4">
-              {topAgents.slice(0, 1).map((agent: any) => (
+              {topAgents.length > 0 ? (
+                topAgents.slice(0, 3).map((agent: any) => (
                 <div key={agent._id} className="flex items-center justify-between p-4 bg-[var(--background)] rounded-2xl border border-[var(--card-border)]">
                   <div className="flex items-center gap-3">
                     <div className="h-10 w-10 rounded-full bg-[#101013] flex items-center justify-center text-[#D4A843] font-bold text-xs">
@@ -433,20 +434,28 @@ export default function DashboardPage() {
                  </tr>
                </thead>
                <tbody className="divide-y divide-[var(--card-border)]">
-                 {recentSubmissions.slice(0, 4).map((sub: any) => (
-                   <tr key={sub._id} className="group">
-                     <td className="py-4">
-                        <div className="flex items-center gap-3">
-                           <div className="h-8 w-8 rounded-full bg-[#D4A843]/10 flex items-center justify-center text-[#D4A843] font-bold text-[10px]">
-                             {sub.agentName?.[0] || 'A'}
+                  {recentSubmissions.length > 0 ? (
+                    recentSubmissions.slice(0, 5).map((sub: any) => (
+                      <tr key={sub._id} className="group">
+                        <td className="py-4">
+                           <div className="flex items-center gap-3">
+                              <div className="h-8 w-8 rounded-full bg-[#D4A843]/10 flex items-center justify-center text-[#D4A843] font-bold text-[10px]">
+                                {sub.agentName?.[0] || 'A'}
+                              </div>
+                              <span className="text-sm font-medium text-[var(--text-primary)]">{sub.agentName || 'ahmad'}</span>
                            </div>
-                           <span className="text-sm font-medium text-[var(--text-primary)]">{sub.agentName || 'ahmad'}</span>
-                        </div>
-                     </td>
-                     <td className="py-4 text-sm text-[var(--text-secondary)] truncate max-w-[120px]">{sub.formTitle || 'testing form'}</td>
-                     <td className="py-4 text-sm text-[var(--text-tertiary)] text-right">{sub.timeAgo || '7h ago'}</td>
-                   </tr>
-                 ))}
+                        </td>
+                        <td className="py-4 text-sm text-[var(--text-secondary)] truncate max-w-[120px]">{sub.formTitle || 'testing form'}</td>
+                        <td className="py-4 text-sm text-[var(--text-tertiary)] text-right">{sub.timeAgo || '7h ago'}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-sm text-[var(--text-tertiary)]">
+                        No recent submissions
+                      </td>
+                    </tr>
+                  )}
                </tbody>
              </table>
            </div>
