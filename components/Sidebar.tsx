@@ -234,217 +234,219 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   }
 
   return (
-    <aside
-      className={`${
-        collapsed ? 'w-[72px]' : 'w-[260px]'
-      } bg-[#101013] h-[100dvh] sticky top-0 flex flex-col transition-all duration-300 ease-in-out z-40 border-r border-white/[0.02] shadow-2xl`}
-    >
-      {/* ─── Brand Header ─── */}
-      <div className={`pt-2 pb-8 ${collapsed ? 'px-3' : 'px-6'} flex flex-col items-center justify-center gap-4 border-b border-white/[0.04]`}>
-        {brand.logo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={brand.logo}
-            alt={brand.name}
-            className={`transition-all duration-300 object-contain ${collapsed ? 'h-10 w-10' : 'h-24 w-24'} rounded-2xl flex-shrink-0`}
-          />
-        ) : (
-          <>
-            <div className={`transition-all duration-300 rounded-2xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] font-black flex-shrink-0 shadow-2xl shadow-[#D4A843]/10 ${collapsed ? 'h-10 w-10 text-sm' : 'h-20 w-20 text-2xl'}`}>
-              {brand.name.slice(0, 2).toUpperCase()}
-            </div>
-            {!collapsed && (
-              <div className="text-center animate-fade-in">
-                <h1 className="text-lg font-black text-[#D4A843] tracking-[0.2em] uppercase leading-tight">
-                  {brand.name}
-                </h1>
-                <div className="h-[2px] w-8 bg-[#D4A843]/20 mx-auto mt-3 rounded-full" />
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* ─── Collapse Toggle ─── */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-[52px] h-6 w-6 rounded-full bg-[#1A1A1F] border border-[#D4A843]/20 flex items-center justify-center text-[#8B8B94] hover:text-[#D4A843] hover:bg-[#1A1A1F] transition-all z-50 shadow-lg"
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+    <div className={`${collapsed ? 'w-[72px]' : 'w-[260px]'} flex-shrink-0 transition-all duration-300 relative z-40`}>
+      <aside
+        className={`${
+          collapsed ? 'w-[72px]' : 'w-[260px]'
+        } bg-[#101013] fixed inset-y-0 left-0 flex flex-col transition-all duration-300 ease-in-out border-r border-white/[0.02] shadow-2xl`}
       >
-        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-      </button>
-
-      {/* ─── Navigation ─── */}
-      <nav className="flex-1 overflow-y-auto sidebar-scroll py-4 px-3">
-        {navGroups.map((group, gi) => (
-          <div key={group.label} className={gi > 0 ? 'mt-6' : ''}>
-            {/* Group Label */}
-            {!collapsed && (
-              <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#D4A843]/50">
-                {group.label}
-              </p>
-            )}
-            {collapsed && gi > 0 && (
-              <div className="mx-3 mb-3 border-t border-white/[0.06]" />
-            )}
-
-            <div className="space-y-0.5">
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
-
-                return (
-                  <Link
-                    key={item.href + item.label}
-                    href={item.href}
-                    title={collapsed ? item.label : undefined}
-                    className={`group relative flex items-center gap-3 rounded-xl transition-all duration-200 ${
-                      collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
-                    } ${
-                      isActive
-                        ? 'bg-[#D4A843] text-[#101013]'
-                        : 'text-[#8B8B94] hover:text-white hover:bg-white/[0.04]'
-                    }`}
-                  >
-                    {/* Icon */}
-                    <div
-                      className={`flex-shrink-0 flex items-center justify-center rounded-lg transition-all duration-200 ${
-                        collapsed ? 'h-10 w-10' : 'h-8 w-8'
-                      } ${
-                        isActive
-                          ? 'bg-[#101013]/15 text-[#101013]'
-                          : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
-                      }`}
-                    >
-                      <Icon size={collapsed ? 20 : 17} strokeWidth={isActive ? 2.2 : 1.8} />
-                    </div>
-
-                    {/* Label */}
-                    {!collapsed && (
-                      <span className={`text-[13px] font-medium truncate ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
-                    )}
-
-                    {/* Badge */}
-                    {item.badge !== undefined && item.badge > 0 && (
-                      <span
-                        className={`${
-                          collapsed ? 'absolute -top-0.5 -right-0.5 h-4 w-4 text-[9px]' : 'ml-auto text-[10px] px-1.5 py-0.5'
-                        } rounded-full font-semibold flex items-center justify-center ${
-                          isActive
-                            ? 'bg-[#101013] text-[#D4A843]'
-                            : 'bg-[#D4A843] text-[#101013]'
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-
-        {/* Accessible Chatrooms */}
-        {accessibleChatrooms.length > 0 && (
-          <div className="mt-6">
-            {!collapsed && (
-              <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#D4A843]/50">
-                Chatrooms
-              </p>
-            )}
-            {collapsed && <div className="mx-3 mb-3 border-t border-white/[0.06]" />}
-            <div className="space-y-0.5">
-              {accessibleChatrooms.map((chatroom) => {
-                const isActive = pathname === `/chatroom/${chatroom._id}` || pathname?.startsWith(`/chatroom/${chatroom._id}/`);
-                return (
-                  <Link
-                    key={chatroom._id}
-                    href={`/chatroom-login?id=${chatroom._id}`}
-                    title={collapsed ? chatroom.name : undefined}
-                    className={`group relative flex items-center gap-3 rounded-xl transition-all duration-200 ${
-                      collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
-                    } ${
-                      isActive
-                        ? 'bg-[#D4A843] text-[#101013]'
-                        : 'text-[#8B8B94] hover:text-white hover:bg-white/[0.04]'
-                    }`}
-                  >
-                    <div
-                      className={`flex-shrink-0 flex items-center justify-center rounded-lg transition-all ${
-                        collapsed ? 'h-10 w-10' : 'h-8 w-8'
-                      } ${
-                        isActive
-                          ? 'bg-[#101013]/15 text-[#101013]'
-                          : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
-                      }`}
-                    >
-                      <MessageSquare size={collapsed ? 20 : 17} strokeWidth={isActive ? 2.2 : 1.8} />
-                    </div>
-                    {!collapsed && (
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[13px] font-medium block truncate">{chatroom.name}</span>
-                        {chatroom.description && (
-                          <span className="text-[10px] text-[#8B8B94]/60 block truncate">{chatroom.description}</span>
-                        )}
-                      </div>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </nav>
-
-
-      {/* ─── User Card Footer ─── */}
-      {session?.user && (
-        <div className={`mt-auto border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-4'}`}>
-          <div
-            className={`flex items-center gap-3 ${
-              collapsed ? 'flex-col items-center' : 'rounded-xl bg-white/[0.03] border border-white/[0.06] p-3'
-            }`}
-          >
-            {/* Avatar / User Info */}
-            <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] text-xs font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/20">
-                {initials}
+        {/* ─── Brand Header ─── */}
+        <div className={`pt-2 pb-8 ${collapsed ? 'px-3' : 'px-6'} flex flex-col items-center justify-center gap-4 border-b border-white/[0.04]`}>
+          {brand.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={brand.logo}
+              alt={brand.name}
+              className={`transition-all duration-300 object-contain ${collapsed ? 'h-10 w-10' : 'h-24 w-24'} rounded-2xl flex-shrink-0`}
+            />
+          ) : (
+            <>
+              <div className={`transition-all duration-300 rounded-2xl bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] font-black flex-shrink-0 shadow-2xl shadow-[#D4A843]/10 ${collapsed ? 'h-10 w-10 text-sm' : 'h-20 w-20 text-2xl'}`}>
+                {brand.name.slice(0, 2).toUpperCase()}
               </div>
-
               {!collapsed && (
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-white truncate">
-                    {session.user.name || session.user.email}
-                  </p>
-                  <p className="text-[10px] text-[#8B8B94] font-medium uppercase tracking-wider">
-                    {roleLabel}
-                  </p>
+                <div className="text-center animate-fade-in">
+                  <h1 className="text-lg font-black text-[#D4A843] tracking-[0.2em] uppercase leading-tight">
+                    {brand.name}
+                  </h1>
+                  <div className="h-[2px] w-8 bg-[#D4A843]/20 mx-auto mt-3 rounded-full" />
                 </div>
               )}
-            </div>
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className={`${
-                collapsed 
-                  ? 'h-9 w-9 mt-2' 
-                  : 'h-8 w-8'
-              } rounded-lg flex items-center justify-center text-[#8B8B94] hover:text-[#D4A843] hover:bg-[#D4A843]/10 transition-all border border-transparent hover:border-[#D4A843]/20`}
-              title="Logout"
-            >
-              <LogOut size={collapsed ? 18 : 15} />
-            </button>
-          </div>
-
-          {!collapsed && (
-            <div className="mt-4 text-center">
-              <p className="text-[10px] text-[#8B8B94]/40">© 2026 {brand.name}</p>
-            </div>
+            </>
           )}
         </div>
-      )}
-    </aside>
+
+        {/* ─── Collapse Toggle ─── */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute -right-3 top-[52px] h-6 w-6 rounded-full bg-[#1A1A1F] border border-[#D4A843]/20 flex items-center justify-center text-[#8B8B94] hover:text-[#D4A843] hover:bg-[#1A1A1F] transition-all z-50 shadow-lg"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+        </button>
+
+        {/* ─── Navigation ─── */}
+        <nav className="flex-1 overflow-y-auto sidebar-scroll py-4 px-3">
+          {navGroups.map((group, gi) => (
+            <div key={group.label} className={gi > 0 ? 'mt-6' : ''}>
+              {/* Group Label */}
+              {!collapsed && (
+                <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#D4A843]/50">
+                  {group.label}
+                </p>
+              )}
+              {collapsed && gi > 0 && (
+                <div className="mx-3 mb-3 border-t border-white/[0.06]" />
+              )}
+
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+
+                  return (
+                    <Link
+                      key={item.href + item.label}
+                      href={item.href}
+                      title={collapsed ? item.label : undefined}
+                      className={`group relative flex items-center gap-3 rounded-xl transition-all duration-200 ${
+                        collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
+                      } ${
+                        isActive
+                          ? 'bg-[#D4A843] text-[#101013]'
+                          : 'text-[#8B8B94] hover:text-white hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      {/* Icon */}
+                      <div
+                        className={`flex-shrink-0 flex items-center justify-center rounded-lg transition-all duration-200 ${
+                          collapsed ? 'h-10 w-10' : 'h-8 w-8'
+                        } ${
+                          isActive
+                            ? 'bg-[#101013]/15 text-[#101013]'
+                            : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
+                        }`}
+                      >
+                        <Icon size={collapsed ? 20 : 17} strokeWidth={isActive ? 2.2 : 1.8} />
+                      </div>
+
+                      {/* Label */}
+                      {!collapsed && (
+                        <span className={`text-[13px] font-medium truncate ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
+                      )}
+
+                      {/* Badge */}
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span
+                          className={`${
+                            collapsed ? 'absolute -top-0.5 -right-0.5 h-4 w-4 text-[9px]' : 'ml-auto text-[10px] px-1.5 py-0.5'
+                          } rounded-full font-semibold flex items-center justify-center ${
+                            isActive
+                              ? 'bg-[#101013] text-[#D4A843]'
+                              : 'bg-[#D4A843] text-[#101013]'
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          {/* Accessible Chatrooms */}
+          {accessibleChatrooms.length > 0 && (
+            <div className="mt-6">
+              {!collapsed && (
+                <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#D4A843]/50">
+                  Chatrooms
+                </p>
+              )}
+              {collapsed && <div className="mx-3 mb-3 border-t border-white/[0.06]" />}
+              <div className="space-y-0.5">
+                {accessibleChatrooms.map((chatroom) => {
+                  const isActive = pathname === `/chatroom/${chatroom._id}` || pathname?.startsWith(`/chatroom/${chatroom._id}/`);
+                  return (
+                    <Link
+                      key={chatroom._id}
+                      href={`/chatroom-login?id=${chatroom._id}`}
+                      title={collapsed ? chatroom.name : undefined}
+                      className={`group relative flex items-center gap-3 rounded-xl transition-all duration-200 ${
+                        collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'
+                      } ${
+                        isActive
+                          ? 'bg-[#D4A843] text-[#101013]'
+                          : 'text-[#8B8B94] hover:text-white hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      <div
+                        className={`flex-shrink-0 flex items-center justify-center rounded-lg transition-all ${
+                          collapsed ? 'h-10 w-10' : 'h-8 w-8'
+                        } ${
+                          isActive
+                            ? 'bg-[#101013]/15 text-[#101013]'
+                            : 'bg-transparent text-inherit group-hover:bg-white/[0.06]'
+                        }`}
+                      >
+                        <MessageSquare size={collapsed ? 20 : 17} strokeWidth={isActive ? 2.2 : 1.8} />
+                      </div>
+                      {!collapsed && (
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[13px] font-medium block truncate">{chatroom.name}</span>
+                          {chatroom.description && (
+                            <span className="text-[10px] text-[#8B8B94]/60 block truncate">{chatroom.description}</span>
+                          )}
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </nav>
+
+
+        {/* ─── User Card Footer ─── */}
+        {session?.user && (
+          <div className={`mt-auto border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-4'}`}>
+            <div
+              className={`flex items-center gap-3 ${
+                collapsed ? 'flex-col items-center' : 'rounded-xl bg-white/[0.03] border border-white/[0.06] p-3'
+              }`}
+            >
+              {/* Avatar / User Info */}
+              <div className="flex items-center gap-3 flex-1 min-w-0 w-full">
+                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] text-xs font-bold flex-shrink-0 shadow-lg shadow-[#D4A843]/20">
+                  {initials}
+                </div>
+
+                {!collapsed && (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-semibold text-white truncate">
+                      {session.user.name || session.user.email}
+                    </p>
+                    <p className="text-[10px] text-[#8B8B94] font-medium uppercase tracking-wider">
+                      {roleLabel}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className={`${
+                  collapsed 
+                    ? 'h-9 w-9 mt-2' 
+                    : 'h-8 w-8'
+                } rounded-lg flex items-center justify-center text-[#8B8B94] hover:text-[#D4A843] hover:bg-[#D4A843]/10 transition-all border border-transparent hover:border-[#D4A843]/20`}
+                title="Logout"
+              >
+                <LogOut size={collapsed ? 18 : 15} />
+              </button>
+            </div>
+
+            {!collapsed && (
+              <div className="mt-4 text-center">
+                <p className="text-[10px] text-[#8B8B94]/40">© 2026 {brand.name}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </aside>
+    </div>
   );
 }
