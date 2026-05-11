@@ -3,10 +3,20 @@ import { getSetting } from '@/lib/settings';
 
 export async function GET() {
   try {
-    const appName = (await getSetting('APP_NAME')) || process.env.APP_NAME || 'Portal';
-    const appLogoUrl = (await getSetting('APP_LOGO_URL')) || process.env.APP_LOGO_URL || '';
-    const appFaviconUrl = (await getSetting('APP_FAVICON_URL')) || '';
-    const showSalaryBonus = (await getSetting('SHOW_SALARY_BONUS')) ?? '1';
+    let appName = process.env.APP_NAME || 'Portal';
+    let appLogoUrl = process.env.APP_LOGO_URL || '';
+    let appFaviconUrl = '';
+    let showSalaryBonus = '1';
+
+    try {
+      appName = (await getSetting('APP_NAME')) || appName;
+      appLogoUrl = (await getSetting('APP_LOGO_URL')) || appLogoUrl;
+      appFaviconUrl = (await getSetting('APP_FAVICON_URL')) || '';
+      showSalaryBonus = (await getSetting('SHOW_SALARY_BONUS')) ?? '1';
+    } catch (dbError) {
+      console.error('Database error in public settings:', dbError);
+      // Continue with defaults
+    }
 
     return NextResponse.json({
       success: true,
@@ -18,9 +28,10 @@ export async function GET() {
       },
     });
   } catch (error: any) {
+    console.error('Critical error in public settings:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Failed to load branding' },
-      { status: 500 }
+      { success: true, data: { APP_NAME: 'Portal', APP_LOGO_URL: '', APP_FAVICON_URL: '', SHOW_SALARY_BONUS: '1' } },
+      { status: 200 } // Return 200 with defaults to avoid UI break
     );
   }
 }
