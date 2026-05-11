@@ -145,7 +145,7 @@ export default function FormsPage() {
           },
           { 
             label: 'Linked Campaigns', 
-            value: Array.from(new Set(forms.map(f => typeof f.campaign === 'object' ? f.campaign._id : f.campaign))).filter(Boolean).length,
+            value: Array.from(new Set(forms.map(f => (f.campaign && typeof f.campaign === 'object') ? f.campaign._id : f.campaign))).filter(Boolean).length,
             icon: '🔗',
             sparkColor: '#101013',
             sparkData: [2, 3, 3, 4, 4, 5, 5]
@@ -192,7 +192,7 @@ export default function FormsPage() {
                  <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1 group-hover:text-[#D4A843] transition-colors">{form.title}</h3>
                  <p className="text-[11px] text-[var(--text-tertiary)] mb-4 flex items-center gap-1">
                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                   {typeof form.campaign === 'object' ? form.campaign.name : 'Unlinked Campaign'}
+                   {(form.campaign && typeof form.campaign === 'object') ? form.campaign.name : 'Unlinked Campaign'}
                  </p>
                  
                  {form.description && (
