@@ -1,10 +1,6 @@
-'use client';
-
-import { useSession, signOut } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import AgentLaunch from './AgentLaunch';
-import { Search, Bell, Moon, Sun, ChevronDown, Settings, LogOut } from 'lucide-react';
+import { Search, Bell, Moon, Sun, ChevronDown, Settings, LogOut, X, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import CommandPalette from './CommandPalette';
 
 export default function Header() {
   const { data: session, status } = useSession();
@@ -12,6 +8,10 @@ export default function Header() {
   const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Comet', logo: '/logo.svg' });
   const [darkMode, setDarkMode] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     setMounted(true);
@@ -41,6 +41,37 @@ export default function Header() {
     loadBrand();
   }, []);
 
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (!session?.user) return;
+      try {
+        const res = await fetch('/api/requests');
+        const result = await res.json();
+        if (result.success) {
+          const pending = result.data.filter((r: any) => r.status === 'Pending').slice(0, 5);
+          setNotifications(pending);
+          setUnreadCount(pending.length);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 60000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, [session]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setShowSearch(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const toggleDarkMode = () => {
     const next = !darkMode;
     setDarkMode(next);
@@ -66,16 +97,11 @@ export default function Header() {
 
   const user = session.user;
 
-  const roleBadge =
-    user.role === 'Admin'
-      ? 'bg-gradient-to-r from-[#D4A843] to-[#B8923A] text-[#101013]'
-      : user.role === 'Supervisor'
-      ? 'bg-gradient-to-r from-[#3A3A42] to-[#2A2A30] text-white'
-      : 'bg-gradient-to-r from-[#8B8B94] to-[#6B6B74] text-white';
-
   return (
     <>
       <AgentLaunch />
+      <CommandPalette isOpen={showSearch} onClose={() => setShowSearch(false)} />
+      
       <header className="bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--header-border)] px-6 py-3 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
         {/* Left: Empty spacer */}
         <div className="flex items-center gap-3">
@@ -83,14 +109,18 @@ export default function Header() {
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
-          {/* Search Bar (Moved to Right) */}
-          <div className="hidden lg:flex items-center gap-2 bg-[var(--header-input-bg)] border border-[var(--header-input-border)] rounded-xl px-3 py-1.5 text-sm text-[var(--text-tertiary)] hover:border-[#D4A843]/30 transition-colors cursor-pointer min-w-[200px]">
+          {/* Search Bar */}
+          <div 
+            onClick={() => setShowSearch(true)}
+            className="hidden lg:flex items-center gap-2 bg-[var(--header-input-bg)] border border-[var(--header-input-border)] rounded-xl px-3 py-1.5 text-sm text-[var(--text-tertiary)] hover:border-[#D4A843]/30 transition-colors cursor-pointer min-w-[200px]"
+          >
             <Search size={14} />
             <span className="select-none text-xs">Search...</span>
             <kbd className="hidden xl:inline-flex items-center px-1.2 py-0.3 rounded text-[9px] font-semibold text-[var(--text-tertiary)] bg-[var(--card-bg)] border border-[var(--card-border)] ml-auto">
               ⌘K
             </kbd>
           </div>
+
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
@@ -101,10 +131,69 @@ export default function Header() {
           </button>
 
           {/* Notification bell */}
-          <button className="h-9 w-9 rounded-xl bg-[var(--header-input-bg)] border border-[var(--header-input-border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all relative">
-            <Bell size={17} />
-            <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#D4A843] border-2 border-[var(--card-bg)]" />
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => {
+                setShowNotifications(!showNotifications);
+                setShowUserMenu(false);
+              }}
+              className="h-9 w-9 rounded-xl bg-[var(--header-input-bg)] border border-[var(--header-input-border)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all relative"
+            >
+              <Bell size={17} />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-[#D4A843] border-2 border-[var(--card-bg)] text-[8px] font-bold text-[#101013] flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifications && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)} />
+                <div className="absolute right-0 mt-2 w-80 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-4 border-b border-[var(--card-border)] flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">Notifications</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-[#D4A843]/10 text-[#D4A843] text-[9px] font-bold">{unreadCount} New</span>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map((n) => (
+                        <Link 
+                          key={n.id} 
+                          href="/requests"
+                          onClick={() => setShowNotifications(false)}
+                          className="flex items-start gap-3 p-4 hover:bg-[var(--header-input-bg)] transition-colors border-b border-[var(--card-border)] last:border-0"
+                        >
+                          <div className="h-8 w-8 rounded-lg bg-[#D4A843]/10 flex items-center justify-center text-[#D4A843] flex-shrink-0">
+                            <Clock size={14} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{n.title || n.type}</p>
+                            <p className="text-[10px] text-[var(--text-tertiary)] line-clamp-2 mt-0.5">{n.details || n.message}</p>
+                            <p className="text-[9px] text-[#D4A843] mt-1 font-bold">{new Date(n.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center">
+                        <div className="h-12 w-12 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center mx-auto mb-3">
+                          <Bell size={20} className="text-slate-300" />
+                        </div>
+                        <p className="text-xs text-[var(--text-tertiary)]">No new notifications</p>
+                      </div>
+                    )}
+                  </div>
+                  <Link 
+                    href="/requests" 
+                    onClick={() => setShowNotifications(false)}
+                    className="block p-3 text-center text-[10px] font-bold text-[#D4A843] hover:bg-[#D4A843]/5 border-t border-[var(--card-border)] uppercase tracking-widest"
+                  >
+                    View All Requests
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Divider */}
           <div className="h-6 w-px bg-[var(--card-border)]" />
@@ -112,7 +201,10 @@ export default function Header() {
           {/* User Info Dropdown */}
           <div className="relative">
             <div 
-              onClick={() => setShowUserMenu(!showUserMenu)}
+              onClick={() => {
+                setShowUserMenu(!showUserMenu);
+                setShowNotifications(false);
+              }}
               className="flex items-center gap-2.5 cursor-pointer hover:bg-[var(--header-input-bg)] transition-all px-2 py-1.5 rounded-xl"
             >
               <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#D4A843] to-[#B8923A] flex items-center justify-center text-[#101013] text-xs font-bold shadow-sm">
@@ -134,13 +226,7 @@ export default function Header() {
 
             {showUserMenu && (
               <>
-                {/* Backdrop to close on click outside */}
-                <div 
-                  className="fixed inset-0 z-40" 
-                  onClick={() => setShowUserMenu(false)}
-                />
-                
-                {/* Dropdown Menu */}
+                <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
                 <div className="absolute right-0 mt-2 w-48 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="p-2 border-b border-[var(--card-border)] bg-[var(--header-input-bg)]">
                     <p className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider px-3 py-1">User Account</p>
