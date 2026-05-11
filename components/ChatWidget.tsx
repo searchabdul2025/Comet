@@ -200,7 +200,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
       return (
         <span
           key={idx}
-          className={`px-1 rounded ${isMe ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700'}`}
+          className={`px-1 rounded ${isMe ? 'bg-[#D4A843]/10 text-[#D4A843]' : 'bg-slate-100 text-slate-700'}`}
         >
           {part}
         </span>
@@ -213,7 +213,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
   if (isMinimized) {
     return (
       <div className="fixed bottom-6 right-6 z-50 w-80 bg-white rounded-t-lg shadow-2xl border border-slate-200">
-        <div className="flex items-center justify-between px-4 py-3 bg-blue-600 text-white rounded-t-lg cursor-pointer" onClick={onMinimize}>
+        <div className="flex items-center justify-between px-4 py-3 bg-[#D4A843] text-white rounded-t-lg cursor-pointer" onClick={onMinimize}>
           <div className="flex items-center gap-2">
             <MessageSquare size={18} />
             <span className="font-semibold">Team Chat</span>
@@ -229,7 +229,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
                 e.stopPropagation();
                 onMinimize();
               }}
-              className="p-1 hover:bg-blue-700 rounded transition"
+              className="p-1 hover:bg-[#B8923A] rounded transition"
               aria-label="Maximize"
             >
               <Maximize2 size={16} />
@@ -239,7 +239,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
                 e.stopPropagation();
                 onClose();
               }}
-              className="p-1 hover:bg-blue-700 rounded transition"
+              className="p-1 hover:bg-[#B8923A] rounded transition"
               aria-label="Close"
             >
               <X size={16} />
@@ -253,7 +253,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
   return (
     <div className="fixed bottom-6 right-6 z-50 w-96 h-[600px] bg-white rounded-lg shadow-2xl border border-slate-200 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-blue-600 text-white rounded-t-lg">
+      <div className="flex items-center justify-between px-4 py-3 bg-[#D4A843] text-white rounded-t-lg">
         <div className="flex items-center gap-2">
           <MessageSquare size={18} />
           <span className="font-semibold">Team Chat</span>
@@ -266,14 +266,14 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
         <div className="flex items-center gap-2">
           <button
             onClick={onMinimize}
-            className="p-1 hover:bg-blue-700 rounded transition"
+            className="p-1 hover:bg-[#B8923A] rounded transition"
             aria-label="Minimize"
           >
             <Minimize2 size={16} />
           </button>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-blue-700 rounded transition"
+            className="p-1 hover:bg-[#B8923A] rounded transition"
             aria-label="Close"
           >
             <X size={16} />
@@ -282,7 +282,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50" ref={messagesContainerRef}>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FBF7ED]" ref={messagesContainerRef}>
         {banned && (
           <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             <ShieldAlert size={16} />
@@ -313,7 +313,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
                     isSystem
                       ? 'bg-slate-100 text-slate-700 border-slate-200'
                       : isOwn
-                      ? 'bg-blue-600 text-white border-blue-500'
+                      ? 'bg-[#D4A843] text-white border-[#B8923A]/30'
                       : 'bg-white text-slate-900 border-slate-200'
                   }`}
                 >
@@ -365,7 +365,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
                 ? 'You cannot send messages while banned.'
                 : 'Write a message...'
             }
-            className="flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2 bg-white text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500"
+            className="flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2 bg-white text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#D4A843] disabled:bg-slate-50 disabled:text-slate-500"
             rows={2}
             maxLength={limits.maxMessageLength}
           />
@@ -386,7 +386,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
           <button
             onClick={sendMessage}
             disabled={sending || status !== 'live' || !!banned || !input.trim()}
-            className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-[#D4A843] text-white hover:bg-[#B8923A] transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <Send size={14} />
           </button>

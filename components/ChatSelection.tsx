@@ -18,13 +18,13 @@ export default function ChatSelection({ onSelect }: ChatSelectionProps) {
         {/* User Chat Card */}
         <button
           onClick={() => onSelect('user')}
-          className="group relative bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/50 border border-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-200/50 text-left overflow-hidden"
+          className="group relative bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/50 border border-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#D4A843]/20 text-left overflow-hidden"
         >
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
             <Users size={120} />
           </div>
           
-          <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+          <div className="h-14 w-14 rounded-2xl bg-[#D4A843]/10 text-[#D4A843] flex items-center justify-center mb-6 group-hover:bg-[#D4A843] group-hover:text-white transition-colors duration-300">
             <Users size={28} />
           </div>
           
@@ -33,7 +33,7 @@ export default function ChatSelection({ onSelect }: ChatSelectionProps) {
             Public room for all portal users. Real-time team collaboration and general announcements.
           </p>
           
-          <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+          <div className="flex items-center gap-2 text-[#D4A843] font-semibold text-sm">
             Enter Chat <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
@@ -41,13 +41,13 @@ export default function ChatSelection({ onSelect }: ChatSelectionProps) {
         {/* Management Chat Card */}
         <button
           onClick={() => onSelect('management')}
-          className="group relative bg-slate-900 rounded-3xl p-8 shadow-xl shadow-slate-900/20 border border-slate-800 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/20 text-left overflow-hidden"
+          className="group relative bg-[#101013] rounded-3xl p-8 shadow-xl shadow-black/20 border border-white/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#D4A843]/10 text-left overflow-hidden"
         >
           <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
             <ShieldCheck size={120} className="text-white" />
           </div>
           
-          <div className="h-14 w-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-6 group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-300">
+          <div className="h-14 w-14 rounded-2xl bg-white/5 text-[#D4A843] flex items-center justify-center mb-6 group-hover:bg-[#D4A843] group-hover:text-white transition-colors duration-300">
             <ShieldCheck size={28} />
           </div>
           
@@ -56,7 +56,7 @@ export default function ChatSelection({ onSelect }: ChatSelectionProps) {
             Restricted area for internal staff. Private communication and user oversight panel.
           </p>
           
-          <div className="flex items-center gap-2 text-indigo-400 font-semibold text-sm">
+          <div className="flex items-center gap-2 text-[#D4A843] font-semibold text-sm">
             Access Management <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
