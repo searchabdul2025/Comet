@@ -51,79 +51,34 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setMounted(true);
-    fetchStats();
-    fetchChart();
-    fetchRecentAndTop();
-    fetchActivities();
+    fetchAll();
   }, []);
 
-  const fetchStats = async () => {
+  /** Single request — all 10 DB queries run in parallel on the server */
+  const fetchAll = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/stats');
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const result = await response.json();
-      if (result.success || result.data) setStats(result.data);
-    } catch (err) {
-      console.error('Failed to fetch stats:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchChart = async () => {
-    try {
       setChartLoading(true);
       setChartError('');
-      const scope = session?.user?.role === 'User' ? 'self' : undefined;
-      const res = await fetch(`/api/submissions/summary${scope ? `?scope=${scope}` : ''}`);
+
+      const res = await fetch('/api/dashboard/mega-stats');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = await res.json();
-      if (result.success) {
-        const arr: number[] = Array(12).fill(0);
-        (result.data as { month: number; count: number }[]).forEach((m) => {
-          if (m.month >= 1 && m.month <= 12) arr[m.month - 1] = m.count;
-        });
-        setChartData(arr);
-      } else {
-        setChartError(result.error || 'Failed to load summary');
-        setChartData(Array(12).fill(0));
+
+      if (result.success && result.data) {
+        const { stats: s, recentSubmissions: rs, topAgents: ta, activities: ac, chartData: cd } = result.data;
+        if (s)  setStats(s);
+        if (rs) setRecentSubmissions(rs);
+        if (ta) setTopAgents(ta);
+        if (ac) setActivities(ac);
+        if (cd) setChartData(cd);
       }
     } catch (err) {
-      setChartError((err as any)?.message || 'Failed to load summary');
-      setChartData(Array(12).fill(0));
+      console.error('[dashboard] fetch error:', err);
+      setChartError('Failed to load dashboard data');
     } finally {
+      setLoading(false);
       setChartLoading(false);
-    }
-  };
-
-  const fetchRecentAndTop = async () => {
-    try {
-      const [recentRes, topRes] = await Promise.allSettled([
-        fetch('/api/stats/recent-submissions'),
-        fetch('/api/stats/top-agents'),
-      ]);
-      if (recentRes.status === 'fulfilled' && recentRes.value.ok) {
-        const data = await recentRes.value.json();
-        if (data.success) setRecentSubmissions(data.data || []);
-      }
-      if (topRes.status === 'fulfilled' && topRes.value.ok) {
-        const data = await topRes.value.json();
-        if (data.success) setTopAgents(data.data || []);
-      }
-    } catch {
-      // silently ignore — these are supplementary
-    }
-  };
-
-  const fetchActivities = async () => {
-    try {
-      const res = await fetch('/api/stats/activity');
-      if (res.ok) {
-        const result = await res.json();
-        if (result.success) setActivities(result.data || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch activities:', err);
     }
   };
 
