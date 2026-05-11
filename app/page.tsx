@@ -133,47 +133,33 @@ export default function LoginPage() {
           {/* ── Brand header ── */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center mb-5">
-              <div style={{ position: 'relative' }}>
-                {/* Halo ring around logo */}
-                <div
+              {brand.logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={brand.logo}
+                  alt={brand.name}
                   style={{
-                    position: 'absolute', inset: -6,
-                    borderRadius: '50%',
-                    background: 'conic-gradient(from 0deg, rgba(212,168,67,0.4), rgba(212,168,67,0.05), rgba(212,168,67,0.4))',
-                    animation: 'spinSlow 8s linear infinite',
-                    filter: 'blur(2px)',
+                    width: 64, height: 64,
+                    borderRadius: 18,
+                    objectFit: 'contain',
+                    background: 'rgba(255,255,255,0.05)',
+                    boxShadow: '0 0 0 1px rgba(212,168,67,0.2), 0 8px 32px rgba(212,168,67,0.18)',
                   }}
                 />
-                {brand.logo ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={brand.logo}
-                    alt={brand.name}
-                    style={{
-                      position: 'relative', zIndex: 1,
-                      width: 64, height: 64,
-                      borderRadius: 18,
-                      objectFit: 'contain',
-                      background: 'rgba(255,255,255,0.04)',
-                      boxShadow: '0 8px 32px rgba(212,168,67,0.2)',
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      position: 'relative', zIndex: 1,
-                      width: 64, height: 64,
-                      borderRadius: 18,
-                      background: 'linear-gradient(135deg, #D4A843, #B8923A)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#0C0C0F', fontSize: 22, fontWeight: 800,
-                      boxShadow: '0 8px 32px rgba(212,168,67,0.3)',
-                    }}
-                  >
-                    {brand.name.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-              </div>
+              ) : (
+                <div
+                  style={{
+                    width: 64, height: 64,
+                    borderRadius: 18,
+                    background: 'linear-gradient(135deg, #D4A843, #B8923A)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#0C0C0F', fontSize: 22, fontWeight: 800,
+                    boxShadow: '0 0 0 1px rgba(212,168,67,0.3), 0 8px 32px rgba(212,168,67,0.3)',
+                  }}
+                >
+                  {brand.name.slice(0, 2).toUpperCase()}
+                </div>
+              )}
             </div>
 
             <h1 style={{ color: '#fff', fontSize: 22, fontWeight: 700, letterSpacing: '-0.4px', marginBottom: 4 }}>
