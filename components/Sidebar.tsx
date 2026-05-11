@@ -209,7 +209,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
 
   if (!mounted) {
     return (
-      <aside className="w-[260px] bg-[var(--green-900,#101013)] min-h-screen flex flex-col">
+      <aside className="w-[260px] bg-[#101013] h-screen sticky top-0 flex flex-col border-r border-white/[0.02]">
         <div className="p-4 animate-pulse">
           <div className="h-12 bg-white/5 rounded-xl" />
         </div>
@@ -221,10 +221,10 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     <aside
       className={`${
         collapsed ? 'w-[72px]' : 'w-[260px]'
-      } bg-[#101013] min-h-screen flex flex-col transition-all duration-300 ease-in-out relative`}
+      } bg-[#101013] h-screen sticky top-0 flex flex-col transition-all duration-300 ease-in-out z-40 border-r border-white/[0.02]`}
     >
       {/* ─── Brand Header ─── */}
-      <div className={`py-10 ${collapsed ? 'px-3' : 'px-6'} flex flex-col items-center justify-center gap-6 border-b border-white/[0.04]`}>
+      <div className={`pt-6 pb-8 ${collapsed ? 'px-3' : 'px-6'} flex flex-col items-center justify-center gap-5 border-b border-white/[0.04]`}>
         {brand.logo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
