@@ -196,7 +196,8 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     },
   ];
 
-  const isAgent = userRole === 'User' || userRole === 'Supervisor';
+  const lowerRole = userRole?.toLowerCase();
+  const isAgent = lowerRole === 'user' || lowerRole === 'supervisor';
   const rawGroups = isAgent ? agentGroups : adminGroups;
 
   // Filter items by permissions
@@ -204,8 +205,11 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     .map(group => ({
       ...group,
       items: group.items.filter(item => {
-        if (item.roles && (!userRole || !(item.roles as readonly string[]).includes(userRole))) {
-          return false;
+        if (item.roles) {
+          const allowedRoles = (item.roles as readonly string[]).map(r => r.toLowerCase());
+          if (!lowerRole || !allowedRoles.includes(lowerRole)) {
+            return false;
+          }
         }
         if (!item.permission) return true;
         if (!permissions) return false;
@@ -214,7 +218,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     }))
     .filter(group => group.items.length > 0);
 
-  const roleLabel = userRole === 'User' ? 'Agent' : userRole === 'Supervisor' ? 'Supervisor' : 'Admin';
+  const roleLabel = lowerRole === 'user' ? 'Agent' : lowerRole === 'supervisor' ? 'Supervisor' : 'Admin';
   const initials = session?.user?.name
     ? session.user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : session?.user?.email?.slice(0, 2).toUpperCase() || 'U';
@@ -233,7 +237,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     <aside
       className={`${
         collapsed ? 'w-[72px]' : 'w-[260px]'
-      } bg-[#101013] h-screen sticky top-0 flex flex-col transition-all duration-300 ease-in-out z-40 border-r border-white/[0.02]`}
+      } bg-[#101013] h-[100dvh] sticky top-0 flex flex-col transition-all duration-300 ease-in-out z-40 border-r border-white/[0.02] shadow-2xl`}
     >
       {/* ─── Brand Header ─── */}
       <div className={`pt-2 pb-8 ${collapsed ? 'px-3' : 'px-6'} flex flex-col items-center justify-center gap-4 border-b border-white/[0.04]`}>
@@ -396,7 +400,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
 
       {/* ─── User Card Footer ─── */}
       {session?.user && (
-        <div className={`border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-4'}`}>
+        <div className={`mt-auto border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-4'}`}>
           <div
             className={`flex items-center gap-3 ${
               collapsed ? 'flex-col items-center' : 'rounded-xl bg-white/[0.03] border border-white/[0.06] p-3'
@@ -433,14 +437,12 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
               <LogOut size={collapsed ? 18 : 15} />
             </button>
           </div>
-        </div>
-      )}
 
-      {/* ─── Footer ─── */}
-      {!collapsed && (
-        <div className="px-5 pb-4 text-center">
-          <p className="text-[10px] text-[#8B8B94]/50">© 2026 {brand.name}</p>
-          <p className="text-[10px] text-[#8B8B94]/40">All rights reserved.</p>
+          {!collapsed && (
+            <div className="mt-4 text-center">
+              <p className="text-[10px] text-[#8B8B94]/40">© 2026 {brand.name}</p>
+            </div>
+          )}
         </div>
       )}
     </aside>
