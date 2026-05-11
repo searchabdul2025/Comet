@@ -26,19 +26,19 @@ export async function GET(req: NextRequest) {
           { username: regex }, 
           { email: regex }
         ] 
-      }).select('name username email role').limit(5).lean(),
+      }).limit(5).lean(),
       Form.find({ 
         $or: [
           { title: regex }, 
           { formId: regex }
         ] 
-      }).select('title formId').limit(5).lean(),
+      }).limit(5).lean(),
       Campaign.find({ 
         $or: [
           { name: regex },
           { campaignId: regex }
         ]
-      }).select('name campaignId').limit(5).lean()
+      }).limit(5).lean()
     ]);
 
     const results = [
