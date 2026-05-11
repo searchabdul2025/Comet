@@ -376,7 +376,6 @@ export default function DashboardPage() {
           </div>
           </div>
         </div>
-      </div>
 
       {/* ─── Bottom Sections ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
