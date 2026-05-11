@@ -11,15 +11,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { password } = await request.json();
-    if (!password) {
-      return NextResponse.json({ success: false, error: 'Password is required' }, { status: 400 });
+    const { email, password } = await request.json();
+    if (!email || !password) {
+      return NextResponse.json({ success: false, error: 'Email and password are required' }, { status: 400 });
     }
 
     await connectDB();
     const user = await User.findById(sessionUser.id);
     if (!user) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+    }
+
+    // Verify email matches current session user
+    if (user.email !== email) {
+      return NextResponse.json({ success: false, error: 'Invalid management email.' }, { status: 403 });
     }
 
     // Verify password
