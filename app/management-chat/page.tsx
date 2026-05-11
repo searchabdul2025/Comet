@@ -200,17 +200,17 @@ export default function ManagementChatPage() {
       {/* Top Header */}
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 transition-all">
+          <button onClick={() => router.back()} className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-[#D4A843] transition-all">
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Security Command Hub</h1>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Management Only</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Management Hub</h1>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Admin & Supervisor Access</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Encrypted Link Active</span>
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Connection</span>
         </div>
       </div>
 
@@ -223,7 +223,7 @@ export default function ManagementChatPage() {
                 onClick={() => setActiveTab('management')}
                 className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all ${
                   activeTab === 'management' 
-                    ? 'bg-indigo-600 shadow-xl shadow-indigo-100 text-white' 
+                    ? 'bg-[#D4A843] shadow-xl shadow-[#D4A843]/20 text-[#0C0C0F]' 
                     : 'text-slate-500 hover:bg-white border border-transparent hover:border-slate-100'
                 }`}
               >
@@ -231,20 +231,20 @@ export default function ManagementChatPage() {
                   <Lock size={18} />
                   <span className="font-bold text-sm">Internal Group</span>
                 </div>
-                {activeTab === 'management' && <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>}
+                {activeTab === 'management' && <div className="h-2 w-2 rounded-full bg-[#0C0C0F] animate-pulse"></div>}
               </button>
 
               <button
                 onClick={() => setActiveTab('users')}
                 className={`w-full flex items-center justify-between p-5 rounded-3xl transition-all ${
                   activeTab === 'users' 
-                    ? 'bg-indigo-600 shadow-xl shadow-indigo-100 text-white' 
+                    ? 'bg-[#D4A843] shadow-xl shadow-[#D4A843]/20 text-[#0C0C0F]' 
                     : 'text-slate-500 hover:bg-white border border-transparent hover:border-slate-100'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <Users size={18} />
-                  <span className="font-bold text-sm">User Oversight</span>
+                  <span className="font-bold text-sm">Team Activity</span>
                 </div>
                 {activeTab === 'users' && <ChevronRight size={18} />}
               </button>
@@ -256,8 +256,8 @@ export default function ManagementChatPage() {
               <div className="h-10 w-10 rounded-xl bg-[#D4A843]/10 text-[#D4A843] flex items-center justify-center mb-4">
                 <ShieldCheck size={20} />
               </div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Protocol Status</p>
-              <p className="text-xs font-bold text-slate-600 leading-relaxed">Monitoring all communications across {userConversations.length} sessions.</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">System Status</p>
+              <p className="text-xs font-bold text-slate-600 leading-relaxed">Tracking {userConversations.length} active discussions.</p>
             </div>
           </div>
         </div>
@@ -269,8 +269,8 @@ export default function ManagementChatPage() {
               {/* Chat Header */}
               <div className="px-10 py-8 border-b border-slate-50 flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-black text-slate-900 tracking-tight">Internal Management Group</h2>
-                  <p className="text-xs text-slate-400 font-medium">Encrypted internal briefing room for staff only.</p>
+                  <h2 className="text-xl font-black text-slate-900 tracking-tight">Management Discussion</h2>
+                  <p className="text-xs text-slate-400 font-medium">Private discussion for management team.</p>
                 </div>
                 <div className="flex -space-x-3">
                   {[1, 2, 3].map((i) => (
@@ -292,7 +292,7 @@ export default function ManagementChatPage() {
                       </div>
                       <div className={`p-5 rounded-[2rem] shadow-sm text-sm leading-relaxed font-medium ${
                         msg.userId === session?.user?.id 
-                          ? 'bg-indigo-600 text-white rounded-tr-none shadow-indigo-100' 
+                          ? 'bg-[#D4A843] text-[#0C0C0F] rounded-tr-none shadow-[#D4A843]/10' 
                           : 'bg-slate-50 text-slate-700 rounded-tl-none border border-slate-100'
                       }`}>
                         {msg.content}
@@ -318,9 +318,9 @@ export default function ManagementChatPage() {
                             key={name}
                             type="button"
                             onMouseDown={(e) => { e.preventDefault(); insertMention(name); }}
-                            className="w-full text-left px-3 py-2.5 text-sm hover:bg-indigo-50 flex items-center gap-2.5 transition-colors"
+                            className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#D4A843]/5 flex items-center gap-2.5 transition-colors"
                           >
-                            <div className="h-7 w-7 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                            <div className="h-7 w-7 rounded-full bg-[#D4A843]/10 text-[#D4A843] flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                               {name[0]?.toUpperCase()}
                             </div>
                             <span className="font-medium text-slate-700">@{name}</span>
@@ -338,13 +338,13 @@ export default function ManagementChatPage() {
                       if (e.key === 'Enter') handleSendMessage();
                       if (e.key === 'Escape') setMentionQuery('');
                     }}
-                    placeholder="Type @ to mention someone..."
+                    placeholder="Send a message..."
                     className="flex-1 bg-transparent border-none focus:ring-0 text-slate-900 placeholder:text-slate-400 px-6 font-medium"
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={sending || !input.trim()}
-                    className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-indigo-100"
+                    className="h-12 w-12 rounded-2xl bg-[#D4A843] text-[#0C0C0F] flex items-center justify-center hover:bg-[#B8923A] hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-[#D4A843]/10"
                   >
                     <Send size={20} />
                   </button>
@@ -356,21 +356,21 @@ export default function ManagementChatPage() {
               <div className="px-10 py-8 border-b border-slate-50 bg-slate-50/10">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h2 className="text-xl font-black text-slate-900 tracking-tight">Intelligence Oversight</h2>
-                    <p className="text-xs text-slate-400 font-medium">Real-time surveillance of user communications.</p>
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">Recent Activity</h2>
+                    <p className="text-xs text-slate-400 font-medium">Review recent team discussions.</p>
                   </div>
                   <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input
                       type="text"
-                      placeholder="Search intercepts..."
-                      className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-[1.5rem] text-sm focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+                      placeholder="Search messages..."
+                      className="pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-[1.5rem] text-sm focus:ring-4 focus:ring-[#D4A843]/10 transition-all outline-none"
                     />
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  {['All Transmissions', 'Security Risks', 'Tagged'].map((label) => (
-                    <button key={label} className="px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-[10px] font-black text-slate-500 hover:border-indigo-500 hover:text-indigo-600 transition-all uppercase tracking-widest shadow-sm">
+                  {['All Messages', 'Flagged', 'Mentions'].map((label) => (
+                    <button key={label} className="px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-[10px] font-black text-slate-500 hover:border-[#D4A843] hover:text-[#D4A843] transition-all uppercase tracking-widest shadow-sm">
                       {label}
                     </button>
                   ))}
@@ -387,7 +387,7 @@ export default function ManagementChatPage() {
                   userConversations.map((msg) => (
                     <div key={msg._id} className="group bg-white border border-slate-100 rounded-[2rem] p-6 hover:shadow-2xl hover:shadow-slate-200/50 hover:border-indigo-500/20 transition-all flex items-start justify-between animate-in fade-in slide-in-from-bottom-2">
                       <div className="flex gap-6">
-                        <div className="h-14 w-14 rounded-2xl bg-slate-50 flex items-center justify-center text-indigo-600 font-black text-xl border border-slate-100 shadow-sm">
+                        <div className="h-14 w-14 rounded-2xl bg-slate-50 flex items-center justify-center text-[#D4A843] font-black text-xl border border-slate-100 shadow-sm">
                           {msg.userName.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -408,7 +408,7 @@ export default function ManagementChatPage() {
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all">
                         <button 
                           onClick={() => handleTagUser(msg.userName)}
-                          className="h-10 w-10 rounded-xl hover:bg-indigo-50 text-indigo-600 transition-all flex items-center justify-center border border-transparent hover:border-indigo-100" 
+                          className="h-10 w-10 rounded-xl hover:bg-[#D4A843]/5 text-[#D4A843] transition-all flex items-center justify-center border border-transparent hover:border-[#D4A843]/20" 
                           title="Message/Tag User"
                         >
                           <Tag size={18} />
