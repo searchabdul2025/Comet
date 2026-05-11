@@ -96,7 +96,11 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
   }, [isOpen, isMinimized]);
 
   useEffect(() => {
-    if (!userId || !isOpen || isMinimized) return;
+    // Notification Permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
     const source = new EventSource('/api/chat/stream');
 
     source.onopen = () => setStatus('live');
@@ -106,13 +110,31 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
       try {
         const payload = JSON.parse(event.data);
         if (payload.type === 'message' && payload.message) {
+          const msg = payload.message as ChatMessage;
           setMessages((prev) => {
-            const next = [...prev, payload.message as ChatMessage];
+            const next = [...prev, msg];
             if (next.length > limits.historyLimit) {
               return next.slice(next.length - limits.historyLimit);
             }
             return next;
           });
+
+          // Check for mention
+          const name = session?.user?.name;
+          if (name && msg.userId !== userId && msg.content.toLowerCase().includes(`@${name.toLowerCase()}`)) {
+            // Play Sound
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+
+            // Browser Notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(`New Mention in Team Chat`, {
+                body: `${msg.userName}: ${msg.content}`,
+                icon: '/logo.svg'
+              });
+            }
+          }
         } else if (payload.type === 'ban' && payload.ban?.userId === userId) {
           setBanned({ reason: payload.ban.reason });
         } else if (payload.type === 'unban' && payload.userId === userId) {

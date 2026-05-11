@@ -57,15 +57,38 @@ export default function ManagementChatPage() {
   useEffect(() => {
     if (isVerified && session?.user && (session.user.role === 'Admin' || session.user.role === 'Supervisor')) {
       loadData();
+      // Notification Permission
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
       // Setup SSE for real-time updates
       const source = new EventSource('/api/chat/stream');
       source.onmessage = (event) => {
         const payload = JSON.parse(event.data);
         if (payload.type === 'message') {
-          if (payload.message.isManagement) {
-            setManagementMessages((prev) => [...prev, payload.message]);
+          const msg = payload.message;
+          if (msg.isManagement) {
+            setManagementMessages((prev) => [...prev, msg]);
           } else {
-            setUserConversations((prev) => [payload.message, ...prev.slice(0, 49)]);
+            setUserConversations((prev) => [msg, ...prev.slice(0, 49)]);
+          }
+
+          // Check for mention
+          const name = session?.user?.name;
+          if (name && msg.userId !== session?.user?.id && msg.content.toLowerCase().includes(`@${name.toLowerCase()}`)) {
+            // Play Sound
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+
+            // Browser Notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(`New Mention in Management Hub`, {
+                body: `${msg.userName}: ${msg.content}`,
+                icon: '/logo.svg'
+              });
+            }
           }
         }
       };
