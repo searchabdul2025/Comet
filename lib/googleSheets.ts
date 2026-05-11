@@ -346,19 +346,22 @@ export async function resolveSheetsConfig() {
   const envSheetId = process.env.GOOGLE_SHEETS_ID?.trim();
   const envSubmissionsTab = process.env.GOOGLE_SHEETS_TAB_SUBMISSIONS?.trim();
   const envDailyTab = process.env.GOOGLE_SHEETS_TAB_DAILY?.trim();
+  const envDuplicatesTab = process.env.GOOGLE_SHEETS_TAB_DUPLICATES?.trim();
 
   if (envSheetId) {
     return {
       sheetId: envSheetId,
       submissionsTab: envSubmissionsTab || 'Submissions',
       dailyTab: envDailyTab || 'DailyReports',
+      duplicatesTab: envDuplicatesTab || 'Duplicates',
     };
   }
 
   const sheetId = (await getSetting('GOOGLE_SHEETS_ID'))?.trim();
   const submissionsTab = ((await getSetting('GOOGLE_SHEETS_TAB_SUBMISSIONS')) || 'Submissions').trim();
   const dailyTab = ((await getSetting('GOOGLE_SHEETS_TAB_DAILY')) || 'DailyReports').trim();
+  const duplicatesTab = ((await getSetting('GOOGLE_SHEETS_TAB_DUPLICATES')) || 'Duplicates').trim();
 
-  return { sheetId: sheetId || '', submissionsTab, dailyTab };
+  return { sheetId: sheetId || '', submissionsTab, dailyTab, duplicatesTab };
 }
 

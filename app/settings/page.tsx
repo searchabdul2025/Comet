@@ -27,6 +27,7 @@ interface SettingsData {
   GOOGLE_SHEETS_ID?: string | null;
   GOOGLE_SHEETS_TAB_SUBMISSIONS?: string | null;
   GOOGLE_SHEETS_TAB_DAILY?: string | null;
+  GOOGLE_SHEETS_TAB_DUPLICATES?: string | null;
   APP_NAME?: string | null;
   APP_LOGO_URL?: string | null;
   APP_FAVICON_URL?: string | null;
@@ -87,6 +88,7 @@ export default function SettingsPage() {
     GOOGLE_SHEETS_ID: '',
     GOOGLE_SHEETS_TAB_SUBMISSIONS: 'Submissions',
     GOOGLE_SHEETS_TAB_DAILY: 'DailyReports',
+    GOOGLE_SHEETS_TAB_DUPLICATES: 'Duplicates',
     APP_NAME: 'Portal',
     APP_LOGO_URL: '',
     APP_FAVICON_URL: '',
@@ -420,6 +422,15 @@ export default function SettingsPage() {
                   type="text"
                   value={settings.GOOGLE_SHEETS_TAB_DAILY || ''}
                   onChange={(e) => setSettings({ ...settings, GOOGLE_SHEETS_TAB_DAILY: e.target.value })}
+                  className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843] transition-all outline-none text-sm"
+                />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Duplicates Tab (Blocked Attempts)</label>
+                <input
+                  type="text"
+                  value={settings.GOOGLE_SHEETS_TAB_DUPLICATES || ''}
+                  onChange={(e) => setSettings({ ...settings, GOOGLE_SHEETS_TAB_DUPLICATES: e.target.value })}
                   className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] focus:ring-1 focus:ring-[#D4A843] transition-all outline-none text-sm"
                 />
               </div>

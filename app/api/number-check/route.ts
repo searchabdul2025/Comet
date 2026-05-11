@@ -29,6 +29,30 @@ export async function GET(request: NextRequest) {
       [`formData.${fieldId}`]: value.trim(),
     });
 
+    // Log to Google Sheets if it's a duplicate
+    if (exists) {
+      const { appendSubmissionRow, resolveSheetsConfig } = await import('@/lib/googleSheets');
+      const Form = (await import('@/models/Form')).default;
+      const form = await Form.findById(formId);
+      
+      const { sheetId, duplicatesTab } = await resolveSheetsConfig();
+      if (sheetId) {
+        // Fire and forget
+        appendSubmissionRow({
+          sheetId,
+          tabName: duplicatesTab,
+          formTitle: form?.title || 'Duplicate Check',
+          formId: form?.formId,
+          submission: { 
+            field: fieldId,
+            duplicateValue: value.trim(),
+            reason: 'Duplicate number attempt',
+            timestamp: new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
+          }
+        }).catch(err => console.error('Failed to log duplicate to sheets:', err));
+      }
+    }
+
     return NextResponse.json({ success: true, duplicate: Boolean(exists) });
   } catch (error: any) {
     return NextResponse.json(
