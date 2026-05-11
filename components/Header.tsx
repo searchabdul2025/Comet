@@ -1,20 +1,23 @@
-'use client';
-
-import { useSession, signOut } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { Search, Bell, Moon, Sun, ChevronDown, Settings, LogOut, X, Clock, MessageSquare } from 'lucide-react';
+import { Search, Bell, Moon, Sun, ChevronDown, Settings, LogOut, X, Clock, MessageSquare, Megaphone, Users, FileText, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import CommandPalette from './CommandPalette';
 import AgentLaunch from './AgentLaunch';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [brand, setBrand] = useState<{ name: string; logo?: string }>({ name: 'Comet', logo: '/logo.svg' });
   const [darkMode, setDarkMode] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -66,16 +69,31 @@ export default function Header() {
     return () => clearInterval(interval);
   }, [session]);
 
+  // Realtime Search Logic
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setShowSearch(prev => !prev);
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.length >= 2) {
+        setIsSearching(true);
+        try {
+          const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+          const result = await res.json();
+          if (result.success) {
+            setSearchResults(result.data);
+            setShowSearchResults(true);
+          }
+        } catch (err) {
+          console.error('Search failed:', err);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+        setShowSearchResults(false);
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   const toggleDarkMode = () => {
     const next = !darkMode;
@@ -105,7 +123,6 @@ export default function Header() {
   return (
     <>
       <AgentLaunch />
-      <CommandPalette isOpen={showSearch} onClose={() => setShowSearch(false)} />
       
       <header className="bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--header-border)] px-6 py-3 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300">
         {/* Left: Empty spacer */}
@@ -114,16 +131,72 @@ export default function Header() {
 
         {/* Right: Controls */}
         <div className="flex items-center gap-3">
-          {/* Search Bar */}
-          <div 
-            onClick={() => setShowSearch(true)}
-            className="hidden lg:flex items-center gap-2 bg-[var(--header-input-bg)] border border-[var(--header-input-border)] rounded-xl px-3 py-1.5 text-sm text-[var(--text-tertiary)] hover:border-[#D4A843]/30 transition-colors cursor-pointer min-w-[200px]"
-          >
-            <Search size={14} />
-            <span className="select-none text-xs">Search...</span>
-            <kbd className="hidden xl:inline-flex items-center px-1.2 py-0.3 rounded text-[9px] font-semibold text-[var(--text-tertiary)] bg-[var(--card-bg)] border border-[var(--card-border)] ml-auto">
-              ⌘K
-            </kbd>
+          {/* Realtime Search Bar */}
+          <div className="relative hidden lg:block">
+            <div className={`flex items-center gap-2 bg-[var(--header-input-bg)] border transition-all duration-300 rounded-xl px-3 py-1.5 min-w-[280px] ${showSearchResults ? 'border-[#D4A843] ring-2 ring-[#D4A843]/10' : 'border-[var(--header-input-border)]'}`}>
+              <Search size={14} className={isSearching ? 'hidden' : 'text-[var(--text-tertiary)]'} />
+              {isSearching && <Loader2 size={14} className="animate-spin text-[#D4A843]" />}
+              <input 
+                type="text"
+                placeholder="Search users, forms, campaigns..."
+                className="bg-transparent border-none outline-none text-xs text-[var(--text-primary)] w-full placeholder:text-[var(--text-tertiary)]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => searchQuery.length >= 2 && setShowSearchResults(true)}
+              />
+              <kbd className="hidden xl:inline-flex items-center px-1.2 py-0.3 rounded text-[9px] font-semibold text-[var(--text-tertiary)] bg-[var(--card-bg)] border border-[var(--card-border)] ml-auto opacity-50">
+                ⌘K
+              </kbd>
+            </div>
+
+            {/* Search Results Dropdown */}
+            {showSearchResults && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowSearchResults(false)} />
+                <div className="absolute top-full right-0 mt-2 w-[320px] bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-2 border-b border-[var(--card-border)] bg-[var(--header-input-bg)]">
+                    <p className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider px-3 py-1">Quick Search Results</p>
+                  </div>
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {searchResults.length > 0 ? (
+                      searchResults.map((result) => {
+                        const Icon = result.type === 'User' ? Users : result.type === 'Form' ? FileText : Megaphone;
+                        return (
+                          <Link
+                            key={result.id + result.type}
+                            href={result.href}
+                            onClick={() => {
+                              setShowSearchResults(false);
+                              setSearchQuery('');
+                            }}
+                            className="flex items-center gap-3 p-3 hover:bg-[var(--header-input-bg)] transition-all border-b border-[var(--card-border)] last:border-0 group"
+                          >
+                            <div className="h-9 w-9 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-[#D4A843] group-hover:bg-[#D4A843]/10 transition-all">
+                              <Icon size={16} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs font-bold text-[var(--text-primary)] truncate">{result.title}</p>
+                                <span className="text-[9px] font-black uppercase tracking-tighter text-[#D4A843] bg-[#D4A843]/5 px-1.5 py-0.5 rounded">{result.type}</span>
+                              </div>
+                              <p className="text-[10px] text-[var(--text-tertiary)] truncate">{result.subtitle}</p>
+                            </div>
+                          </Link>
+                        );
+                      })
+                    ) : (
+                      <div className="p-8 text-center">
+                        <Search size={24} className="mx-auto mb-2 text-slate-200" />
+                        <p className="text-xs text-[var(--text-tertiary)]">No results found for &quot;{searchQuery}&quot;</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2 bg-[var(--header-input-bg)] border-t border-[var(--card-border)] text-center">
+                    <p className="text-[9px] font-medium text-[var(--text-tertiary)] uppercase tracking-widest">Press ESC to close</p>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Dark Mode Toggle */}
