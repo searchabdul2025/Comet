@@ -15,7 +15,7 @@ export async function POST(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || !requirePermission(user.role as any, 'canManageSettings', user.permissions)) {
+    if (!user || (!requirePermission(user.role as any, 'canManageSettings', user.permissions) && !requirePermission(user.role as any, 'canManageGoogleSheets', user.permissions))) {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 

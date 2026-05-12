@@ -59,8 +59,8 @@ export async function PUT(
       description: body.description,
     };
 
-    // Only allow users with Manage Settings permission to update Google Sheets settings
-    if (requirePermission(user.role as any, 'canManageSettings', user.permissions)) {
+    // Only allow users with Manage Settings or Manage Google Sheets permission to update Google Sheets settings
+    if (requirePermission(user.role as any, 'canManageSettings', user.permissions) || requirePermission(user.role as any, 'canManageGoogleSheets', user.permissions)) {
       if (body.googleSheetId !== undefined) updateData.googleSheetId = body.googleSheetId;
       if (body.sheetTabs !== undefined) updateData.sheetTabs = body.sheetTabs;
     }

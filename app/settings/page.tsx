@@ -932,7 +932,7 @@ export default function SettingsPage() {
                     <p className="text-xs text-[var(--text-secondary)] line-clamp-3 leading-relaxed">{c.description || 'No description provided for this campaign.'}</p>
 
                     <div className="mt-6 pt-4 border-t border-[var(--card-border)]">
-                      {permissions?.canManageSettings && (
+                      {(permissions?.canManageSettings || permissions?.canManageGoogleSheets) && (
                         <>
                           <button
                             onClick={() => setExpandedCampaignId(expandedCampaignId === c._id ? null : c._id)}
