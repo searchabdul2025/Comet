@@ -3,6 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Campaign from '@/models/Campaign';
 import { getCurrentUser } from '@/lib/auth';
 import { createSheetTab } from '@/lib/googleSheets';
+import { requirePermission } from '@/lib/permissions';
 
 async function resolveParams(params: Promise<{ id: string }> | { id: string }) {
   return params instanceof Promise ? await params : params;
@@ -14,10 +15,9 @@ export async function POST(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'Admin') {
-      return NextResponse.json({ success: false, error: 'Forbidden: Admin access required' }, { status: 403 });
+    if (!user || !requirePermission(user.role as any, 'canManageSettings', user.permissions)) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
-
 
     const { id } = await resolveParams(params);
     const body = await request.json();
@@ -65,10 +65,9 @@ export async function DELETE(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'Admin') {
-      return NextResponse.json({ success: false, error: 'Forbidden: Admin access required' }, { status: 403 });
+    if (!user || !requirePermission(user.role as any, 'canManageSettings', user.permissions)) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
-
 
     const { id } = await resolveParams(params);
     const { searchParams } = new URL(request.url);

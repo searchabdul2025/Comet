@@ -57,6 +57,8 @@ export default function UserManagementPage() {
       canCreateForms: false,
       canManageSettings: false,
       canManageChatRooms: false,
+      canManageIPs: false,
+      canDeleteSubmissions: false,
     },
     allowedFormFields: [] as string[],
     salary: 0,
@@ -140,6 +142,8 @@ export default function UserManagementPage() {
         canCreateForms: false,
         canManageSettings: false,
         canManageChatRooms: false,
+        canManageIPs: false,
+        canDeleteSubmissions: false,
       },
       allowedFormFields: [],
       salary: 0,
@@ -168,6 +172,8 @@ export default function UserManagementPage() {
         canCreateForms: user.permissions?.canCreateForms ?? false,
         canManageSettings: user.permissions?.canManageSettings ?? false,
         canManageChatRooms: user.permissions?.canManageChatRooms ?? false,
+        canManageIPs: user.permissions?.canManageIPs ?? false,
+        canDeleteSubmissions: user.permissions?.canDeleteSubmissions ?? false,
       },
       allowedFormFields: user.allowedFormFields || [],
       salary: user.salary ?? 0,
@@ -311,7 +317,7 @@ export default function UserManagementPage() {
         description="Manage system users and their roles"
         action={canManageUsers ? {
           label: "Add New User",
-          href: "#", // In a real app this might open the modal
+          onClick: handleAddUser,
           icon: UserPlus
         } : undefined}
       />
@@ -454,18 +460,142 @@ export default function UserManagementPage() {
                <h3 className="text-xl font-bold text-[#101013]">{editingUser ? 'Edit User' : 'Add New User'}</h3>
                <button onClick={handleCancel} className="p-2 hover:bg-black/5 rounded-full"><X size={20}/></button>
             </div>
-            <div className="p-8 max-h-[80vh] overflow-y-auto space-y-6">
-              {/* Form fields... (simplified for brevity, original logic remains) */}
+            <div className="p-8 max-h-[80vh] overflow-y-auto space-y-6 scrollbar-premium">
               <div className="grid grid-cols-2 gap-6">
                 <div className="col-span-2">
-                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2">Full Name</label>
-                  <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-5 py-3 rounded-xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843]" />
+                  <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.15em] mb-2">Full Name</label>
+                  <input 
+                    type="text" 
+                    placeholder="Enter full name"
+                    value={formData.name} 
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
+                    className="w-full px-5 py-3 rounded-2xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843] text-sm" 
+                  />
                 </div>
-                {/* Other fields... */}
+
+                <div className="col-span-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.15em] mb-2">Email Address</label>
+                  <input 
+                    type="email" 
+                    placeholder="email@example.com"
+                    value={formData.email} 
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
+                    className="w-full px-5 py-3 rounded-2xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843] text-sm" 
+                  />
+                </div>
+
+                <div className="col-span-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.15em] mb-2">Username</label>
+                  <input 
+                    type="text" 
+                    placeholder="username"
+                    value={formData.username} 
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })} 
+                    className="w-full px-5 py-3 rounded-2xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843] text-sm" 
+                  />
+                </div>
+
+                <div className="col-span-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.15em] mb-2">Password</label>
+                  <div className="relative">
+                    <input 
+                      type={showPassword ? "text" : "password"}
+                      placeholder={editingUser ? "Leave blank to keep current" : "Enter password"}
+                      value={formData.password} 
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
+                      className="w-full px-5 py-3 rounded-2xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843] text-sm pr-12" 
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#D4A843] transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="col-span-1">
+                  <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.15em] mb-2">Role</label>
+                  <select 
+                    value={formData.role} 
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as any })} 
+                    className="w-full px-5 py-3 rounded-2xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843] text-sm appearance-none"
+                  >
+                    <option value="User">User / Agent</option>
+                    <option value="Supervisor">Supervisor</option>
+                    <option value="Admin">Administrator</option>
+                  </select>
+                </div>
+
+                {showSalaryBonus && (
+                  <>
+                    <div className="col-span-1">
+                      <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.15em] mb-2">Base Salary</label>
+                      <input 
+                        type="number" 
+                        value={formData.salary} 
+                        onChange={(e) => setFormData({ ...formData, salary: Number(e.target.value) })} 
+                        className="w-full px-5 py-3 rounded-2xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843] text-sm" 
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-[0.15em] mb-2">Target Bonus</label>
+                      <input 
+                        type="number" 
+                        value={formData.bonus} 
+                        onChange={(e) => setFormData({ ...formData, bonus: Number(e.target.value) })} 
+                        className="w-full px-5 py-3 rounded-2xl border border-[var(--card-border)] bg-slate-50 focus:bg-white transition-all outline-none focus:border-[#D4A843] text-sm" 
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="col-span-2 pt-4">
+                  <label className="block text-[11px] font-black text-[#101013] uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-[#D4A843]" />
+                    Permissions Overrides
+                  </label>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-4 bg-slate-50 rounded-3xl p-6 border border-slate-100">
+                    {Object.keys(formData.permissions).map((key) => (
+                      <label key={key} className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative">
+                          <input 
+                            type="checkbox" 
+                            checked={(formData.permissions as any)[key]} 
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              permissions: {
+                                ...formData.permissions,
+                                [key]: e.target.checked
+                              }
+                            })}
+                            className="peer h-5 w-5 rounded-md border-slate-300 text-[#D4A843] focus:ring-[#D4A843] transition-all appearance-none checked:bg-[#D4A843] border"
+                          />
+                          <Check size={14} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#101013] opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
+                        </div>
+                        <span className="text-xs font-bold text-slate-600 group-hover:text-[#101013] transition-colors uppercase tracking-tight">
+                          {key.replace(/([A-Z])/g, ' $1').replace(/^can /, '').trim()}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="flex gap-4 pt-6">
-                <button onClick={handleSave} className="flex-1 py-4 bg-[#101013] text-[#D4A843] rounded-2xl font-bold shadow-xl hover:shadow-[#D4A843]/10 transition-all">Save Changes</button>
-                <button onClick={handleCancel} className="flex-1 py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold transition-all">Cancel</button>
+
+              <div className="flex gap-4 pt-8 sticky bottom-0 bg-white pb-2">
+                <button 
+                  onClick={handleSave} 
+                  className="flex-1 py-4 bg-[#101013] text-[#D4A843] rounded-[20px] font-bold shadow-xl shadow-[#D4A843]/5 hover:scale-[1.02] active:scale-95 transition-all"
+                >
+                  {editingUser ? 'Update User Account' : 'Create User Account'}
+                </button>
+                <button 
+                  onClick={handleCancel} 
+                  className="px-8 py-4 bg-slate-100 text-slate-500 rounded-[20px] font-bold hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>

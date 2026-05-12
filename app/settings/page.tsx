@@ -3,20 +3,20 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { getPermissions } from '@/lib/permissions';
-import { 
-  Pencil, 
-  Save, 
-  Trash2, 
-  X, 
-  MessageCircle, 
-  ShieldX, 
+import {
+  Pencil,
+  Save,
+  Trash2,
+  X,
+  MessageCircle,
+  ShieldX,
   ShieldCheck,
-  Ban, 
-  UserCheck, 
-  Sparkles, 
-  Activity, 
-  Upload, 
-  Check, 
+  Ban,
+  UserCheck,
+  Sparkles,
+  Activity,
+  Upload,
+  Check,
   Fingerprint,
   Smartphone,
   Table as TableIcon,
@@ -119,11 +119,11 @@ export default function SettingsPage() {
     ATTENDANCE_LATE_RULES: '[]',
     ATTENDANCE_HOLIDAYS: '[]',
   });
-  
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
+
   // Campaign state
   const [campaigns, setCampaigns] = useState<CampaignRow[]>([]);
   const [campaignsLoading, setCampaignsLoading] = useState(false);
@@ -132,7 +132,7 @@ export default function SettingsPage() {
   const [editName, setEditName] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [campaignSaving, setCampaignSaving] = useState(false);
-  
+
   // Ban state
   const [bans, setBans] = useState<ChatBanRow[]>([]);
   const [bansLoading, setBansLoading] = useState(false);
@@ -140,7 +140,7 @@ export default function SettingsPage() {
   const [banMessage, setBanMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [banForm, setBanForm] = useState<{ userId: string; reason: string }>({ userId: '', reason: '' });
   const [userOptions, setUserOptions] = useState<UserOption[]>([]);
-  
+
   // Campaign Sheet management
   const [expandedCampaignId, setExpandedCampaignId] = useState<string | null>(null);
   const [newTabForm, setNewTabForm] = useState({ name: '', label: '', purpose: 'custom' });
@@ -175,7 +175,7 @@ export default function SettingsPage() {
         method: 'DELETE',
       });
       if (res.ok) loadCampaigns();
-    } catch {}
+    } catch { }
   };
 
   const updateCampaignSheetId = async (campaignId: string, sheetId: string) => {
@@ -185,15 +185,15 @@ export default function SettingsPage() {
       const res = await fetch(`/api/campaigns/${campaignId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: campaign.name, 
-          description: campaign.description, 
+        body: JSON.stringify({
+          name: campaign.name,
+          description: campaign.description,
           googleSheetId: sheetId,
-          sheetTabs: campaign.sheetTabs 
+          sheetTabs: campaign.sheetTabs
         }),
       });
       if (res.ok) loadCampaigns();
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -240,7 +240,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/users');
       const result = await res.json();
       if (result.success) setUserOptions(result.data);
-    } catch {}
+    } catch { }
   };
 
   const loadBans = async () => {
@@ -249,7 +249,7 @@ export default function SettingsPage() {
       const res = await fetch('/api/chat/bans');
       const result = await res.json();
       if (result.success) setBans(result.data);
-    } catch {} finally {
+    } catch { } finally {
       setBansLoading(false);
     }
   };
@@ -291,9 +291,9 @@ export default function SettingsPage() {
       });
       const result = await res.json();
       if (result.success) {
-        setSettings(prev => ({ 
-          ...prev, 
-          [type === 'logo' ? 'APP_LOGO_URL' : 'APP_FAVICON_URL']: result.url 
+        setSettings(prev => ({
+          ...prev,
+          [type === 'logo' ? 'APP_LOGO_URL' : 'APP_FAVICON_URL']: result.url
         }));
         setMessage({ type: 'success', text: `${type === 'logo' ? 'Logo' : 'Favicon'} uploaded. Save changes to apply.` });
       } else {
@@ -323,7 +323,7 @@ export default function SettingsPage() {
         setEditId(null);
         loadCampaigns();
       }
-    } catch {} finally {
+    } catch { } finally {
       setCampaignSaving(false);
     }
   };
@@ -333,7 +333,7 @@ export default function SettingsPage() {
     try {
       await fetch(`/api/campaigns/${id}`, { method: 'DELETE' });
       loadCampaigns();
-    } catch {}
+    } catch { }
   };
 
   const handleBanUser = async () => {
@@ -349,7 +349,7 @@ export default function SettingsPage() {
         setBanForm({ userId: '', reason: '' });
         loadBans();
       }
-    } catch {} finally {
+    } catch { } finally {
       setBanSaving(false);
     }
   };
@@ -358,7 +358,7 @@ export default function SettingsPage() {
     try {
       await fetch(`/api/chat/bans?userId=${userId}`, { method: 'DELETE' });
       loadBans();
-    } catch {}
+    } catch { }
   };
 
   if (!permissions?.canManageSettings) {
@@ -383,9 +383,8 @@ export default function SettingsPage() {
       </div>
 
       {message && (
-        <div className={`p-4 rounded-2xl border text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${
-          message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-red-500/10 border-red-500/20 text-red-600'
-        }`}>
+        <div className={`p-4 rounded-2xl border text-sm flex items-center gap-3 animate-in fade-in slide-in-from-top-2 ${message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-red-500/10 border-red-500/20 text-red-600'
+          }`}>
           {message.type === 'success' ? <Check size={20} /> : <ShieldX size={20} />}
           <span className="font-medium">{message.text}</span>
         </div>
@@ -516,8 +515,8 @@ export default function SettingsPage() {
           <div className="space-y-6">
             <label className="flex items-center gap-4 cursor-pointer group">
               <div className="relative">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={String(settings.SHOW_SALARY_BONUS || '1') !== '0'}
                   onChange={(e) => setSettings({ ...settings, SHOW_SALARY_BONUS: e.target.checked ? '1' : '0' })}
                   className="peer h-6 w-6 rounded-lg border-[var(--card-border)] bg-[var(--background)] text-[#D4A843] focus:ring-[#D4A843] transition-all appearance-none checked:bg-[#D4A843] border"
@@ -553,7 +552,7 @@ export default function SettingsPage() {
         {/* WhatsApp & Chat Configuration */}
         <div className="card-premium p-8 space-y-8 lg:col-span-2 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
@@ -723,7 +722,7 @@ export default function SettingsPage() {
           <div className="space-y-6 border-t border-[var(--card-border)] pt-8">
             <div className="flex items-center justify-between">
               <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Tiered Late Fines</label>
-              <button 
+              <button
                 onClick={() => {
                   const current = JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]');
                   setSettings({ ...settings, ATTENDANCE_LATE_RULES: JSON.stringify([...current, { min: 15, fine: 0 }]) });
@@ -738,8 +737,8 @@ export default function SettingsPage() {
                 <div key={i} className="flex gap-4 items-center animate-in fade-in slide-in-from-left-2">
                   <div className="flex-1 flex items-center gap-2 bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3">
                     <span className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase">Late</span>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       value={rule.min}
                       onChange={(e) => {
                         const rules = JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]');
@@ -752,8 +751,8 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex-1 flex items-center gap-2 bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3">
                     <span className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase">Fine</span>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       value={rule.fine}
                       onChange={(e) => {
                         const rules = JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]');
@@ -764,7 +763,7 @@ export default function SettingsPage() {
                     />
                     <span className="text-[10px] text-[var(--text-tertiary)] font-bold uppercase text-right flex-1 text-slate-400">PKR</span>
                   </div>
-                  <button 
+                  <button
                     onClick={() => {
                       const rules = JSON.parse(settings.ATTENDANCE_LATE_RULES || '[]');
                       rules.splice(i, 1);
@@ -786,7 +785,7 @@ export default function SettingsPage() {
           <div className="space-y-6 border-t border-[var(--card-border)] pt-8">
             <div className="flex items-center justify-between">
               <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Company Holidays</label>
-              <button 
+              <button
                 onClick={() => {
                   const current = JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]');
                   setSettings({ ...settings, ATTENDANCE_HOLIDAYS: JSON.stringify([...current, new Date().toISOString().slice(0, 10)]) });
@@ -799,8 +798,8 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]').map((date: string, i: number) => (
                 <div key={i} className="flex gap-2 items-center bg-[var(--background)] border border-[var(--card-border)] rounded-xl px-4 py-3 animate-in fade-in slide-in-from-right-2">
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     value={date}
                     onChange={(e) => {
                       const dates = JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]');
@@ -809,7 +808,7 @@ export default function SettingsPage() {
                     }}
                     className="bg-transparent text-sm font-bold text-[var(--text-secondary)] outline-none flex-1"
                   />
-                  <button 
+                  <button
                     onClick={() => {
                       const dates = JSON.parse(settings.ATTENDANCE_HOLIDAYS || '[]');
                       dates.splice(i, 1);
@@ -872,8 +871,8 @@ export default function SettingsPage() {
                   <p className="text-sm font-bold text-[var(--text-primary)]">{ban.userName}</p>
                   <p className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{ban.reason || 'No reason specified'}</p>
                 </div>
-                <button 
-                  onClick={() => handleUnbanUser(ban.userId)} 
+                <button
+                  onClick={() => handleUnbanUser(ban.userId)}
                   className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-all"
                 >
                   Unban
@@ -899,7 +898,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <button onClick={loadCampaigns} className="bg-[var(--background)] border border-[var(--card-border)] px-4 py-2 rounded-xl text-xs font-bold text-[#D4A843] hover:text-[#B8923A] transition-all">
-               Refresh List
+              Refresh List
             </button>
           </div>
 
@@ -921,8 +920,8 @@ export default function SettingsPage() {
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-[var(--text-primary)] group-hover:text-[#D4A843] transition-colors truncate text-lg">{c.name}</h4>
                         <div className="flex items-center gap-2 mt-1">
-                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                           <p className="text-[10px] text-[var(--text-tertiary)] font-medium">Created: {formatUSDate(c.createdAt)}</p>
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                          <p className="text-[10px] text-[var(--text-tertiary)] font-medium">Created: {formatUSDate(c.createdAt)}</p>
                         </div>
                       </div>
                       <div className="flex gap-1 ml-4">
@@ -931,11 +930,11 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <p className="text-xs text-[var(--text-secondary)] line-clamp-3 leading-relaxed">{c.description || 'No description provided for this campaign.'}</p>
-                    
+
                     <div className="mt-6 pt-4 border-t border-[var(--card-border)]">
-                      {userRole === 'Admin' && (
+                      {permissions?.canManageSettings && (
                         <>
-                          <button 
+                          <button
                             onClick={() => setExpandedCampaignId(expandedCampaignId === c._id ? null : c._id)}
                             className="flex items-center gap-2 text-[10px] font-bold text-[#D4A843] uppercase hover:underline"
                           >
@@ -948,7 +947,7 @@ export default function SettingsPage() {
                               <div>
                                 <label className="block text-[9px] font-bold text-[var(--text-tertiary)] uppercase mb-2">Campaign Spreadsheet ID</label>
                                 <div className="flex gap-2">
-                                  <input 
+                                  <input
                                     type="text"
                                     defaultValue={c.googleSheetId || ''}
                                     onBlur={(e) => updateCampaignSheetId(c._id, e.target.value)}
@@ -976,26 +975,26 @@ export default function SettingsPage() {
                                     <p className="text-[8px] text-[var(--text-tertiary)] italic">No custom tabs configured.</p>
                                   )}
                                 </div>
-                                
+
                                 {/* Add Tab Form */}
                                 <div className="bg-[#D4A843]/5 border border-dashed border-[#D4A843]/30 rounded-lg p-3 space-y-3 mt-4">
                                   <div className="grid grid-cols-2 gap-2">
-                                    <input 
+                                    <input
                                       placeholder="Tab Name (Internal)"
                                       value={newTabForm.name}
-                                      onChange={e => setNewTabForm({...newTabForm, name: e.target.value})}
+                                      onChange={e => setNewTabForm({ ...newTabForm, name: e.target.value })}
                                       className="bg-white border border-[var(--card-border)] rounded-lg px-2 py-1.5 text-[10px] outline-none"
                                     />
-                                    <input 
+                                    <input
                                       placeholder="Label (UI Display)"
                                       value={newTabForm.label}
-                                      onChange={e => setNewTabForm({...newTabForm, label: e.target.value})}
+                                      onChange={e => setNewTabForm({ ...newTabForm, label: e.target.value })}
                                       className="bg-white border border-[var(--card-border)] rounded-lg px-2 py-1.5 text-[10px] outline-none"
                                     />
                                   </div>
-                                  <select 
+                                  <select
                                     value={newTabForm.purpose}
-                                    onChange={e => setNewTabForm({...newTabForm, purpose: e.target.value as any})}
+                                    onChange={e => setNewTabForm({ ...newTabForm, purpose: e.target.value as any })}
                                     className="w-full bg-white border border-[var(--card-border)] rounded-lg px-2 py-1.5 text-[10px] outline-none"
                                   >
                                     <option value="submissions">Submissions</option>
@@ -1003,7 +1002,7 @@ export default function SettingsPage() {
                                     <option value="duplicates">Duplicates</option>
                                     <option value="custom">Custom Tab</option>
                                   </select>
-                                  <button 
+                                  <button
                                     onClick={() => addCampaignTab(c._id)}
                                     disabled={addingTab || !newTabForm.name || !newTabForm.label || !c.googleSheetId}
                                     className="w-full py-2 bg-[#D4A843] text-[#101013] rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 disabled:opacity-50"
@@ -1025,7 +1024,7 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
-      
+
       {/* Biometric Integration Guide */}
       <section className="bg-gradient-to-br from-[#101013] to-[#1A1A1F] rounded-[3rem] p-12 text-white shadow-2xl relative overflow-hidden border border-white/5">
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#D4A843]/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[120px]"></div>
@@ -1060,10 +1059,10 @@ export default function SettingsPage() {
           <div className="flex flex-col justify-center">
             <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 backdrop-blur-md shadow-2xl">
               <div className="flex items-center gap-4 mb-8">
-                 <div className="h-10 w-10 rounded-xl bg-[#D4A843]/10 flex items-center justify-center">
-                    <ShieldCheck size={20} className="text-[#D4A843]" />
-                 </div>
-                 <h4 className="text-2xl font-bold">Device Compliance</h4>
+                <div className="h-10 w-10 rounded-xl bg-[#D4A843]/10 flex items-center justify-center">
+                  <ShieldCheck size={20} className="text-[#D4A843]" />
+                </div>
+                <h4 className="text-2xl font-bold">Device Compliance</h4>
               </div>
               <ul className="space-y-6">
                 {[
@@ -1081,7 +1080,7 @@ export default function SettingsPage() {
                 ))}
               </ul>
               <button className="mt-12 w-full py-5 bg-white/10 border border-white/10 rounded-2xl text-sm font-bold text-white hover:bg-white/20 transition-all active:scale-95">
-                 Download Device Manual (PDF)
+                Download Device Manual (PDF)
               </button>
             </div>
           </div>
