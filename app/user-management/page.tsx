@@ -303,6 +303,8 @@ export default function UserManagementPage() {
         canCreateForms: false,
         canManageSettings: false,
         canManageChatRooms: false,
+        canManageIPs: false,
+        canDeleteSubmissions: false,
       },
       allowedFormFields: [],
       salary: 0,
