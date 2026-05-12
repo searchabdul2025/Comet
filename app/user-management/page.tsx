@@ -308,6 +308,7 @@ export default function UserManagementPage() {
         canManageChatRooms: false,
         canManageIPs: false,
         canDeleteSubmissions: false,
+        canManageGoogleSheets: false,
       },
       allowedFormFields: [],
       salary: 0,
