@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Edit, Trash2, Key, Eye, EyeOff, X, UserPlus, Save, Users, BarChart3, Megaphone, Sparkles } from 'lucide-react';
+import { Plus, Edit, Trash2, Key, Eye, EyeOff, X, UserPlus, Save, Users, BarChart3, Megaphone, Sparkles, ShieldCheck, Check } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
