@@ -54,9 +54,20 @@ export async function PUT(
       );
     }
 
+    const updateData: any = {
+      name: body.name,
+      description: body.description,
+    };
+
+    // Only allow Admin to update Google Sheets settings
+    if (user.role === 'Admin') {
+      if (body.googleSheetId !== undefined) updateData.googleSheetId = body.googleSheetId;
+      if (body.sheetTabs !== undefined) updateData.sheetTabs = body.sheetTabs;
+    }
+
     const campaign = await Campaign.findByIdAndUpdate(
       id,
-      { name: body.name, description: body.description },
+      updateData,
       { new: true, runValidators: true }
     ).populate('createdBy', 'name email');
 

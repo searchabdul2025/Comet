@@ -19,7 +19,9 @@ import {
   Check, 
   Fingerprint,
   Smartphone,
-  Table as TableIcon
+  Table as TableIcon,
+  Plus,
+  Database
 } from 'lucide-react';
 import { formatUSDateTime, formatUSDate } from '@/lib/dateFormat';
 
@@ -55,6 +57,12 @@ interface CampaignRow {
   _id: string;
   name: string;
   description?: string;
+  googleSheetId?: string;
+  sheetTabs?: {
+    name: string;
+    label: string;
+    purpose: string;
+  }[];
   createdAt: string;
 }
 
@@ -132,6 +140,61 @@ export default function SettingsPage() {
   const [banMessage, setBanMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [banForm, setBanForm] = useState<{ userId: string; reason: string }>({ userId: '', reason: '' });
   const [userOptions, setUserOptions] = useState<UserOption[]>([]);
+  
+  // Campaign Sheet management
+  const [expandedCampaignId, setExpandedCampaignId] = useState<string | null>(null);
+  const [newTabForm, setNewTabForm] = useState({ name: '', label: '', purpose: 'custom' });
+  const [addingTab, setAddingTab] = useState(false);
+
+  const addCampaignTab = async (campaignId: string) => {
+    try {
+      setAddingTab(true);
+      const res = await fetch(`/api/campaigns/${campaignId}/sheets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTabForm),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setNewTabForm({ name: '', label: '', purpose: 'custom' });
+        loadCampaigns();
+      } else {
+        alert(result.error || 'Failed to add tab');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to add tab');
+    } finally {
+      setAddingTab(false);
+    }
+  };
+
+  const removeCampaignTab = async (campaignId: string, tabName: string) => {
+    if (!confirm('Remove this tab from configuration? (Data in Google Sheets will remain safe)')) return;
+    try {
+      const res = await fetch(`/api/campaigns/${campaignId}/sheets?name=${encodeURIComponent(tabName)}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) loadCampaigns();
+    } catch {}
+  };
+
+  const updateCampaignSheetId = async (campaignId: string, sheetId: string) => {
+    try {
+      const campaign = campaigns.find(c => c._id === campaignId);
+      if (!campaign) return;
+      const res = await fetch(`/api/campaigns/${campaignId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: campaign.name, 
+          description: campaign.description, 
+          googleSheetId: sheetId,
+          sheetTabs: campaign.sheetTabs 
+        }),
+      });
+      if (res.ok) loadCampaigns();
+    } catch {}
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -868,6 +931,93 @@ export default function SettingsPage() {
                       </div>
                     </div>
                     <p className="text-xs text-[var(--text-secondary)] line-clamp-3 leading-relaxed">{c.description || 'No description provided for this campaign.'}</p>
+                    
+                    <div className="mt-6 pt-4 border-t border-[var(--card-border)]">
+                      {userRole === 'Admin' && (
+                        <>
+                          <button 
+                            onClick={() => setExpandedCampaignId(expandedCampaignId === c._id ? null : c._id)}
+                            className="flex items-center gap-2 text-[10px] font-bold text-[#D4A843] uppercase hover:underline"
+                          >
+                            <TableIcon size={12} />
+                            {expandedCampaignId === c._id ? 'Close Configuration' : 'Configure Sheets'}
+                          </button>
+
+                          {expandedCampaignId === c._id && (
+                            <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
+                              <div>
+                                <label className="block text-[9px] font-bold text-[var(--text-tertiary)] uppercase mb-2">Campaign Spreadsheet ID</label>
+                                <div className="flex gap-2">
+                                  <input 
+                                    type="text"
+                                    defaultValue={c.googleSheetId || ''}
+                                    onBlur={(e) => updateCampaignSheetId(c._id, e.target.value)}
+                                    className="flex-1 bg-white border border-[var(--card-border)] rounded-lg px-3 py-2 text-xs outline-none focus:border-[#D4A843] font-mono"
+                                    placeholder="Leave blank to use global"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="block text-[9px] font-bold text-[var(--text-tertiary)] uppercase">Configured Tabs</label>
+                                <div className="space-y-2 max-h-[150px] overflow-y-auto pr-1 scrollbar-premium">
+                                  {c.sheetTabs?.map((tab, idx) => (
+                                    <div key={idx} className="flex items-center justify-between bg-white border border-[var(--card-border)] rounded-lg px-3 py-2">
+                                      <div className="min-w-0">
+                                        <p className="text-[10px] font-bold text-[var(--text-primary)] truncate">{tab.label}</p>
+                                        <p className="text-[8px] text-[var(--text-tertiary)] truncate">{tab.name} • {tab.purpose}</p>
+                                      </div>
+                                      <button onClick={() => removeCampaignTab(c._id, tab.name)} className="text-red-500 hover:text-red-600 flex-shrink-0 ml-2">
+                                        <Trash2 size={12} />
+                                      </button>
+                                    </div>
+                                  ))}
+                                  {(!c.sheetTabs || c.sheetTabs.length === 0) && (
+                                    <p className="text-[8px] text-[var(--text-tertiary)] italic">No custom tabs configured.</p>
+                                  )}
+                                </div>
+                                
+                                {/* Add Tab Form */}
+                                <div className="bg-[#D4A843]/5 border border-dashed border-[#D4A843]/30 rounded-lg p-3 space-y-3 mt-4">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <input 
+                                      placeholder="Tab Name (Internal)"
+                                      value={newTabForm.name}
+                                      onChange={e => setNewTabForm({...newTabForm, name: e.target.value})}
+                                      className="bg-white border border-[var(--card-border)] rounded-lg px-2 py-1.5 text-[10px] outline-none"
+                                    />
+                                    <input 
+                                      placeholder="Label (UI Display)"
+                                      value={newTabForm.label}
+                                      onChange={e => setNewTabForm({...newTabForm, label: e.target.value})}
+                                      className="bg-white border border-[var(--card-border)] rounded-lg px-2 py-1.5 text-[10px] outline-none"
+                                    />
+                                  </div>
+                                  <select 
+                                    value={newTabForm.purpose}
+                                    onChange={e => setNewTabForm({...newTabForm, purpose: e.target.value as any})}
+                                    className="w-full bg-white border border-[var(--card-border)] rounded-lg px-2 py-1.5 text-[10px] outline-none"
+                                  >
+                                    <option value="submissions">Submissions</option>
+                                    <option value="daily_reports">Daily Reports</option>
+                                    <option value="duplicates">Duplicates</option>
+                                    <option value="custom">Custom Tab</option>
+                                  </select>
+                                  <button 
+                                    onClick={() => addCampaignTab(c._id)}
+                                    disabled={addingTab || !newTabForm.name || !newTabForm.label || !c.googleSheetId}
+                                    className="w-full py-2 bg-[#D4A843] text-[#101013] rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 disabled:opacity-50"
+                                  >
+                                    {addingTab ? <Activity size={10} className="animate-spin" /> : <Plus size={10} />}
+                                    {!c.googleSheetId ? 'Set ID First' : 'Create Live Tab'}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </>
                 )}
               </div>

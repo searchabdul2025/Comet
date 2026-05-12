@@ -62,7 +62,7 @@ export async function appendRow({ sheetId, range, values }: AppendRowParams) {
     // If the tab doesn't exist, create it and try again
     if (error.message.includes('not found') || error.code === 400) {
       try {
-        await createSheet(sheetId, tabName);
+        await createSheetTab(sheetId, tabName);
         // Default headers for basic append
         const headers = ['ID', 'Timestamp', 'Form Title', 'Form ID', 'Phone Number', 'Submission Data'];
         await sheets.spreadsheets.values.update({
@@ -116,7 +116,7 @@ export async function appendDynamicRow(params: {
     headers = response.data.values?.[0] || [];
   } catch (error: any) {
     if (error.code === 404 || error.message.includes('not found')) {
-      await createSheet(sheetId, tabName);
+      await createSheetTab(sheetId, tabName);
       headers = [];
     } else {
       throw error;
@@ -223,7 +223,7 @@ async function formatHeaders(spreadsheetId: string, tabName: string) {
 /**
  * Create a new tab in the spreadsheet
  */
-async function createSheet(spreadsheetId: string, title: string) {
+export async function createSheetTab(spreadsheetId: string, title: string) {
   const sheets = getSheetsClient();
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId,
@@ -327,7 +327,7 @@ export async function deleteSubmissionFromSheets(params: {
 /**
  * Get the sheet ID (numeric) from sheet name
  */
-async function getSheetId(spreadsheetId: string, sheetName: string): Promise<number> {
+export async function getSheetId(spreadsheetId: string, sheetName: string): Promise<number> {
   const sheets = getSheetsClient();
   const response = await sheets.spreadsheets.get({
     spreadsheetId,

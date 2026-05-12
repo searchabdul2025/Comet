@@ -66,23 +66,47 @@ export async function POST(
     // Fire-and-forget Google Sheets append (do not block response)
     (async () => {
       try {
-        const { sheetId, submissionsTab } = await resolveSheetsConfig();
-        if (!sheetId) return;
+        const { sheetId: globalSheetId, submissionsTab: globalSubmissionsTab } = await resolveSheetsConfig();
+        
+        // Fetch campaign to check for per-campaign sheet settings
+        const Campaign = (await import('@/models/Campaign')).default;
+        const campaign = form.campaign ? await Campaign.findById(form.campaign) : null;
+        
+        const campaignSheetId = campaign?.googleSheetId;
+        const campaignTabs = campaign?.sheetTabs || [];
+        
+        // 1. Sync to Global Sheet
+        if (globalSheetId) {
+          const targetTab = agentName ? agentName.replace(/[^\w\s]/gi, '').trim() : globalSubmissionsTab;
+          await appendSubmissionRow({
+            sheetId: globalSheetId,
+            tabName: targetTab,
+            formTitle: form.title,
+            formId: form.formId,
+            submission: body.formData || {},
+            phoneNumber: normalizedPhone,
+            submissionId: submission._id.toString(),
+          });
+        }
 
-        // Use agent name as tab name if available, otherwise fallback to default
-        const targetTab = agentName ? agentName.replace(/[^\w\s]/gi, '').trim() : submissionsTab;
+        // 2. Sync to Campaign Sheet (if configured)
+        if (campaignSheetId && campaignSheetId !== globalSheetId) {
+          // Find tab for submissions or fallback to default
+          const subTab = campaignTabs.find((t: any) => t.purpose === 'submissions');
+          const campaignTabName = subTab?.name || 'Submissions';
 
-        await appendSubmissionRow({
-          sheetId,
-          tabName: targetTab,
-          formTitle: form.title,
-          formId: form.formId,
-          submission: body.formData || {},
-          phoneNumber: normalizedPhone,
-          submissionId: submission._id.toString(), // Store submission ID for deletion
-        });
+          await appendSubmissionRow({
+            sheetId: campaignSheetId,
+            tabName: campaignTabName,
+            formTitle: form.title,
+            formId: form.formId,
+            submission: body.formData || {},
+            phoneNumber: normalizedPhone,
+            submissionId: submission._id.toString(),
+          });
+        }
       } catch (err) {
-        console.error('Sheets append failed', err);
+        console.error('Sheets sync failed', err);
       }
     })();
 
