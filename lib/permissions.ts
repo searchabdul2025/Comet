@@ -63,6 +63,7 @@ export function basePermissions(role: UserRole): Permissions {
         canManageSettings: false,
         canDeleteSubmissions: false,
         canManageChatRooms: false,
+        canManageGoogleSheets: false,
       };
   }
 }
