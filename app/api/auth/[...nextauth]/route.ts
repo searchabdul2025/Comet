@@ -83,6 +83,18 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
   },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        domain: '.cometbpo.org',
+        secure: true,
+      },
+    },
+  },
   secret: process.env.NEXTAUTH_SECRET || 'temp-build-secret-replace-in-production',
 };
 

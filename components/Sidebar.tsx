@@ -122,7 +122,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       label: 'MAIN',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null },
-        { href: '/chat', label: 'Chat Hub', icon: MessageSquare, permission: null },
+        { href: 'https://chat.cometbpo.org/chat', label: 'Chat Hub', icon: MessageSquare, permission: null },
         { href: '/requests', label: 'Requests', icon: Bell, badge: requestCount, permission: 'canManageRequests' as const },
         { href: '/user-management', label: 'User Management', icon: Users, permission: 'canManageUsers' as const },
       ],
@@ -152,7 +152,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
     {
       label: 'COMMUNICATION',
       items: [
-        { href: '/chatrooms', label: 'Chatrooms', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
+        { href: 'https://chat.cometbpo.org/chatrooms', label: 'Chatrooms', icon: MessageSquare, permission: 'canManageChatRooms' as const, roles: ['Admin'] as const },
       ],
     },
   ];
@@ -162,7 +162,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
       label: 'MAIN',
       items: [
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, permission: null, roles: ['User', 'Supervisor'] as const },
-        { href: '/chat', label: 'Chat Hub', icon: MessageSquare, permission: null, roles: ['User', 'Supervisor'] as const },
+        { href: 'https://chat.cometbpo.org/chat', label: 'Chat Hub', icon: MessageSquare, permission: null, roles: ['User', 'Supervisor'] as const },
       ],
     },
     {
@@ -361,7 +361,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
                   return (
                     <Link
                       key={chatroom._id}
-                      href={`/chatroom-login?id=${chatroom._id}`}
+                      href={`https://chat.cometbpo.org/chatroom-login?id=${chatroom._id}`}
                       title={collapsed ? chatroom.name : undefined}
                       className={`group relative flex items-center gap-3 rounded-xl transition-all duration-200 ${
                         collapsed ? 'px-0 py-2.5 justify-center' : 'px-3 py-2.5'

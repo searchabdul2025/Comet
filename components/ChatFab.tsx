@@ -41,7 +41,7 @@ export default function ChatFab() {
     if (type === 'management') {
       const role = session?.user?.role;
       if (role === 'Admin' || role === 'Supervisor') {
-        router.push('/management-chat');
+        window.location.href = 'https://chat.cometbpo.org/management-chat';
         setShowSelection(false);
       } else {
         alert('Access Denied: Only management can access this area.');
