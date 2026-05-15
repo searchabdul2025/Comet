@@ -1,12 +1,21 @@
 'use client';
 
-import { Users, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Users, ShieldCheck, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ChatSelectionProps {
   onSelect: (type: 'user' | 'management') => void;
 }
 
 export default function ChatSelection({ onSelect }: ChatSelectionProps) {
+  const [isSubdomain, setIsSubdomain] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsSubdomain(window.location.hostname === 'chat.cometbpo.org');
+    }
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
       <div className="text-center mb-10 space-y-2">
@@ -14,7 +23,7 @@ export default function ChatSelection({ onSelect }: ChatSelectionProps) {
         <p className="text-gray-500 max-w-md mx-auto">Select the appropriate channel to continue your conversation.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
         {/* User Chat Card */}
         <button
           onClick={() => onSelect('user')}
@@ -60,6 +69,31 @@ export default function ChatSelection({ onSelect }: ChatSelectionProps) {
             Access Management <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
+
+        {/* Back to Dashboard Card (Only on Subdomain) */}
+        {isSubdomain && (
+          <button
+            onClick={() => window.location.href = 'https://cometbpo.org/dashboard'}
+            className="group relative bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/50 border border-slate-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#D4A843]/20 text-left overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+              <LayoutDashboard size={120} />
+            </div>
+            
+            <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+              <LayoutDashboard size={28} />
+            </div>
+            
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Portal Access</h3>
+            <p className="text-slate-500 text-sm mb-6 leading-relaxed">
+              Exit the communication hub and return to your main management dashboard.
+            </p>
+            
+            <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+              Back to Dashboard <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </div>
+          </button>
+        )}
       </div>
     </div>
   );
