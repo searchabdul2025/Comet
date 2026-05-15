@@ -18,6 +18,14 @@ export default function ChatFab() {
   const [showSelection, setShowSelection] = useState(false);
 
   const handleToggle = () => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      if (hostname === 'cometbpo.org' || hostname.includes('localhost')) {
+        window.location.href = 'https://chat.cometbpo.org';
+        return;
+      }
+    }
+
     if (isOpen && !isMinimized) {
       setIsMinimized(true);
     } else if (isOpen && isMinimized) {

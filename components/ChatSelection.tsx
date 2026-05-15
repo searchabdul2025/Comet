@@ -80,7 +80,7 @@ export default function ChatSelection({ onSelect }: ChatSelectionProps) {
               <LayoutDashboard size={120} />
             </div>
             
-            <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+            <div className="h-14 w-14 rounded-2xl bg-[#D4A843]/10 text-[#D4A843] flex items-center justify-center mb-6 group-hover:bg-[#D4A843] group-hover:text-white transition-colors duration-300">
               <LayoutDashboard size={28} />
             </div>
             
@@ -89,7 +89,7 @@ export default function ChatSelection({ onSelect }: ChatSelectionProps) {
               Exit the communication hub and return to your main management dashboard.
             </p>
             
-            <div className="flex items-center gap-2 text-blue-600 font-semibold text-sm">
+            <div className="flex items-center gap-2 text-[#D4A843] font-semibold text-sm">
               Back to Dashboard <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
