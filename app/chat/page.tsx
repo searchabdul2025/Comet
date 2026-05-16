@@ -208,7 +208,7 @@ export default function ChatPage() {
 
         if (token.includes(mention)) {
           const parts = token.split(mention);
-          const newTokens: (string | JSX.Element)[] = [];
+          const newTokens: React.ReactNode[] = [];
           
           parts.forEach((part, idx) => {
             newTokens.push(part);
