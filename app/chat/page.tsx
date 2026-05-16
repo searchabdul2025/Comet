@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { Send, ShieldAlert, WifiOff, MessageSquare, Loader2, LogOut, User } from 'lucide-react';
 import ChatSelection from '@/components/ChatSelection';
@@ -198,7 +198,7 @@ export default function ChatPage() {
     // This is more reliable than a generic regex for names with spaces
     if (!text.includes('@')) return <span>{text}</span>;
 
-    const tokens: (string | JSX.Element)[] = [text];
+    const tokens: React.ReactNode[] = [text];
     
     participants.forEach(name => {
       const mention = `@${name}`;
