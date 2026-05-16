@@ -23,6 +23,12 @@ export default function ChatPage() {
   const router = useRouter();
   const { data: session, status: authStatus } = useSession();
   const [view, setView] = useState<'selection' | 'user' | 'management'>('selection');
+
+  useEffect(() => {
+    if (authStatus === 'unauthenticated') {
+      router.push('/chat-login');
+    }
+  }, [authStatus, router]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [mentionQuery, setMentionQuery] = useState('');

@@ -13,19 +13,24 @@ export default withAuth(
 
     // Handle Subdomain Routing
     if (hostname === chatDomain) {
-      // If not authenticated on subdomain, redirect to main login
+      // 1. Check if authenticated
       if (!token) {
-        return NextResponse.redirect(new URL('https://' + mainDomain, req.url));
+        // Allow access to the chat login page
+        if (url.pathname === '/chat-login') {
+          return NextResponse.next();
+        }
+        // Redirect all other unauthenticated requests to chat-login
+        return NextResponse.redirect(new URL('/chat-login', req.url));
       }
 
-      // 1. If at root of subdomain, rewrite to /chat
-      if (url.pathname === '/') {
+      // 2. If authenticated and at root of subdomain, rewrite to /chat
+      if (url.pathname === '/' || url.pathname === '/chat-login') {
         url.pathname = '/chat';
         return NextResponse.rewrite(url);
       }
 
-      // 2. RESTRICTION: Only allow communication-related paths on this subdomain
-      const allowedPaths = ['/chat', '/chatroom', '/chatroom-login', '/chatrooms', '/management-chat', '/api', '/_next', '/favicon.ico'];
+      // 3. RESTRICTION: Only allow communication-related paths on this subdomain
+      const allowedPaths = ['/chat', '/chatroom', '/chatroom-login', '/chatrooms', '/management-chat', '/chat-login', '/api', '/_next', '/favicon.ico'];
       const isAllowed = allowedPaths.some(path => url.pathname.startsWith(path));
 
       if (!isAllowed) {
