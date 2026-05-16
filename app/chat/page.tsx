@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { Send, ShieldAlert, WifiOff, MessageSquare, Loader2, LogOut, User } from 'lucide-react';
+import { Send, ShieldAlert, WifiOff, MessageSquare, Loader2, LogOut, User, Trash2, Search, ShieldCheck, Key } from 'lucide-react';
 import ChatSelection from '@/components/ChatSelection';
 import { useRouter } from 'next/navigation';
 import PageHeader from '@/components/ui/PageHeader';
@@ -38,6 +38,7 @@ export default function ChatPage() {
   const [banned, setBanned] = useState<{ reason?: string | null } | null>(null);
   const [sending, setSending] = useState(false);
   const [limits, setLimits] = useState(DEFAULT_LIMITS);
+  const [searchQuery, setSearchQuery] = useState('');
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const userId = session?.user?.id;
@@ -45,6 +46,15 @@ export default function ChatPage() {
   const currentUsername = session?.user?.username?.toLowerCase?.() || '';
 
   const sortedMessages = useMemo(() => messages, [messages]);
+  
+  const filteredMessages = useMemo(() => {
+    if (!searchQuery.trim()) return sortedMessages;
+    const q = searchQuery.toLowerCase();
+    return sortedMessages.filter(m => 
+      m.content.toLowerCase().includes(q) || 
+      m.userName.toLowerCase().includes(q)
+    );
+  }, [searchQuery, sortedMessages]);
   const participants = useMemo(() => {
     const seen = new Map<string, string>();
     messages.forEach((m) => {
@@ -113,6 +123,8 @@ export default function ChatPage() {
           setBanned({ reason: payload.ban.reason });
         } else if (payload.type === 'unban' && payload.userId === userId) {
           setBanned(null);
+        } else if (payload.type === 'clear_chat') {
+          setMessages([]);
         }
       } catch {
         // ignore malformed payloads
@@ -326,10 +338,66 @@ export default function ChatPage() {
                 </div>
                 {banned && (
                   <div className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-600 text-white border border-red-700 animate-pulse">
-                    Access Revoked: {banned.reason || 'Security Violation'}
+                  Access Revoked: {banned.reason || 'Security Violation'}
+                </div>
+              )}
+
+              {/* Admin Command Center */}
+              {session?.user?.role === 'Admin' && (
+                <div className="flex flex-wrap items-center gap-4 bg-[#101013] border border-white/5 p-4 rounded-3xl shadow-xl animate-in zoom-in-95 duration-500">
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/20 rounded-full">
+                    <ShieldCheck size={14} className="text-red-500" />
+                    <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Admin Control Active</span>
                   </div>
-                )}
-              </div>
+
+                  <div className="flex-1 flex items-center gap-3 bg-white/5 border border-white/5 rounded-2xl px-4 py-2">
+                    <Search size={16} className="text-slate-500" />
+                    <input 
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search across all intelligence logs..."
+                      className="bg-transparent border-none outline-none text-white text-xs w-full placeholder:text-slate-600 font-medium"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={async () => {
+                        if (confirm('TERMINATE ALL COMMUNICATIONS? This will permanently wipe the active chat history.')) {
+                          try {
+                            const res = await fetch('/api/chat/messages/clear', { method: 'DELETE' });
+                            if (res.ok) setMessages([]);
+                          } catch (err: any) {
+                            setError(err.message || 'Failed to clear chat');
+                          }
+                        }
+                      }}
+                      className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-red-500 hover:border-red-500/30 transition-all group relative"
+                      title="Clear History"
+                    >
+                      <Trash2 size={16} />
+                      <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none uppercase whitespace-nowrap tracking-widest">Wipe Communications</span>
+                    </button>
+
+                    <button 
+                      onClick={() => router.push('/settings')}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all font-bold text-[10px] uppercase tracking-widest"
+                    >
+                      <ShieldAlert size={14} />
+                      Ban List
+                    </button>
+
+                    <button 
+                      onClick={() => router.push('/settings')}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-[#D4A843] hover:border-[#D4A843]/30 transition-all font-bold text-[10px] uppercase tracking-widest"
+                    >
+                      <Key size={14} />
+                      Keywords
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="card-premium flex flex-col h-[75vh] overflow-hidden relative">
                 {/* Chat Background Graphic */}
@@ -339,13 +407,15 @@ export default function ChatPage() {
 
                 {/* Messages Display */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-premium relative z-10">
-                  {sortedMessages.length === 0 && status === 'live' ? (
+                  {filteredMessages.length === 0 && status === 'live' ? (
                     <div className="h-full flex flex-col items-center justify-center opacity-30">
                        <MessageSquare size={48} />
-                       <p className="mt-4 font-bold uppercase tracking-widest text-xs">Awaiting Communications</p>
+                       <p className="mt-4 font-bold uppercase tracking-widest text-xs">
+                         {searchQuery ? 'No intelligence matching search query' : 'Awaiting Communications'}
+                       </p>
                     </div>
                   ) : (
-                    sortedMessages.map((msg) => {
+                    filteredMessages.map((msg) => {
                       const isOwn = msg.userId === userId;
                       const isSystem = msg.isSystem;
                       return (
