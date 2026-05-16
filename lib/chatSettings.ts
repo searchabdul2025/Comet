@@ -12,7 +12,7 @@ function parseNumber(value: string | null, fallback: number) {
 }
 
 export async function getChatLimits() {
-  const [rateLimitRaw, maxLengthRaw, historyLimitRaw] = await Promise.all([
+  const [rateLimitRaw, maxLengthRaw, historyLimitRaw, autoDeleteMinutesRaw] = await Promise.all([
     getSetting('CHAT_RATE_LIMIT_PER_MINUTE'),
     getSetting('CHAT_MESSAGE_MAX_LENGTH'),
     getSetting('CHAT_HISTORY_LIMIT'),
