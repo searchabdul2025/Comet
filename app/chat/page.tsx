@@ -130,10 +130,19 @@ export default function ChatPage() {
     setInput(value);
     const caret = caretPos ?? value.length;
     setMentionCaret(caret);
+    
     const before = value.slice(0, caret);
-    const match = /(^|\s)@([a-zA-Z0-9_.-]{0,24})$/i.exec(before);
-    if (match) {
-      setMentionQuery(match[2]);
+    // Find the last '@' that is either at the start or preceded by a space
+    const lastAtIdx = before.lastIndexOf('@');
+    if (lastAtIdx !== -1 && (lastAtIdx === 0 || before[lastAtIdx - 1] === ' ')) {
+      const query = before.slice(lastAtIdx + 1);
+      // Only treat as a mention if the query is reasonably short (e.g., < 25 chars) 
+      // and doesn't contain multiple trailing spaces
+      if (query.length < 25 && !query.includes('  ')) {
+        setMentionQuery(query);
+      } else {
+        setMentionQuery('');
+      }
     } else {
       setMentionQuery('');
     }
@@ -143,12 +152,10 @@ export default function ChatPage() {
     const caret = mentionCaret;
     const before = input.slice(0, caret);
     const after = input.slice(caret);
-    const match = /(^|\s)@([a-zA-Z0-9_.-]{0,24})$/i.exec(before);
-    if (!match) {
-      return;
-    }
-    const start = (match.index ?? 0) + match[1].length;
-    const prefix = before.slice(0, start);
+    const lastAtIdx = before.lastIndexOf('@');
+    if (lastAtIdx === -1) return;
+
+    const prefix = before.slice(0, lastAtIdx);
     const newValue = `${prefix}@${name} ${after}`;
     setInput(newValue);
     setMentionQuery('');
@@ -187,24 +194,48 @@ export default function ChatPage() {
   };
 
   const renderContent = (text: string) => {
-    const parts = text.split(/(@[A-Za-z0-9_.-]+)/g);
-    return parts.map((part, idx) => {
-      if (!part.startsWith('@')) {
-        return <span key={idx}>{part}</span>;
+    // We want to highlight names from the participants list when preceded by @
+    // This is more reliable than a generic regex for names with spaces
+    if (!text.includes('@')) return <span>{text}</span>;
+
+    const tokens: (string | JSX.Element)[] = [text];
+    
+    participants.forEach(name => {
+      const mention = `@${name}`;
+      for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        if (typeof token !== 'string') continue;
+
+        if (token.includes(mention)) {
+          const parts = token.split(mention);
+          const newTokens: (string | JSX.Element)[] = [];
+          
+          parts.forEach((part, idx) => {
+            newTokens.push(part);
+            if (idx < parts.length - 1) {
+              const isMe = name.toLowerCase() === currentName || name.toLowerCase() === currentUsername;
+              newTokens.push(
+                <span
+                  key={`${name}-${idx}`}
+                  className={`px-1.5 py-0.5 rounded-md font-bold ${
+                    isMe 
+                      ? 'bg-[#D4A843] text-[#101013] shadow-sm' 
+                      : 'bg-blue-500/10 text-blue-600 border border-blue-500/20'
+                  }`}
+                >
+                  @{name}
+                </span>
+              );
+            }
+          });
+          
+          tokens.splice(i, 1, ...newTokens);
+          i += newTokens.length - 1;
+        }
       }
-      const mention = part.slice(1);
-      const isMe =
-        mention.toLowerCase() === currentName ||
-        mention.toLowerCase() === currentUsername;
-      return (
-        <span
-          key={idx}
-          className={`px-1 rounded ${isMe ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-700'}`}
-        >
-          {part}
-        </span>
-      );
     });
+
+    return <>{tokens}</>;
   };
 
   const handleSelect = (type: 'user' | 'management') => {
