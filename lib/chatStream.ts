@@ -9,7 +9,8 @@ export type ChatEvent =
   | { type: 'message'; message: any }
   | { type: 'ban'; ban: { userId: string; reason?: string | null } }
   | { type: 'unban'; userId: string }
-  | { type: 'system'; message: string };
+  | { type: 'system'; message: string }
+  | { type: 'clear_chat' };
 
 const encoder = new TextEncoder();
 const globalAny = global as any;
