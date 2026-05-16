@@ -338,9 +338,10 @@ export default function ChatPage() {
                 </div>
                 {banned && (
                   <div className="px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-600 text-white border border-red-700 animate-pulse">
-                  Access Revoked: {banned.reason || 'Security Violation'}
-                </div>
-              )}
+                    Access Revoked: {banned.reason || 'Security Violation'}
+                  </div>
+                )}
+              </div>
 
               {/* Admin Command Center */}
               {session?.user?.role === 'Admin' && (
