@@ -109,7 +109,10 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
   }, [session]);
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+    await signOut({ 
+      callbackUrl: '/',
+      redirect: true 
+    });
   };
 
   const userRole = session?.user?.role as 'Admin' | 'Supervisor' | 'User' | undefined;
