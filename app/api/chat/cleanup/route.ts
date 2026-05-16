@@ -6,14 +6,14 @@ import ChatMessage from '@/models/ChatMessage';
 export async function GET() {
   try {
     await connectDB();
-    const autoDeleteHours = parseInt(await getSetting('CHAT_AUTO_DELETE_HOURS') || '0');
+    const autoDeleteMinutes = parseInt(await getSetting('CHAT_AUTO_DELETE_MINUTES') || '0');
 
-    if (autoDeleteHours <= 0) {
+    if (autoDeleteMinutes <= 0) {
       return NextResponse.json({ success: true, message: 'Auto-delete is disabled.' });
     }
 
     const cutoffDate = new Date();
-    cutoffDate.setHours(cutoffDate.getHours() - autoDeleteHours);
+    cutoffDate.setMinutes(cutoffDate.getMinutes() - autoDeleteMinutes);
 
     const result = await ChatMessage.deleteMany({
       createdAt: { $lt: cutoffDate },

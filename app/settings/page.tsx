@@ -36,7 +36,7 @@ interface SettingsData {
   CHAT_RATE_LIMIT_PER_MINUTE?: string | null;
   CHAT_MESSAGE_MAX_LENGTH?: string | null;
   CHAT_HISTORY_LIMIT?: string | null;
-  CHAT_AUTO_DELETE_HOURS?: string | null;
+  CHAT_AUTO_DELETE_MINUTES?: string | null;
   BONUS_PER_SUBMISSION?: string | null;
   BONUS_TARGET_BONUS?: string | null;
   SHOW_SALARY_BONUS?: string | null;
@@ -103,7 +103,7 @@ export default function SettingsPage() {
     CHAT_RATE_LIMIT_PER_MINUTE: '15',
     CHAT_MESSAGE_MAX_LENGTH: '500',
     CHAT_HISTORY_LIMIT: '50',
-    CHAT_AUTO_DELETE_HOURS: '0',
+    CHAT_AUTO_DELETE_MINUTES: '0',
     BONUS_PER_SUBMISSION: '0',
     BONUS_TARGET_BONUS: '0',
     SHOW_SALARY_BONUS: '1',
@@ -623,11 +623,11 @@ export default function SettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Auto Delete (hrs)</label>
+                  <label className="block text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-3">Auto Delete (mins)</label>
                   <input
                     type="number"
-                    value={settings.CHAT_AUTO_DELETE_HOURS || ''}
-                    onChange={(e) => setSettings({ ...settings, CHAT_AUTO_DELETE_HOURS: e.target.value })}
+                    value={settings.CHAT_AUTO_DELETE_MINUTES || ''}
+                    onChange={(e) => setSettings({ ...settings, CHAT_AUTO_DELETE_MINUTES: e.target.value })}
                     className="w-full bg-[var(--background)] border border-[var(--card-border)] rounded-2xl p-4 text-[var(--text-primary)] focus:border-[#D4A843] transition-all outline-none text-sm"
                   />
                 </div>

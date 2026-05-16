@@ -16,12 +16,14 @@ export async function getChatLimits() {
     getSetting('CHAT_RATE_LIMIT_PER_MINUTE'),
     getSetting('CHAT_MESSAGE_MAX_LENGTH'),
     getSetting('CHAT_HISTORY_LIMIT'),
+    getSetting('CHAT_AUTO_DELETE_MINUTES'),
   ]);
 
   return {
     rateLimitPerMinute: parseNumber(rateLimitRaw, DEFAULT_RATE_LIMIT),
     maxMessageLength: parseNumber(maxLengthRaw, DEFAULT_MAX_LENGTH),
     historyLimit: parseNumber(historyLimitRaw, DEFAULT_HISTORY_LIMIT),
+    autoDeleteMinutes: parseNumber(autoDeleteMinutesRaw, 0),
   };
 }
 

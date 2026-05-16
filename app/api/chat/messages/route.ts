@@ -18,7 +18,13 @@ export async function GET() {
     const limits = await getChatLimits();
 
     const [messagesRaw, ban] = await Promise.all([
-      ChatMessage.find({ chatroomId: null, isManagement: { $ne: true } }) // Only main team chat messages
+      ChatMessage.find({ 
+        chatroomId: null, 
+        isManagement: { $ne: true },
+        ...(limits.autoDeleteMinutes > 0 ? {
+          createdAt: { $gte: new Date(Date.now() - limits.autoDeleteMinutes * 60000) }
+        } : {})
+      }) // Only main team chat messages and respect retention
         .sort({ createdAt: -1 })
         .limit(limits.historyLimit)
         .lean(),
@@ -103,6 +109,18 @@ export async function POST(request: NextRequest) {
     };
 
     broadcast({ type: 'message', message: payload });
+
+    // Background cleanup trigger (don't await to keep response fast)
+    if (limits.autoDeleteMinutes > 0) {
+      connectDB().then(() => {
+        const cutoff = new Date(Date.now() - limits.autoDeleteMinutes * 60000);
+        ChatMessage.deleteMany({
+          chatroomId: null,
+          isSystem: { $ne: true },
+          createdAt: { $lt: cutoff }
+        }).exec();
+      });
+    }
 
     return NextResponse.json({ success: true, data: payload }, { status: 201 });
   } catch (error: any) {
