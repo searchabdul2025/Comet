@@ -101,6 +101,7 @@ export default function ChatWidget({ isOpen, onClose, onMinimize, isMinimized }:
       Notification.requestPermission();
     }
 
+    if (!userId) return;
     const source = new EventSource('/api/chat/stream');
 
     source.onopen = () => setStatus('live');
