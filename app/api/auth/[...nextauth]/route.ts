@@ -3,6 +3,12 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
+import { NextRequest } from 'next/server';
+
+const isProd = process.env.NODE_ENV === 'production';
+const hasCometDomain = process.env.NEXTAUTH_URL?.includes('cometbpo.org');
+
+const cookieDomain = (isProd && hasCometDomain) ? '.cometbpo.org' : undefined;
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -85,13 +91,13 @@ export const authOptions: NextAuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: `__Secure-next-auth.session-token`,
+      name: isProd ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        domain: '.cometbpo.org',
-        secure: true,
+        domain: cookieDomain,
+        secure: isProd,
       },
     },
   },
@@ -105,7 +111,41 @@ if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_SECRET) {
   console.error('⚠️  Generate one at: https://generate-secret.vercel.app/32');
 }
 
-const handler = NextAuth(authOptions);
+const nextAuthHandler = NextAuth(authOptions);
+
+const handler = async (req: NextRequest, ctx: any) => {
+  const host = req.headers.get('host') || '';
+  const proto = req.headers.get('x-forwarded-proto') || 'https';
+  const isProd = process.env.NODE_ENV === 'production';
+
+  // Dynamically set NEXTAUTH_URL based on request domain to avoid host/callback mismatches
+  if (host) {
+    process.env.NEXTAUTH_URL = `${proto}://${host}`;
+  }
+
+  const hasCometDomain = host.includes('cometbpo.org');
+  const cookieDomain = (isProd && hasCometDomain) ? '.cometbpo.org' : undefined;
+
+  const dynamicAuthOptions: NextAuthOptions = {
+    ...authOptions,
+    cookies: {
+      ...authOptions.cookies,
+      sessionToken: {
+        name: isProd ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
+        options: {
+          httpOnly: true,
+          sameSite: 'lax',
+          path: '/',
+          domain: cookieDomain,
+          secure: isProd,
+        },
+      },
+    },
+  };
+
+  // Set-up request ctx params if necessary
+  return await NextAuth(req, ctx, dynamicAuthOptions);
+};
 
 export { handler as GET, handler as POST };
 
