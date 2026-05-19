@@ -128,5 +128,50 @@ if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_SECRET) {
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
+// Intercept signout to clear legacy/duplicate cookies
+async function handleSignoutCookies(req: Request, res: Response): Promise<Response> {
+  const url = new URL(req.url);
+  if (url.pathname.endsWith('/signout')) {
+    const cookieNames = [
+      'next-auth.session-token',
+      '__Secure-next-auth.session-token',
+      'next-auth.callback-url',
+      '__Secure-next-auth.callback-url',
+      'next-auth.csrf-token',
+      '__Host-next-auth.csrf-token',
+    ];
+
+    const domains = [
+      '', // Host-only cookie (no domain attribute)
+      '.cometbpo.org',
+      'cometbpo.org',
+      'www.cometbpo.org',
+      'chat.cometbpo.org',
+    ];
+
+    cookieNames.forEach((name) => {
+      domains.forEach((domain) => {
+        let cookieString = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0; HttpOnly; SameSite=Lax`;
+        if (domain) {
+          cookieString += `; Domain=${domain}`;
+        }
+        if (name.startsWith('__Secure-') || name.startsWith('__Host-')) {
+          cookieString += '; Secure';
+        }
+        res.headers.append('Set-Cookie', cookieString);
+      });
+    });
+  }
+  return res;
+}
+
+export async function GET(req: Request, ctx: any) {
+  const res = await handler(req, ctx);
+  return handleSignoutCookies(req, res);
+}
+
+export async function POST(req: Request, ctx: any) {
+  const res = await handler(req, ctx);
+  return handleSignoutCookies(req, res);
+}
 
