@@ -323,9 +323,9 @@ export default function Header() {
                       <span>Settings</span>
                     </Link>
                     <button 
-                      onClick={() => {
+                      onClick={async () => {
                         setShowUserMenu(false);
-                        signOut({ callbackUrl: '/', redirect: true });
+                        await signOut({ callbackUrl: 'https://cometbpo.org/' });
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-xl transition-all group"
                     >

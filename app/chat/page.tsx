@@ -298,7 +298,9 @@ export default function ChatPage() {
           </div>
 
           <button
-            onClick={() => signOut({ callbackUrl: '/chat-login' })}
+            onClick={async () => {
+              await signOut({ callbackUrl: 'https://cometbpo.org/' });
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500 hover:text-white transition-all font-bold text-[11px] uppercase tracking-widest"
           >
             <LogOut size={14} />

@@ -110,8 +110,7 @@ export default function Sidebar({ requestCount = 0 }: SidebarProps) {
 
   const handleLogout = async () => {
     await signOut({ 
-      callbackUrl: '/',
-      redirect: true 
+      callbackUrl: 'https://cometbpo.org/',
     });
   };
 
